@@ -21,6 +21,10 @@ const login = async (
         await authRepository.findByUsername(
             username
         );
+		
+		console.log("========== LOGIN ==========");
+		console.log("Usuario recibido:", username);
+		console.log("Usuario BD:", user);
 
     console.log(
         'PASO 2 - USUARIO ENCONTRADO',
@@ -42,6 +46,10 @@ const validPassword =
         password,
         user.password_hash
     );
+	
+	console.log("Password ingresado:", password);
+	console.log("Hash BD:", user.password_hash);
+	console.log("Resultado bcrypt:", validPassword);
 
 console.log(
     'PASO 4 - PASSWORD VALIDADO',
