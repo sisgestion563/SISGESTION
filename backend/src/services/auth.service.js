@@ -47,10 +47,12 @@ const validPassword =
         user.password_hash
     );
 	
-	console.log("Password ingresado:", password);
-	console.log("Hash BD:", user.password_hash);
-	console.log("Resultado bcrypt:", validPassword);
-
+console.log("================================");
+console.log("Usuario:", username);
+console.log("Password ingresado:", password);
+console.log("Hash:", user.password_hash);
+console.log("bcrypt.compare:", validPassword);
+console.log("================================");
 console.log(
     'PASO 4 - PASSWORD VALIDADO',
     validPassword
