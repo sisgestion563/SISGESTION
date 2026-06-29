@@ -17,13 +17,3 @@ app.listen(PORT, () => {
       version: '1.0'
     });
   });
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://sisgestion-kohl.vercel.app/",
-      process.env.FRONTEND_URL,
-    ],
-    credentials: true,
-  })
-);
