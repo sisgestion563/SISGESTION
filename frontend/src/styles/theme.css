@@ -1,0 +1,18 @@
+body {
+
+    margin: 0;
+    padding: 0;
+
+    background: var(--background-color);
+
+    font-family: var(--font-family);
+
+    color: var(--text-primary);
+
+}
+
+* {
+
+    box-sizing: border-box;
+
+}
