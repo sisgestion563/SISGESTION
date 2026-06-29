@@ -1,9 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-
-    baseURL: 'http://localhost:3000/api'
-
+    baseURL: 'https://sisgestion-backend-k8r1.onrender.com/api'
 });
 
 api.interceptors.request.use(
