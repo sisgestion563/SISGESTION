@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const healthRoutes = require('./routes/healthRoutes');
 
 const app = express();
-const testDbRoutes = require('./routes/testDb.routes');
+const testDbRoutes = require('./routes/testDB.routes');
 const authRoutes = require('./routes/auth.routes');
 const catalogosRoutes = require('./routes/catalogos.routes');
 const ubigeosRoutes = require('./routes/ubigeos.routes');
