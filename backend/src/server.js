@@ -1,17 +1,19 @@
-const express = require('express');
+require('dotenv').config();
 
-const app = express();
+const app = require('./app');
 
-// Middlewares...
+const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-    res.json({
-        sistema: 'SISGESTION',
-        estado: 'OK',
-        version: '1.0'
-    });
+app.listen(PORT, () => {
+  console.log(
+    `Servidor ejecutándose en puerto ${PORT}`
+  );
+  
 });
-
-// app.use('/api/...')
-
-module.exports = app;
+  app.get('/', (req, res) => {
+    res.json({
+      sistema: 'SISGESTION',
+      estado: 'OK',
+      version: '1.0'
+    });
+  });
