@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:3000/api';
+import api from './api';
 
 export const obtenerProveedores =
 async () => {
@@ -9,8 +7,8 @@ async () => {
         localStorage.getItem('token');
 
     const response =
-        await axios.get(
-            `${API_URL}/proveedores`,
+        await api.get(
+            '/proveedores',
             {
                 headers:{
                     Authorization:
@@ -30,8 +28,8 @@ async (proveedor) => {
         localStorage.getItem('token');
 
     const response =
-        await axios.post(
-            `${API_URL}/proveedores`,
+        await api.post(
+            '/proveedores',
             proveedor,
             {
                 headers:{
@@ -52,8 +50,8 @@ async (id) => {
         localStorage.getItem('token');
 
     const response =
-        await axios.get(
-            `${API_URL}/proveedores/${id}`,
+        await api.get(
+            `/proveedores/${id}`,
             {
                 headers:{
                     Authorization:
@@ -76,8 +74,8 @@ async (
         localStorage.getItem('token');
 
     const response =
-        await axios.put(
-            `${API_URL}/proveedores/${proveedorId}`,
+        await api.put(
+            `/proveedores/${proveedorId}`,
             proveedor,
             {
                 headers:{
@@ -101,8 +99,8 @@ async (
         localStorage.getItem('token');
 
     const response =
-        await axios.get(
-            `${API_URL}/proveedores/busqueda/${tipo}/${valor}`,
+        await api.get(
+            `/proveedores/busqueda/${tipo}/${valor}`,
             {
                 headers:{
                     Authorization:
