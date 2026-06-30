@@ -576,8 +576,13 @@ disabled={soloLectura}
     }
 >
 
+<label className="form-label">
+    Documento      
+</label>
+
+
 <option value="">
-Seleccione
+Seleccione 
 </option>
 
 {
@@ -627,7 +632,8 @@ item.descripcion
                 <br/><br/>
 
 <label className="form-label">
-    Fecha Inicio      
+    Fecha Inicio
+	
 </label>
 
 
@@ -647,7 +653,7 @@ item.descripcion
                 <br/><br/>
 
 <label className="form-label">
-    Fecha Fin      
+    Fecha Fin       
 </label>
 
                 <input
@@ -666,7 +672,7 @@ item.descripcion
                 <br/><br/>
 				
 <label className="form-label">
-    Fecha Vigencia      
+    Fecha Vigencia       
 </label>
 
                 <input
@@ -685,7 +691,7 @@ item.descripcion
                 <br/><br/>
 				
 				<label className="form-label">
-    Alcance  
+    Alcance   
 </label>
 
 <select
