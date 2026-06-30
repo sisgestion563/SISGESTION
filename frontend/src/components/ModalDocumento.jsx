@@ -607,9 +607,6 @@ item.descripcion
 </select>
 
 :
-<label className="form-label">
-    Tipo Documento      
-</label>
 
 <input
     value={
