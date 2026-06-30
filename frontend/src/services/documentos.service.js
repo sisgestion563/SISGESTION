@@ -1,48 +1,25 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL =
-'http://localhost:3000/api';
-
-export const listarPorGrupo =
-async (
+export const listarPorGrupo = async (
     proveedorId,
     grupo
 ) => {
 
-    const token =
-        localStorage.getItem('token');
-
     const response =
-        await axios.get(
-            `${API_URL}/documentos/proveedor/${proveedorId}/grupo/${grupo}`,
-            {
-                headers:{
-                    Authorization:
-                    `Bearer ${token}`
-                }
-            }
+        await api.get(
+            `/documentos/proveedor/${proveedorId}/grupo/${grupo}`
         );
 
     return response.data.data;
 
 };
 
-export const crearDocumento =
-async (documento) => {
-
-    const token =
-        localStorage.getItem('token');
+export const crearDocumento = async (documento) => {
 
     const response =
-        await axios.post(
-            `${API_URL}/documentos`,
-            documento,
-            {
-                headers:{
-                    Authorization:
-                    `Bearer ${token}`
-                }
-            }
+        await api.post(
+            '/documentos',
+            documento
         );
 
     return response.data;
@@ -54,41 +31,21 @@ export const actualizarDocumento = async (
     documento
 ) => {
 
-    const token = localStorage.getItem('token');
-
-    const response = await axios.put(
-
-        `${API_URL}/documentos/${documentoId}`,
-
-        documento,
-
-        {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-
-    );
+    const response =
+        await api.put(
+            `/documentos/${documentoId}`,
+            documento
+        );
 
     return response.data;
 
 };
 
-export const obtenerDocumentoPorId =
-async (documentoId) => {
-
-    const token =
-        localStorage.getItem('token');
+export const obtenerDocumentoPorId = async (documentoId) => {
 
     const response =
-        await axios.get(
-            `${API_URL}/documentos/${documentoId}`,
-            {
-                headers:{
-                    Authorization:
-                    `Bearer ${token}`
-                }
-            }
+        await api.get(
+            `/documentos/${documentoId}`
         );
 
     return response.data.data;
