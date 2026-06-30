@@ -626,13 +626,12 @@ item.descripcion
 }
                 <br/><br/>
 
-<label className="form-label">
+<label className="form-label">style={{ marginRight: "8px", display: "inline-block" }}>
     Fecha Inicio	
 </label>
 
 
                 <input
-				style={{ marginLeft: "8px" }}
                     type="date"
 					disabled={soloLectura}
                     value={form.fecha_inicio}
@@ -647,12 +646,11 @@ item.descripcion
 
                 <br/><br/>
 
-<label className="form-label">
+<label className="form-label">style={{ marginRight: "8px", display: "inline-block" }}>
     Fecha Fin       
 </label>
 
                 <input
-				style={{ marginLeft: "8px" }}
                     type="date"
 					disabled={soloLectura}
                     value={form.fecha_fin}
@@ -667,12 +665,11 @@ item.descripcion
 
                 <br/><br/>
 				
-<label className="form-label">
+<label className="form-label">style={{ marginRight: "8px", display: "inline-block" }}>
     Fecha Vigencia       
 </label>
 
                 <input
-				style={{ marginLeft: "8px" }}
                     type="date"
 					disabled={soloLectura}
                     value={form.fecha_vigencia}
@@ -687,12 +684,11 @@ item.descripcion
 
                 <br/><br/>
 				
-				<label className="form-label">
+				<label className="form-label">style={{ marginRight: "8px", display: "inline-block" }}>
     Alcance
 </label>
 
 <select
-style={{ marginLeft: "8px" }}
     className="form-control"
     value={form.alcance}
     disabled={soloLectura}
