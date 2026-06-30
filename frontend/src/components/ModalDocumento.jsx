@@ -607,6 +607,9 @@ item.descripcion
 </select>
 
 :
+<label className="form-label">
+    Tipo Documento      
+</label>
 
 <input
     value={
@@ -625,6 +628,10 @@ item.descripcion
 
 }
 
+<label className="form-label">
+    Fecha Inicio      
+</label>
+
                 <br/><br/>
 
                 <input
@@ -642,6 +649,10 @@ item.descripcion
 
                 <br/><br/>
 
+<label className="form-label">
+    Fecha Fin      
+</label>
+
                 <input
                     type="date"
 					disabled={soloLectura}
@@ -656,6 +667,10 @@ item.descripcion
                 />
 
                 <br/><br/>
+				
+<label className="form-label">
+    Fecha Vigencia      
+</label>
 
                 <input
                     type="date"
