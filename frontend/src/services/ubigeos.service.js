@@ -1,30 +1,11 @@
-import axios from 'axios';
-
-const API_URL =
-'http://localhost:3000/api';
-
-const getToken = () => {
-
-    return {
-        headers:{
-            Authorization:
-            `Bearer ${
-                localStorage.getItem(
-                    'token'
-                )
-            }`
-        }
-    };
-
-};
+import api from './api';
 
 export const obtenerDepartamentos =
 async () => {
 
     const response =
-        await axios.get(
-            `${API_URL}/ubigeos/departamentos`,
-            getToken()
+        await api.get(
+            '/ubigeos/departamentos'
         );
 
     return response.data.data;
@@ -35,9 +16,8 @@ export const obtenerProvincias =
 async (departamento) => {
 
     const response =
-        await axios.get(
-            `${API_URL}/ubigeos/provincias/${departamento}`,
-            getToken()
+        await api.get(
+            `/ubigeos/provincias/${departamento}`
         );
 
     return response.data.data;
@@ -51,9 +31,8 @@ async (
 ) => {
 
     const response =
-        await axios.get(
-            `${API_URL}/ubigeos/distritos/${departamento}/${provincia}`,
-            getToken()
+        await api.get(
+            `/ubigeos/distritos/${departamento}/${provincia}`
         );
 
     return response.data.data;
