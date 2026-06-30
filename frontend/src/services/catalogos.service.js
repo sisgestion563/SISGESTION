@@ -1,7 +1,4 @@
-import axios from 'axios';
-
-const API_URL =
-'http://localhost:3000/api';
+import api from './api';
 
 export const obtenerCatalogo =
 async (
@@ -13,8 +10,8 @@ async (
         localStorage.getItem('token');
 
     const response =
-        await axios.get(
-            `${API_URL}/catalogos/${codGrupo}/${tipoGrupo}`,
+        await api.get(
+            `/catalogos/${codGrupo}/${tipoGrupo}`,
             {
                 headers:{
                     Authorization:
