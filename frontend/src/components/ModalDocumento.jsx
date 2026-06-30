@@ -576,6 +576,10 @@ disabled={soloLectura}
     }
 >
 
+<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
+    Documento	
+</label>
+
 <option value="">
 Seleccione 
 </option>
@@ -627,7 +631,7 @@ item.descripcion
                 <br/><br/>
 
 <label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
-    Fecha Inicio{" "}	
+    Fecha Inicio	
 </label>
 
 
