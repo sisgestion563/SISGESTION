@@ -627,7 +627,7 @@ item.descripcion
                 <br/><br/>
 
 <label className="form-label">style={{ marginRight: "8px", display: "inline-block" }}>
-    Fecha Inicio	
+    Fecha Inicio{" "}	
 </label>
 
 
@@ -647,7 +647,7 @@ item.descripcion
                 <br/><br/>
 
 <label className="form-label">style={{ marginRight: "8px", display: "inline-block" }}>
-    Fecha Fin       
+    Fecha Fin{" "}       
 </label>
 
                 <input
@@ -666,7 +666,7 @@ item.descripcion
                 <br/><br/>
 				
 <label className="form-label">style={{ marginRight: "8px", display: "inline-block" }}>
-    Fecha Vigencia       
+    Fecha Vigencia{" "}       
 </label>
 
                 <input
@@ -685,7 +685,7 @@ item.descripcion
                 <br/><br/>
 				
 				<label className="form-label">style={{ marginRight: "8px", display: "inline-block" }}>
-    Alcance
+    Alcance{" "}
 </label>
 
 <select
