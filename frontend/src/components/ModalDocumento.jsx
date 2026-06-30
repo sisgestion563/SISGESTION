@@ -624,12 +624,12 @@ item.descripcion
 />
 
 }
+                <br/><br/>
 
 <label className="form-label">
     Fecha Inicio      
 </label>
 
-                <br/><br/>
 
                 <input
                     type="date"
