@@ -576,11 +576,6 @@ disabled={soloLectura}
     }
 >
 
-<label className="form-label">
-    Documento      
-</label>
-
-
 <option value="">
 Seleccione 
 </option>
@@ -632,12 +627,12 @@ item.descripcion
                 <br/><br/>
 
 <label className="form-label">
-    Fecha Inicio
-	
+    Fecha Inicio	
 </label>
 
 
                 <input
+				style={{ marginLeft: "8px" }}
                     type="date"
 					disabled={soloLectura}
                     value={form.fecha_inicio}
@@ -657,6 +652,7 @@ item.descripcion
 </label>
 
                 <input
+				style={{ marginLeft: "8px" }}
                     type="date"
 					disabled={soloLectura}
                     value={form.fecha_fin}
@@ -676,6 +672,7 @@ item.descripcion
 </label>
 
                 <input
+				style={{ marginLeft: "8px" }}
                     type="date"
 					disabled={soloLectura}
                     value={form.fecha_vigencia}
@@ -691,10 +688,11 @@ item.descripcion
                 <br/><br/>
 				
 				<label className="form-label">
-    Alcance   
+    Alcance
 </label>
 
 <select
+style={{ marginLeft: "8px" }}
     className="form-control"
     value={form.alcance}
     disabled={soloLectura}
