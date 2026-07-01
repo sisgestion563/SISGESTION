@@ -81,7 +81,7 @@ export default function LoginPage() {
 
                 <form onSubmit={loginSubmit}>
 
-                    <label className="form-label">
+                    <label className="form-label"style={{ fontWeight: 'bold' }}>
                         Usuario
                     </label>
 
@@ -102,7 +102,7 @@ export default function LoginPage() {
                         }}
                     />
 
-                    <label className="form-label">
+                    <label className="form-label"style={{ fontWeight: 'bold' }}>
                         Contraseña
                     </label>
 
