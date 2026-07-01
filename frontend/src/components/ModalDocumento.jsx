@@ -352,7 +352,7 @@ if (modo === 'VER') {
                     Consultar Documento - {GRUPOS_DOCUMENTOS[grupoDocumento]}
                 </h2>
 
-                <label className="form-label">
+                <label className="form-label"style={{ fontWeight: 'bold' }}>
                     Tipo Documento
                 </label>
 
@@ -365,7 +365,7 @@ if (modo === 'VER') {
 
                 <br />
 
-                <label className="form-label">
+                <label className="form-label"style={{ fontWeight: 'bold' }}>
                     Estado
                 </label>
 
@@ -375,7 +375,7 @@ if (modo === 'VER') {
 
                 <br />
 
-                <label className="form-label">
+                <label className="form-label"style={{ fontWeight: 'bold' }}>
                     Fecha Vigencia
                 </label>
 
@@ -385,7 +385,7 @@ if (modo === 'VER') {
 
                 <br />
 
-                <label className="form-label">
+                <label className="form-label"style={{ fontWeight: 'bold' }}>
                     Alcance
                 </label>
 
@@ -395,7 +395,7 @@ if (modo === 'VER') {
 
                 <br />
 
-                <label className="form-label">
+                <label className="form-label"style={{ fontWeight: 'bold' }}>
                     Ruta Documento
                 </label>
 
@@ -405,7 +405,7 @@ if (modo === 'VER') {
 
                 <br />
 
-                <label className="form-label">
+                <label className="form-label"style={{ fontWeight: 'bold' }}>
                     Observaciones
                 </label>
 
