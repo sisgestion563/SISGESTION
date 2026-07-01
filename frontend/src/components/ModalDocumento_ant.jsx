@@ -445,8 +445,6 @@ disabled={soloLectura}
         })
     }
 >
-
-<option value="">
 Seleccione
 </option>
 
