@@ -571,6 +571,7 @@ grupoDocumento ===
 
 ?
 
+console.log(form);
 
 <select
 disabled={soloLectura}
