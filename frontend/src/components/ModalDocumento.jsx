@@ -689,11 +689,9 @@ item.descripcion
 <br/><br/>
 				
 				
-				
-				
-				
-				
-				
+<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
+    Ruta Documento       
+</label>		
 
                 <input
                     placeholder="Ruta Documento"
@@ -710,6 +708,10 @@ item.descripcion
 
                 <br/><br/>
 
+
+<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
+    Observaciones       
+</label>		
                 <textarea
                     rows={4}
                     placeholder="Observaciones"
