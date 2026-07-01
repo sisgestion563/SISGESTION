@@ -176,6 +176,9 @@ const datosDocumento = {
     ...form,
     proveedor_id: proveedorId,
     grupo_documentos: grupoDocumento,
+	
+	fecha_inicio: form.fecha_inicio || null,
+    fecha_fin: form.fecha_fin || null,
     update_by: usuario.usuario_id
 };
 
