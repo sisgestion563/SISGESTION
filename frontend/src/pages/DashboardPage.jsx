@@ -145,7 +145,7 @@ setEstados(
                         <div className="card">
 
                             <h3>
-                                Vigentes
+                                Documentos Vigentes
                             </h3>
 
                             <h1
@@ -163,7 +163,7 @@ setEstados(
                         <div className="card">
 
                             <h3>
-                                Vencidos
+                                Documentos Vencidos
                             </h3>
 
                             <h1
