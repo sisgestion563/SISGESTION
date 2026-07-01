@@ -619,7 +619,7 @@ item.descripcion
 <input
     value={
         form.tipo_documento
-    }
+				}}
 	disabled={soloLectura}
     onChange={(e)=>
         setForm({
