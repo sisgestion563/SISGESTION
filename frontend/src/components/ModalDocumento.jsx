@@ -576,7 +576,7 @@ console.log(form);
 <select
 disabled={soloLectura}
     value={form.tipo_documento}
-    onChange={(e)=>
+    onChange={(e)=> console.log(form);
         setForm({
             ...form,
             tipo_documento:
@@ -622,7 +622,7 @@ item.descripcion
         form.tipo_documento
 				}
 	disabled={soloLectura}
-    onChange={(e)=>
+    onChange={(e)=> console.log(form);
         setForm({
             ...form,
             tipo_documento:
