@@ -610,6 +610,8 @@ item.descripcion
 
 </select>
 
+:
+
 <label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
     Tipo Documento       
 </label>
