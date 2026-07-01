@@ -495,38 +495,9 @@ item.descripcion
 
 }
 
-                <br/><br/>
-
-                <input
-                    type="date"
-					disabled={soloLectura}
-                    value={form.fecha_inicio}
-                    onChange={(e)=>
-                        setForm({
-                            ...form,
-                            fecha_inicio:
-                                e.target.value
-                        })
-                    }
-                />
-
-                <br/><br/>
-
-                <input
-                    type="date"
-					disabled={soloLectura}
-                    value={form.fecha_fin}
-                    onChange={(e)=>
-                        setForm({
-                            ...form,
-                            fecha_fin:
-                                e.target.value
-                        })
-                    }
-                />
-
-                <br/><br/>
-
+<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
+    Fecha Vigencia       
+</label>
                 <input
                     type="date"
 					disabled={soloLectura}
