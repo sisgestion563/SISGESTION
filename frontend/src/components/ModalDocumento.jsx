@@ -613,9 +613,6 @@ item.descripcion
 :
 
 <input
-<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
-    Observaciones       
-</label>
     value={
         form.tipo_documento
 				}
