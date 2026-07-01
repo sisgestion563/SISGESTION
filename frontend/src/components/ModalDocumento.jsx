@@ -179,18 +179,11 @@ const datosDocumento = {
     update_by: usuario.usuario_id
 };
 
-
-if(grupoDocumento === 'DOC_NOR'){
-
-    documento.tipo_documento = '';
-
+if (grupoDocumento === 'DOC_NOR') {
+    datosDocumento.tipo_documento = '';
+} else {
+    datosDocumento.tipo_documento_id = '';
 }
-else{
-
-    documento.tipo_documento_id = '';
-
-}
-
 if (modo === 'NUEVO') {
 
     await crearDocumento(datosDocumento);
