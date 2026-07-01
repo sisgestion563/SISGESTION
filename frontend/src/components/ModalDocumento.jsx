@@ -564,6 +564,10 @@ grupoDocumento ===
 
 ?
 
+<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
+    Tipo Documento     
+</label>
+
 <select
 disabled={soloLectura}
     value={form.tipo_documento_id}
@@ -575,10 +579,6 @@ disabled={soloLectura}
         })
     }
 >
-
-<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
-    Documento       
-</label>
 
 <option value="">
 Seleccione 
