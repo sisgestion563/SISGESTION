@@ -574,11 +574,11 @@ grupoDocumento ===
 
 <select
 disabled={soloLectura}
-    value={form.tipo_documento_id}
+    value={form.tipo_documento}
     onChange={(e)=>
         setForm({
             ...form,
-            tipo_documento_id:
+            tipo_documento:
                 e.target.value
         })
     }
