@@ -326,128 +326,101 @@ if (modo === 'VER') {
 
     return (
 
-        <div className="modal-overlay">
+        <div
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.4)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 999
+            }}
+        >
 
-            <div className="modal modal-consulta-documento">
+            <div
+                className="card"
+                style={{
+                    width: '700px',
+                    padding: '30px'
+                }}
+            >
 
-                <div className="consulta-header">
+                <h2>
+                    Consultar Documento - {GRUPOS_DOCUMENTOS[grupoDocumento]}
+                </h2>
 
-                    <h2>📄 Consulta Documento</h2>
+                <label className="form-label">
+                    Tipo Documento
+                </label>
 
-                </div>
+                <input
+                    value={
+                        documento.tipo_documento ||
+                        documento.descripcion_tipo_documento ||
+                        ''
+                    }
+                    disabled
+                />
 
-                <div className="consulta-grid">
+                <br /><br />
 
-                    <div className="consulta-item">
-                        <label>Grupo Documento</label>
-                        <span>
-                            {GRUPOS_DOCUMENTOS[grupoDocumento]}
-                        </span>
-                    </div>
+                <label className="form-label">
+                    Estado
+                </label>
 
-                    <div className="consulta-item">
-                        <label>Estado</label>
+                <input
+                    value={documento.estado_documento || ''}
+                    disabled
+                />
 
-                        <span
-                            className={
-                                documento.estado_documento === 'VENCIDO'
-                                    ? 'badge-danger'
-                                    : 'badge-success'
-                            }
-                        >
-                            {documento.estado_documento}
-                        </span>
+                <br /><br />
 
-                    </div>
+                <label className="form-label">
+                    Fecha Vigencia
+                </label>
 
-                    <div className="consulta-item">
-                        <label>Tipo Documento</label>
+                <input
+                    type="date"
+                    value={formatearFecha(documento.fecha_vigencia)}
+                    disabled
+                />
 
-                        <span>
+                <br /><br />
 
-                            {
+                <label className="form-label">
+                    Alcance
+                </label>
 
-                                documento.tipo_documento ||
+                <input
+                    value={documento.descripcion_alcance || ''}
+                    disabled
+                />
 
-                                documento.descripcion_tipo_documento
+                <br /><br />
 
-                            }
+                <label className="form-label">
+                    Observaciones
+                </label>
 
-                        </span>
+                <textarea
+                    rows={4}
+                    value={documento.observaciones || ''}
+                    disabled
+                    style={{ width: '100%' }}
+                />
 
-                    </div>
+                <br /><br />
 
-                    <div className="consulta-item">
-                        <label>Alcance</label>
-
-                        <span>
-
-                            {
-
-                                documento.descripcion_alcance
-
-                            }
-
-                        </span>
-
-                    </div>
-
-                    <div className="consulta-item">
-                        <label>Fecha Vigencia</label>
-
-                        <span>
-
-                            {
-
-                                formatearFecha(
-
-                                    documento.fecha_vigencia
-
-                                )
-
-                            }
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <div className="consulta-observacion">
-
-                    <label>
-
-                        Observaciones
-
-                    </label>
-
-                    <div className="observacion-box">
-
-                        {
-
-                            documento.observaciones
-
-                        }
-
-                    </div>
-
-                </div>
-
-                <div className="consulta-footer">
-
-                    <button
-
-                        className="btn-primary"
-
-                        onClick={cerrarModal}
-
-                    >
-
-                        Cerrar
-
-                    </button>
-
-                </div>
+                <button
+                    className="btn-primary"
+                    onClick={cerrarModal}
+                >
+                    Cerrar
+                </button>
 
             </div>
 
