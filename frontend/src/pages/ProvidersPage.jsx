@@ -229,7 +229,7 @@ async (proveedorId) => {
 									textAlign:'left',
 									padding:'12px'
 									}}>
-								Código
+								Tipo Documento
 							</th>
 
                              <th style={{
