@@ -482,7 +482,11 @@ const renderConsulta = () => (
 </h2>
                 <label
     className="form-label"
-    style={{ marginRight: "8px", display: "inline-block" }}
+        style={{
+        marginRight: "8px",
+        display: "inline-block",
+        fontWeight: 600
+    }}
 >
     Tipo Documento
 </label>
@@ -558,7 +562,11 @@ item.descripcion
 
 
 
-<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
+<label className="form-label"    style={{
+        marginRight: "8px",
+        display: "inline-block",
+        fontWeight: 600
+    }}>
     Fecha Vigencia       
 </label>
 
@@ -577,7 +585,11 @@ item.descripcion
 
                 <br/><br/>
 				
-				<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
+				<label className="form-label"    style={{
+        marginRight: "8px",
+        display: "inline-block",
+        fontWeight: 600
+    }}>
     Alcance
 </label>
 
@@ -615,7 +627,11 @@ item.descripcion
 <br/><br/>
 				
 				
-<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
+<label className="form-label"    style={{
+        marginRight: "8px",
+        display: "inline-block",
+        fontWeight: 600
+    }}>
     Ruta Documento       
 </label>		
 
@@ -635,7 +651,11 @@ item.descripcion
                 <br/><br/>
 
 
-<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
+<label className="form-label"    style={{
+        marginRight: "8px",
+        display: "inline-block",
+        fontWeight: 600
+    }}>
     Observaciones       
 </label>		
                 <textarea
