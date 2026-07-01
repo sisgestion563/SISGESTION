@@ -321,7 +321,6 @@ GRUPOS_DOCUMENTOS[grupoDocumento]
 
 </h2>
 	
-	
 if (modo === 'VER') {
 
     return (
@@ -357,63 +356,70 @@ if (modo === 'VER') {
                     Tipo Documento
                 </label>
 
-                <input
-                    value={
+                <div className="campo-consulta">
+                    {
                         documento.tipo_documento ||
-                        documento.descripcion_tipo_documento ||
-                        ''
+                        documento.descripcion_tipo_documento
                     }
-                    disabled
-                />
+                </div>
 
-                <br /><br />
+                <br />
 
                 <label className="form-label">
                     Estado
                 </label>
 
-                <input
-                    value={documento.estado_documento || ''}
-                    disabled
-                />
+                <div className="campo-consulta">
+                    {documento.estado_documento}
+                </div>
 
-                <br /><br />
+                <br />
 
                 <label className="form-label">
                     Fecha Vigencia
                 </label>
 
-                <input
-                    type="date"
-                    value={formatearFecha(documento.fecha_vigencia)}
-                    disabled
-                />
+                <div className="campo-consulta">
+                    {formatearFecha(documento.fecha_vigencia)}
+                </div>
 
-                <br /><br />
+                <br />
 
                 <label className="form-label">
                     Alcance
                 </label>
 
-                <input
-                    value={documento.descripcion_alcance || ''}
-                    disabled
-                />
+                <div className="campo-consulta">
+                    {documento.descripcion_alcance}
+                </div>
 
-                <br /><br />
+                <br />
+
+                <label className="form-label">
+                    Ruta Documento
+                </label>
+
+                <div className="campo-consulta">
+                    {documento.ruta_documento}
+                </div>
+
+                <br />
 
                 <label className="form-label">
                     Observaciones
                 </label>
 
-                <textarea
-                    rows={4}
-                    value={documento.observaciones || ''}
-                    disabled
-                    style={{ width: '100%' }}
-                />
+                <div
+                    className="campo-consulta"
+                    style={{
+                        minHeight: '100px',
+                        whiteSpace: 'pre-wrap'
+                    }}
+                >
+                    {documento.observaciones}
+                </div>
 
-                <br /><br />
+                <br />
 
                 <button
                     className="btn-primary"
