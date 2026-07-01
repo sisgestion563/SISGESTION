@@ -393,59 +393,6 @@ if (modo === 'VER') {
                     </div>
 
                     <div className="consulta-item">
-                        <label>Fecha Inicio</label>
-
-                        <span>
-
-                            {
-
-                                formatearFecha(
-
-                                    documento.fecha_inicio
-
-                                )
-
-                            }
-
-                        </span>
-
-                    </div>
-
-                    <div className="consulta-item">
-                        <label>Ruta Documento</label>
-
-                        <span>
-
-                            {
-
-                                documento.ruta_documento
-
-                            }
-
-                        </span>
-
-                    </div>
-
-                    <div className="consulta-item">
-                        <label>Fecha Fin</label>
-
-                        <span>
-
-                            {
-
-                                formatearFecha(
-
-                                    documento.fecha_fin
-
-                                )
-
-                            }
-
-                        </span>
-
-                    </div>
-
-                    <div className="consulta-item">
                         <label>Fecha Vigencia</label>
 
                         <span>
