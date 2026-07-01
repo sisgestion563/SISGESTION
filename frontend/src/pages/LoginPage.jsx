@@ -1,57 +1,30 @@
+import { useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
-import {
-    useState
-} from 'react';
+export default function LoginPage() {
 
-import {
-    useAuth
-} from '../hooks/useAuth';
+    const { doLogin } = useAuth();
 
-import { useNavigate }
-from 'react-router-dom';
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
 
-export default function LoginPage(){
+    const navigate = useNavigate();
 
-    const {
-        doLogin
-    } = useAuth();
-
-    const [
-        username,
-        setUsername
-    ] = useState('');
-
-    const [
-        password,
-        setPassword
-    ] = useState('');
-	
-	const navigate = useNavigate();
-
-    const loginSubmit =
-    async (e) => {
+    const loginSubmit = async (e) => {
 
         e.preventDefault();
 
-        const ok =
-            await doLogin(
-                username,
-                password
-            );
+        const ok = await doLogin(username, password);
 
-        if(ok){
+        if (ok) {
 
-            alert(
-                'Login correcto'
-            );
-			navigate('/dashboard');
+            alert('Login correcto');
+            navigate('/dashboard');
 
-        }
-        else {
+        } else {
 
-            alert(
-                'Usuario o Password incorrecto'
-            );
+            alert('Usuario o contraseña incorrectos');
 
         }
 
@@ -61,52 +34,115 @@ export default function LoginPage(){
 
         <div
             style={{
-                width:'400px',
-                margin:'100px auto'
+                minHeight: '100vh',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: '#f4f6f9'
             }}
         >
 
-            <h2>
-                SISGESTION
-            </h2>
-
-            <form
-                onSubmit={loginSubmit}
+            <div
+                style={{
+                    width: '420px',
+                    background: '#fff',
+                    padding: '40px',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.15)'
+                }}
             >
 
-                <input
-                    type="text"
-                    placeholder="Usuario"
-                    value={username}
-                    onChange={(e)=>
-                        setUsername(
-                            e.target.value
-                        )
-                    }
-                />
-
-                <br/><br/>
-
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e)=>
-                        setPassword(
-                            e.target.value
-                        )
-                    }
-                />
-
-                <br/><br/>
-
-                <button
-                    type="submit"
+                <div
+                    style={{
+                        textAlign: 'center',
+                        marginBottom: '30px'
+                    }}
                 >
-                    Ingresar
-                </button>
 
-            </form>
+                    <h1
+                        style={{
+                            margin: 0,
+                            color: '#1976d2'
+                        }}
+                    >
+                        SISGESTION
+                    </h1>
+
+                    <p
+                        style={{
+                            color: '#666',
+                            marginTop: '10px'
+                        }}
+                    >
+                        Sistema de Gestión de Proveedores
+                    </p>
+
+                </div>
+
+                <form onSubmit={loginSubmit}>
+
+                    <label className="form-label">
+                        Usuario
+                    </label>
+
+                    <input
+                        type="text"
+                        value={username}
+                        placeholder="Ingrese su usuario"
+                        onChange={(e) =>
+                            setUsername(e.target.value)
+                        }
+                        style={{
+                            width: '100%',
+                            padding: '12px',
+                            borderRadius: '6px',
+                            border: '1px solid #ccc',
+                            marginBottom: '20px',
+                            boxSizing: 'border-box'
+                        }}
+                    />
+
+                    <label className="form-label">
+                        Contraseña
+                    </label>
+
+                    <input
+                        type="password"
+                        value={password}
+                        placeholder="Ingrese su contraseña"
+                        onChange={(e) =>
+                            setPassword(e.target.value)
+                        }
+                        style={{
+                            width: '100%',
+                            padding: '12px',
+                            borderRadius: '6px',
+                            border: '1px solid #ccc',
+                            marginBottom: '30px',
+                            boxSizing: 'border-box'
+                        }}
+                    />
+
+                    <button
+                        type="submit"
+                        style={{
+                            width: '100%',
+                            padding: '13px',
+                            background: '#1976d2',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Ingresar
+                    </button>
+
+                </form>
+
+            </div>
 
         </div>
 
