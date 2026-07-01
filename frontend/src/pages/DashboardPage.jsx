@@ -141,7 +141,7 @@ setEstados(
                             </h1>
 
                         </div>
-
+/*
                         <div className="card">
 
                             <h3>
@@ -155,7 +155,7 @@ setEstados(
                             </h1>
 
                         </div>
-
+*/
                         <div className="card">
 
                             <h3>
