@@ -32,7 +32,7 @@ export default function Header() {
         >
 
             <h2>
-                Sistema Gestión Documental
+                Sistema Gestión Documentos
             </h2>
 
             <div
