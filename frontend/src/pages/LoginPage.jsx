@@ -68,15 +68,6 @@ export default function LoginPage() {
                         SISGESTION
                     </h1>
 
-                    <p
-                        style={{
-                            color: '#666',
-                            marginTop: '10px'
-                        }}
-                    >
-                        Sistema de Gestión de Proveedores
-                    </p>
-
                 </div>
 
                 <form onSubmit={loginSubmit}>
