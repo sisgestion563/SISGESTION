@@ -396,11 +396,11 @@ else{
 
                 <input
                     placeholder="Nro Documento"
-                    value={form.tipo_documento}
+                    value={form.nro_documento}
                     onChange={(e)=>
                         setForm({
                             ...form,
-                            form.tipo_documento:
+                            nro_documento:
                             e.target.value
                         })
                     }
