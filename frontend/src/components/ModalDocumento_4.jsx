@@ -355,7 +355,7 @@ item.descripcion
 </label>				
 
                 <input
-                    type="ruta_documento"
+                    placeholder="Ruta Documento"
                     value={form.ruta_documento}
                     onChange={(e)=>
                         setForm({
