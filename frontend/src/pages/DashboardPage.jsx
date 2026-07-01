@@ -118,15 +118,15 @@ setEstados(
             {
                 resumen && (
 
-                    <div
-                        style={{
-                            display:'grid',
-                            gridTemplateColumns:
-                            'repeat(4,1fr)',
-                            gap:'20px',
-                            marginTop:'30px'
-                        }}
-                    >
+<div
+    style={{
+        display:'grid',
+        gridTemplateColumns:
+        'repeat(3,1fr)',
+        gap:'20px',
+        marginTop:'30px'
+    }}
+>
 
                         <div className="card">
 
@@ -141,21 +141,7 @@ setEstados(
                             </h1>
 
                         </div>
-/*
-                        <div className="card">
 
-                            <h3>
-                                Documentos
-                            </h3>
-
-                            <h1>
-                                {
-                                  resumen.total_documentos
-                                }
-                            </h1>
-
-                        </div>
-*/
                         <div className="card">
 
                             <h3>
