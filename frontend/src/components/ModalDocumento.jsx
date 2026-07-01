@@ -558,15 +558,19 @@ const renderConsulta = () => (
         GRUPOS_DOCUMENTOS[grupoDocumento]
     }
 </h2>
-                {
+                <label
+    className="form-label"
+    style={{ marginRight: "8px", display: "inline-block" }}
+>
+    Tipo Documento
+</label>
+				
+				{
 grupoDocumento ===
 'DOC_NOR'
 
 ?
 
-<label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
-    Tipo Documento     
-</label>
 
 <select
 disabled={soloLectura}
