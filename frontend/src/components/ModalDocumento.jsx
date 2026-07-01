@@ -626,6 +626,7 @@ item.descripcion
                 <br/><br/>
 
 
+
 <label className="form-label"style={{ marginRight: "8px", display: "inline-block" }}>
     Fecha Vigencia       
 </label>
