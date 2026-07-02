@@ -289,92 +289,92 @@ async (proveedorId) => {
                                 >
 
                                     <td style={{padding:'12px'}}>
-    {item.proveedor_id}
-</td>
-
-<td style={{padding:'12px'}}>
-    {item.test}
-</td>
-
-<td style={{padding:'12px'}}>
-    {item.nro_documento}
-</td>
-
-<td style={{padding:'12px'}}>
-    {item.proveedor}
-</td>
-
-<td>
-    {
-        item.status === 'A'
-        ?
-        <span
-            style={{
-                background:'#DCFCE7',
-                color:'#166534',
-                padding:'12px',
-                borderRadius:'20px',
-                fontWeight:'600'
-            }}
-        >
-            ACTIVO
-        </span>
-        :
-        <span
-            style={{
-                background:'#FEE2E2',
-                color:'#991B1B',
-                padding:'12px',
-                borderRadius:'20px',
-                fontWeight:'600'
-            }}
-        >
-            INACTIVO
-        </span>
-    }
-</td>
-
-<td
-    style={{
-        padding:'12px'
-    }}
->
-
-  <div
-    style={{
-        display:'flex',
-        gap:'8px'
-    }}
->
-
-    <button
-        className="btn-primary"
-        onClick={() =>
-            consultarProveedor(
-                item.proveedor_id
-            )
-        }
-    >
-        Ver
-    </button>
-
-    <button
-        style={{
-            background:'#F59E0B',
-            color:'white',
-            border:'none',
-            padding:'8px 12px',
-            borderRadius:'6px',
-            cursor:'pointer'
-        }}
-        onClick={() =>
-            editarProveedor(
-                item.proveedor_id
-            )
-        }
-    >
-        Editar
-    </button>
+								{item.proveedor_id}
+							</td>
+							
+							<td style={{padding:'12px'}}>
+								{item.tipo_documento}
+							</td>
+							
+							<td style={{padding:'12px'}}>
+								{item.nro_documento}
+							</td>
+							
+							<td style={{padding:'12px'}}>
+								{item.proveedor}
+							</td>
+							
+							<td>
+								{
+									item.status === 'A'
+									?
+									<span
+										style={{
+											background:'#DCFCE7',
+											color:'#166534',
+											padding:'12px',
+											borderRadius:'20px',
+											fontWeight:'600'
+										}}
+									>
+										ACTIVO
+									</span>
+									:
+									<span
+										style={{
+											background:'#FEE2E2',
+											color:'#991B1B',
+											padding:'12px',
+											borderRadius:'20px',
+											fontWeight:'600'
+										}}
+									>
+										INACTIVO
+									</span>
+								}
+							</td>
+							
+							<td
+								style={{
+									padding:'12px'
+								}}
+							>
+							
+							<div
+								style={{
+									display:'flex',
+									gap:'8px'
+								}}
+							>
+							
+								<button
+									className="btn-primary"
+									onClick={() =>
+										consultarProveedor(
+											item.proveedor_id
+										)
+									}
+								>
+									Ver
+								</button>
+							
+								<button
+									style={{
+										background:'#F59E0B',
+										color:'white',
+										border:'none',
+										padding:'8px 12px',
+										borderRadius:'6px',
+										cursor:'pointer'
+									}}
+									onClick={() =>
+										editarProveedor(
+											item.proveedor_id
+										)
+									}
+								>
+									Editar
+								</button>
 
 </div>
 
