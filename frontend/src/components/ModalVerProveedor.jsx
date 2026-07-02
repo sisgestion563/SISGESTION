@@ -99,7 +99,7 @@ export default function ModalVerProveedor({
 						
 						<tr>
                             <td><b>Ubigeo</b></td>
-                            <td>{proveedor.ubigeo_inei}</td>
+                            <td>{proveedor.ubigeo}</td>
                         </tr>
 
                         <tr>
