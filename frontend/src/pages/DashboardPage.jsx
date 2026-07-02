@@ -372,7 +372,7 @@ setEstados(
 <div style={{...styles.card, marginTop:'30px'}}>
 
     <h2 style={styles.sectionTitle}>
-        Próximos a Vencer
+        Proveedores con documentos próximos a vencer
     </h2>
 
     {
@@ -389,7 +389,6 @@ setEstados(
                 <thead>
                     <tr>
                         <th style={styles.th}>Proveedor</th>
-                        <th style={styles.th}>Tipo Documento</th>
                         <th style={styles.th}>Fecha Vencimiento</th>
                         <th style={styles.th}>Días Restantes</th>
                     </tr>
@@ -409,16 +408,10 @@ setEstados(
 
                             return (
                                 <tr key={index}>
-                                    <td style={styles.td}>
+                                    <td style={{...styles.td, fontWeight: 700}}>
                                         {item.proveedor}
                                     </td>
 
-                                    <td style={{...styles.td, fontWeight: 700}}>
-                                        {
-                                            item.descripcion_tipo_documento ||
-                                            item.tipo_documento
-                                        }
-                                    </td>
 
                                     <td style={styles.td}>
                                         {new Date(item.fecha_vigencia).toLocaleDateString('es-PE')}
