@@ -416,8 +416,7 @@ setEstados(
                                     <td style={{...styles.td, fontWeight: 700}}>
                                         {
                                             item.descripcion_tipo_documento ||
-                                            item.tipo_documento ||
-                                            item.tipo_documento_id
+                                            item.tipo_documento
                                         }
                                     </td>
 
