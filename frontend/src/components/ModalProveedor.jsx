@@ -568,34 +568,74 @@ else{
     </>
 }
 
-                <input
-                    placeholder="Correo"
-                    value={form.correo}
-                    onChange={(e)=>
-                        setForm({
-                            ...form,
-                            correo:
-                            e.target.value
-                        })
-                    }
-                />
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Correo
+</label>
+
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.correo}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            correo:e.target.value
+        })
+    }
+/>
 
                 <br/><br/>
 
-                <input
-                    placeholder="Teléfono"
-                    value={form.telefono}
-                    onChange={(e)=>
-                        setForm({
-                            ...form,
-                            telefono:
-                            e.target.value
-                        })
-                    }
-                />
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Teléfono
+</label>
+
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.telefono}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            telefono:e.target.value
+        })
+    }
+/>
 
                 <br/><br/>
-				
+	
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    CIIU
+</label>
+	
 <select
     value={form.ciiu || ''}
     onChange={(e)=>
@@ -604,12 +644,13 @@ else{
             ciiu:e.target.value
         })
     }
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px'
-    }}
+style={{
+    width:'100%',
+    padding:'10px',
+    border:'1px solid #D1D5DB',
+    borderRadius:'6px',
+    marginBottom:'15px'
+}}
 >
 
 <option value="">
@@ -640,21 +681,35 @@ Seleccione CIIU
 }
 
 </select>	
-<br/><br/>	
-		
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Departamento
+</label>
 
 <select
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
     value={form.departamento}
     onChange={async (e)=>{
 
-        const departamento =
-            e.target.value;
+        const departamento = e.target.value;
 
         setForm({
             ...form,
             departamento,
             provincia:'',
-            ciudad:''
+            ciudad:'',
+            ubigeo:''
         });
 
         const data =
@@ -663,52 +718,58 @@ Seleccione CIIU
             );
 
         setProvincias(data);
+        setCiudades([]);
 
     }}
 >
 
-<option value="">
-Seleccione Departamento
-</option>
+    <option value="">
+        Seleccione Departamento
+    </option>
 
-{
-    departamentos.map(
-        item => (
+    {
+        departamentos.map(item => (
 
             <option
-                key={
-                    item.departamento
-                }
-                value={
-                    item.departamento
-                }
+                key={item.departamento}
+                value={item.departamento}
             >
-                {
-                    item.departamento
-                }
+                {item.departamento}
             </option>
 
-        )
-    )
-}
+        ))
+    }
 
 </select>
 
-
-<br/><br/>
-
-
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Provincia
+</label>
 
 <select
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
     value={form.provincia}
     onChange={async (e)=>{
 
-        const provincia =
-            e.target.value;
+        const provincia = e.target.value;
 
         setForm({
             ...form,
-            provincia
+            provincia,
+            ciudad:'',
+            ubigeo:''
         });
 
         const data =
@@ -722,13 +783,12 @@ Seleccione Departamento
     }}
 >
 
-<option value="">
-Seleccione Provincia
-</option>
+    <option value="">
+        Seleccione Provincia
+    </option>
 
-{
-    provincias.map(
-        item => (
+    {
+        provincias.map(item => (
 
             <option
                 key={item.provincia}
@@ -737,73 +797,137 @@ Seleccione Provincia
                 {item.provincia}
             </option>
 
-        )
-    )
-}
+        ))
+    }
 
 </select>
 
-<br/><br/>
-
-
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Distrito
+</label>
 
 <select
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
     value={form.ubigeo || ''}
     onChange={(e)=>{
 
-    const ubigeo =
-        e.target.value;
+        const ubigeo = e.target.value;
 
-    const ciudadSeleccionada =
-        ciudades.find(
-            item =>
-                item.ubigeo_inei === ubigeo
-        );
+        const ciudadSeleccionada =
+            ciudades.find(
+                item =>
+                    item.ubigeo_inei === ubigeo
+            );
 
-    setForm({
-        ...form,
-        ciudad:
-            ciudadSeleccionada?.distrito || '',
-        ubigeo
-    });
+        setForm({
+            ...form,
+            ciudad:
+                ciudadSeleccionada?.distrito || '',
+            ubigeo
+        });
 
-}}
+    }}
 >
 
-<option value="">
-Seleccione Distrito
-</option>
+    <option value="">
+        Seleccione Distrito
+    </option>
 
-{
-    ciudades.map(
-        item => (
+    {
+        ciudades.map(item => (
 
             <option
-                key={
-                    item.ubigeo_inei
-                }
-                value={
-                    item.ubigeo_inei
-                }
+                key={item.ubigeo_inei}
+                value={item.ubigeo_inei}
             >
-                {
-                    item.distrito
-                }
+                {item.distrito}
             </option>
 
-        )
-    )
-}
+        ))
+    }
 
 </select>
 
-<br/><br/>
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Ubigeo
+</label>
+
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.ubigeo || ''}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            ubigeo:e.target.value
+        })
+    }
+/>
+
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Ubigeo
+</label>
+
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.ubigeo || ''}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            ubigeo:e.target.value
+        })
+    }
+/>
 
 
 
+
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Dirección
+</label>
 
 <textarea
-    placeholder="Dirección"
     value={form.direccion}
     onChange={(e)=>
         setForm({
@@ -817,11 +941,10 @@ Seleccione Distrito
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        resize:'none'
+        resize:'none',
+        marginBottom:'15px'
     }}
 />
-
-
 
 
                <div
