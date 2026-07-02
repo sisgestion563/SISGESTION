@@ -5,7 +5,7 @@ const listar = async () => {
     const sql = `
         SELECT
             proveedor_id,
-            tipo_documento,
+            'RUC' tipo_documento,
             nro_documento,
 
             CASE
