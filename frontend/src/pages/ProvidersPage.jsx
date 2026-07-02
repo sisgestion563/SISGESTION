@@ -300,6 +300,10 @@ async (proveedorId) => {
 </td>
 
 <td style={{padding:'12px'}}>
+    {item.test}
+</td>
+
+<td style={{padding:'12px'}}>
     {item.nro_documento}
 </td>
 
