@@ -236,13 +236,6 @@ async (proveedorId) => {
 									textAlign:'left',
 									padding:'12px'
 									}}>
-								Test
-							</th>
-
-                            <th style={{
-									textAlign:'left',
-									padding:'12px'
-									}}>
 								Tipo Documento
 							</th>
 							
