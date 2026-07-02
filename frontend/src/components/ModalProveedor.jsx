@@ -894,36 +894,6 @@ Seleccione CIIU
         fontWeight:'600'
     }}
 >
-    Ubigeo
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.ubigeo || ''}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            ubigeo:e.target.value
-        })
-    }
-/>
-
-
-
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
     Dirección
 </label>
 
