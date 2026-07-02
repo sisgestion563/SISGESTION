@@ -231,19 +231,12 @@ async (proveedorId) => {
 									}}>
 								Proveedor ID
 							</th>
-
-                            <th style={{
-									textAlign:'left',
-									padding:'12px'
-									}}>
-								Tipo Documento
-							</th>
 							
                              <th style={{
 									textAlign:'left',
 									padding:'12px'
 									}}>
-                                Documento
+                                Tipo Documento
                             </th>
 
                              <th style={{
