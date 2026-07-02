@@ -5,6 +5,7 @@ const listar = async () => {
     const sql = `
         SELECT
             proveedor_id,
+			'RUC' as test,
             tipo_documento,
             nro_documento,
 
