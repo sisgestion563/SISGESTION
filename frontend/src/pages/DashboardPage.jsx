@@ -389,7 +389,7 @@ setEstados(
                 <thead>
                     <tr>
                         <th style={styles.th}>Proveedor</th>
-                        <th style={styles.th}>Documento</th>
+                        <th style={styles.th}>Tipo Documento</th>
                         <th style={styles.th}>Fecha Vencimiento</th>
                         <th style={styles.th}>Días Restantes</th>
                     </tr>
@@ -413,8 +413,12 @@ setEstados(
                                         {item.proveedor}
                                     </td>
 
-                                    <td style={styles.td}>
-                                        {item.documento}
+                                    <td style={{...styles.td, fontWeight: 700}}>
+                                        {
+                                            item.descripcion_tipo_documento ||
+                                            item.tipo_documento ||
+                                            item.tipo_documento_id
+                                        }
                                     </td>
 
                                     <td style={styles.td}>
