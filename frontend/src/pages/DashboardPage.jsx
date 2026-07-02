@@ -66,8 +66,8 @@ const styles = {
     }),
     statLabel: {
         fontSize: '13px',
-        fontWeight: 600,
-        color: colors.textMuted,
+        fontWeight: 700,
+        color: colors.text,
         margin: 0,
         textTransform: 'uppercase',
         letterSpacing: '0.03em',
@@ -93,8 +93,8 @@ const styles = {
         textAlign: 'left',
         padding: '12px 16px',
         fontSize: '13px',
-        fontWeight: 600,
-        color: colors.textMuted,
+        fontWeight: 700,
+        color: colors.text,
         borderBottom: `1px solid ${colors.border}`,
         background: '#f9fafb',
     },
@@ -408,7 +408,7 @@ setEstados(
 
                             return (
                                 <tr key={index}>
-                                    <td style={{...styles.td, fontWeight: 700}}>
+                                    <td style={styles.td}>
                                         {item.proveedor}
                                     </td>
 
