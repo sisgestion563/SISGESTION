@@ -292,10 +292,11 @@ async (proveedorId) => {
                 <div style={styles.toolbarRow}>
 
                     <div style={styles.searchWrap}>
-                        <span style={styles.searchIcon}>🔍</span>
+                        <span style={styles.searchIcon}></span>
+						 <td><b>Busqueda</b></td>
                         <input
                             type="text"
-                            placeholder="Buscar proveedor..."
+                            placeholder="Buscar Razon Social..."
                             value={filtro}
                             onChange={
                                 (e)=>
