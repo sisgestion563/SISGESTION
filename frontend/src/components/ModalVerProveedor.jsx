@@ -116,11 +116,7 @@ export default function ModalVerProveedor({
                             <td><b>Dirección</b></td>
                             <td>{proveedor.direccion}</td>
                         </tr>
-						
-                        <tr>
-                            <td><b>CIUU</b></td>
-                            <td>{proveedor.ciuu}</td>
-                        </tr>						
+
 
                         <tr>
     <td>
