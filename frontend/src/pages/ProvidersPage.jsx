@@ -225,13 +225,6 @@ async (proveedorId) => {
 
                         <tr>
 
-                            <th style={{
-									textAlign:'left',
-									padding:'12px'
-									}}>
-								Proveedor ID
-							</th>
-							
                              <th style={{
 									textAlign:'left',
 									padding:'12px'
@@ -289,10 +282,6 @@ async (proveedorId) => {
                                 >
 
                                     <td style={{padding:'12px'}}>
-								{item.proveedor_id}
-							</td>
-							
-							<td style={{padding:'12px'}}>
 								{item.tipo_documento}
 							</td>
 							
