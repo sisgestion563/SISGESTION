@@ -53,29 +53,37 @@ const styles = {
     },
     toolbarRow: {
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '16px',
+        alignItems: 'stretch',
+        gap: '24px',
         flexWrap: 'wrap',
+    },
+    toolbarSection: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        flex: 1,
+        minWidth: '260px',
+    },
+    toolbarLabel: {
+        fontSize: '12px',
+        fontWeight: 700,
+        color: colors.textMuted,
+        textTransform: 'uppercase',
+        letterSpacing: '0.04em',
+        margin: 0,
+    },
+    toolbarDivider: {
+        width: '1px',
+        background: colors.border,
+        alignSelf: 'stretch',
     },
     searchWrap: {
         position: 'relative',
-        flex: 1,
-        minWidth: '260px',
-        maxWidth: '360px',
-    },
-    searchIcon: {
-        position: 'absolute',
-        left: '12px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        color: colors.textMuted,
-        fontSize: '15px',
-        pointerEvents: 'none',
+        width: '100%',
     },
     searchInput: {
         width: '100%',
-        padding: '10px 12px 10px 36px',
+        padding: '10px 12px',
         border: `1px solid ${colors.border}`,
         borderRadius: '8px',
         fontSize: '14px',
@@ -291,33 +299,45 @@ async (proveedorId) => {
 
                 <div style={styles.toolbarRow}>
 
-                    <div style={styles.searchWrap}>
-                        <span style={styles.searchIcon}></span>
-						 <td><b>Busqueda</b></td>
-                        <input
-                            type="text"
-                            placeholder="Buscar Razon Social..."
-                            value={filtro}
-                            onChange={
-                                (e)=>
-                                setFiltro(
-                                    e.target.value
-                                )
-                            }
-                            style={styles.searchInput}
-                        />
+                    <div style={styles.toolbarSection}>
+
+                        <p style={styles.toolbarLabel}>Búsqueda</p>
+
+                        <div style={styles.searchWrap}>
+                            <input
+                                type="text"
+                                placeholder="Buscar Razón Social..."
+                                value={filtro}
+                                onChange={
+                                    (e)=>
+                                    setFiltro(
+                                        e.target.value
+                                    )
+                                }
+                                style={styles.searchInput}
+                            />
+                        </div>
+
                     </div>
 
-                    <button
-                        style={styles.btnPrimary}
-                        onClick={() => {
+                    <div style={styles.toolbarDivider} />
 
-                            setModalVisible(true);
+                    <div style={styles.toolbarSection}>
 
-                        }}
-                    >
-                        + Nuevo Proveedor
-                    </button>
+                        <p style={styles.toolbarLabel}>Nuevo Registro</p>
+
+                        <button
+                            style={{...styles.btnPrimary, alignSelf:'flex-start'}}
+                            onClick={() => {
+
+                                setModalVisible(true);
+
+                            }}
+                        >
+                            + Nuevo Proveedor
+                        </button>
+
+                    </div>
 
                 </div>
 
