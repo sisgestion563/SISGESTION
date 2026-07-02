@@ -3,32 +3,24 @@ const pool = require('../config/db');
 const listar = async () => {
 
     const sql = `
-        SELECT
-            proveedor_id,
-			'RUC' as test,
-            tipo_documento,
-            nro_documento,
+        SELECT MPRO.proveedor_id PROVEEDOR_ID
+	,MLV.DESCRIPCION TIPO_DOCUMENTO
+	,MPRO.nro_documento NRO_DOCUMENTO
+	,CASE 
+		WHEN MPRO.razon_social IS NOT NULL
+			AND TRIM(MPRO.razon_social) <> ''
+			THEN MPRO.razon_social
+		ELSE TRIM(COALESCE(MPRO.nombre, '') || ' ' || COALESCE(MPRO.apellido_paterno, '') || ' ' || COALESCE(MPRO.apellido_materno, ''))
+		END proveedor
+	,MPRO.correo CORREO
+	,MPRO.telefono TELEFONO
+	,MPRO.calificacion CALIFICACION
+	,MPRO.STATUS STATUS
+FROM "SISGES"."MAE_PROVEEDOR" MPRO
+JOIN "SISGES"."MAE_LISTA_VALORES" MLV ON MLV.CODIGO_VALOR = MPRO.TIPO_DOCUMENTO
+WHERE MLV.TIPO_GRUPO = 'TIPO_DOC_SUNAT'
+ORDER BY MPRO.proveedor_id DESC
 
-            CASE
-                WHEN razon_social IS NOT NULL
-                 AND TRIM(razon_social) <> ''
-                THEN razon_social
-                ELSE
-                    TRIM(
-                        COALESCE(nombre,'') || ' ' ||
-                        COALESCE(apellido_paterno,'') || ' ' ||
-                        COALESCE(apellido_materno,'')
-                    )
-            END proveedor,
-
-            correo,
-            telefono,
-            calificacion,
-            status
-
-        FROM "SISGES"."MAE_PROVEEDOR"
-
-        ORDER BY proveedor_id DESC
     `;
 
     const result = await pool.query(sql);
