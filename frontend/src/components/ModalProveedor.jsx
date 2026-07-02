@@ -30,6 +30,7 @@ export default function ModalProveedor({
     proveedorEditar
 }) {
 
+
     const [form,setForm] = useState({
 
     tipo_documento:'06',
@@ -348,7 +349,7 @@ else{
     }}
 >
 
-                <h2>
+<h2>
 {
     proveedorEditar
     ?
@@ -357,8 +358,25 @@ else{
     'Nuevo Proveedor'
 }
 </h2>
-				
-				<select
+
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Tipo Documento
+</label>
+
+<select
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
     value={form.tipo_documento}
     onChange={(e)=>
         setForm({
@@ -390,91 +408,161 @@ else{
 
 </select>
 
-<br/><br/>
-				
-				
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Nro. Documento
+</label>
 
-                <input
-                    placeholder="Nro Documento"
-                    value={form.nro_documento}
-                    onChange={(e)=>
-                        setForm({
-                            ...form,
-                            nro_documento:
-                            e.target.value
-                        })
-                    }
-                />
-
-                <br/><br/>
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.nro_documento}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            nro_documento:e.target.value
+        })
+    }
+/>
 				{
     esEmpresa
     ?
     <>
-        <input
-            placeholder="Razón Social"
-            value={form.razon_social}
-            onChange={(e)=>
-                setForm({
-                    ...form,
-                    razon_social:e.target.value
-                })
-            }
-        />
+        <label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Razón Social
+</label>
 
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.razon_social}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            razon_social:e.target.value
+        })
+    }
+/>
         <br/><br/>
 
-        <input
-            placeholder="Representante Legal"
-            value={form.representante_legal}
-            onChange={(e)=>
-                setForm({
-                    ...form,
-                    representante_legal:e.target.value
-                })
-            }
-        />
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Representante Legal
+</label>
+
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.representante_legal}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            representante_legal:e.target.value
+        })
+    }
+/>
 
         <br/><br/>
     </>
     :
     <>
-        <input
-            placeholder="Nombres"
-            value={form.nombre}
-            onChange={(e)=>
-                setForm({
-                    ...form,
-                    nombre:e.target.value
-                })
-            }
-        />
+<label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
+    Nombres
+</label>
+
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.nombre}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            nombre:e.target.value
+        })
+    }
+/>
 
         <br/><br/>
 
-        <input
-            placeholder="Apellido Paterno"
-            value={form.apellido_paterno}
-            onChange={(e)=>
-                setForm({
-                    ...form,
-                    apellido_paterno:e.target.value
-                })
-            }
-        />
+<label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
+    Apellido Paterno
+</label>
+
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.apellido_paterno}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            apellido_paterno:e.target.value
+        })
+    }
+/>
 
         <br/><br/>
 
-        <input
-            placeholder="Apellido Materno"
-            value={form.apellido_materno}
-            onChange={(e)=>
-                setForm({
-                    ...form,
-                    apellido_materno:e.target.value
-                })
-            }
-        />
+<label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
+    Apellido Materno
+</label>
+
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.apellido_materno}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            apellido_materno:e.target.value
+        })
+    }
+/>
 
         <br/><br/>
     </>

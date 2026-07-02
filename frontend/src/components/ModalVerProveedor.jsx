@@ -97,11 +97,6 @@ export default function ModalVerProveedor({
                             <td>{proveedor.telefono}</td>
                         </tr>
 						
-						<tr>
-                            <td><b>Ubigeo</b></td>
-                            <td>{proveedor.ubigeo}</td>
-                        </tr>
-
                         <tr>
                             <td><b>Departamento</b></td>
                             <td>{proveedor.departamento}</td>
@@ -115,6 +110,11 @@ export default function ModalVerProveedor({
                         <tr>
                             <td><b>Ciudad</b></td>
                             <td>{proveedor.ciudad}</td>
+                        </tr>
+
+						<tr>
+                            <td><b>Ubigeo</b></td>
+                            <td>{proveedor.ubigeo}</td>
                         </tr>
 
                         <tr>
