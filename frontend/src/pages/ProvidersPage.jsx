@@ -506,6 +506,7 @@ async (proveedorId) => {
     }
 />
 
+
 <ModalVerProveedor
 
     visible={
