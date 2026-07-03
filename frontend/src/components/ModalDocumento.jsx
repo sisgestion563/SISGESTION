@@ -318,22 +318,6 @@ const TITULOS = {
 
 };
 
-<h2>
-
-{
-
-TITULOS[modo]
-
-}
-
- - {
-
-GRUPOS_DOCUMENTOS[grupoDocumento]
-
-}
-
-</h2>
-	
 if (modo === 'VER') {
 
     return (
@@ -489,7 +473,7 @@ const renderConsulta = () => (
             >
 
 				<h2>
-    Nuevo Documento - {
+    {TITULOS[modo]} - {
         GRUPOS_DOCUMENTOS[grupoDocumento]
     }
 </h2>
