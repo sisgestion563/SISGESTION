@@ -38,17 +38,21 @@ export default function LoginPage() {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                background: '#f4f6f9'
+                background: '#f4f6f9',
+                padding: '16px',
+                boxSizing: 'border-box'
             }}
         >
 
             <div
                 style={{
-                    width: '420px',
+                    width: '100%',
+                    maxWidth: '420px',
                     background: '#fff',
-                    padding: '40px',
+                    padding: '32px 24px',
                     borderRadius: '12px',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.15)'
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                    boxSizing: 'border-box'
                 }}
             >
 

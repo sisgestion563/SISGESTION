@@ -185,6 +185,22 @@ const styles = {
 	},
 };
 
+const responsiveCSS = `
+    @media (max-width: 640px) {
+        .documentos-card { padding: 16px !important; }
+        .documentos-search-row { flex-direction: column; align-items: stretch !important; }
+        .documentos-search-row input { max-width: 100% !important; }
+    }
+    .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table-scroll table {
+        min-width: 560px;
+    }
+`;
+
 export default function DocumentsPage()
 	{
 		const [tipoBusqueda,setTipoBusqueda] = useState('DOCUMENTO');
@@ -245,7 +261,8 @@ export default function DocumentsPage()
 
 		return (
 			<MainLayout>
-				<div style={styles.card}>
+				<style>{responsiveCSS}</style>
+				<div className="documentos-card" style={styles.card}>
 
 					<h2 style={styles.title}>Documentos</h2>
 
@@ -263,7 +280,7 @@ export default function DocumentsPage()
 
 					</div>
 
-					<div style={styles.searchRow}>
+					<div className="documentos-search-row" style={styles.searchRow}>
 						<input
 							style={styles.input}
 							value={valorBusqueda}
@@ -277,6 +294,7 @@ export default function DocumentsPage()
 					{
 						proveedores.length > 0 &&
 
+						<div className="table-scroll">
 						<table style={styles.table}>
 
 							<thead>
@@ -309,6 +327,7 @@ export default function DocumentsPage()
 								))}
 							</tbody>
 						</table>
+						</div>
 					}
 
 					{
@@ -378,6 +397,7 @@ export default function DocumentsPage()
 								Agregar Documento
 							</button>
 
+							<div className="table-scroll">
 							<table style={styles.table}>
 
 								<thead>
@@ -451,6 +471,7 @@ export default function DocumentsPage()
 								</tbody>
 
 							</table>
+							</div>
 
 						</>
 					}

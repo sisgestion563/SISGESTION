@@ -160,6 +160,21 @@ const styles = {
     },
 };
 
+const responsiveCSS = `
+    @media (max-width: 700px) {
+        .toolbar-divider { display: none; }
+        .toolbar-section { min-width: 100% !important; }
+    }
+    .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table-scroll table {
+        min-width: 720px;
+    }
+`;
+
 export default function ProvidersPage(){
 
     const [
@@ -289,6 +304,8 @@ async (proveedorId) => {
 
         <MainLayout>
 
+            <style>{responsiveCSS}</style>
+
             <h1 style={styles.heading}>
                 Proveedores
             </h1>
@@ -297,7 +314,7 @@ async (proveedorId) => {
 
                 <div style={styles.toolbarRow}>
 
-                    <div style={styles.toolbarSection}>
+                    <div className="toolbar-section" style={styles.toolbarSection}>
 
                         <p style={styles.toolbarLabel}>Búsqueda</p>
 
@@ -318,9 +335,9 @@ async (proveedorId) => {
 
                     </div>
 
-                    <div style={styles.toolbarDivider} />
+                    <div className="toolbar-divider" style={styles.toolbarDivider} />
 
-                    <div style={styles.toolbarSection}>
+                    <div className="toolbar-section" style={styles.toolbarSection}>
 
                         <p style={styles.toolbarLabel}>Nuevo Registro</p>
 
@@ -342,6 +359,8 @@ async (proveedorId) => {
             </div>
 
             <div style={{...styles.card, marginTop:'20px', padding:0}}>
+
+              <div className="table-scroll">
 
                 <table style={styles.table}>
 
@@ -453,6 +472,8 @@ async (proveedorId) => {
                     </tbody>
 
                 </table>
+
+              </div>
 
             </div>
 
