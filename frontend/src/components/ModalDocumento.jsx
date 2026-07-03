@@ -45,6 +45,7 @@ export default function ModalDocumento({
 };
 
 const [form, setForm] = useState(formInicial);
+const [fechaVigenciaDisplay, setFechaVigenciaDisplay] = useState('');
 
     
 
@@ -114,6 +115,10 @@ const cargarFormulario = () => {
 
     });
 
+    setFechaVigenciaDisplay(
+        formatearFechaDisplay(documento.fecha_vigencia)
+    );
+
 };
 
 const formatearFecha = (fecha) => {
@@ -139,6 +144,56 @@ const formatearFechaDisplay = (fecha) => {
 
 };
 
+// Máscara dd/mm/yyyy para el campo de texto de Fecha Vigencia.
+// Guarda el texto visible en fechaVigenciaDisplay y, cuando la fecha
+// queda completa y es válida, actualiza form.fecha_vigencia en ISO
+// (formato que espera el backend).
+const handleFechaVigenciaChange = (e) => {
+
+    const soloNumeros = e.target.value.replace(/\D/g, '').slice(0, 8);
+
+    let formateado = soloNumeros;
+
+    if (soloNumeros.length > 4) {
+        formateado = `${soloNumeros.slice(0, 2)}/${soloNumeros.slice(2, 4)}/${soloNumeros.slice(4)}`;
+    }
+    else if (soloNumeros.length > 2) {
+        formateado = `${soloNumeros.slice(0, 2)}/${soloNumeros.slice(2)}`;
+    }
+
+    setFechaVigenciaDisplay(formateado);
+
+    if (soloNumeros.length === 8) {
+
+        const dia = soloNumeros.slice(0, 2);
+        const mes = soloNumeros.slice(2, 4);
+        const anio = soloNumeros.slice(4, 8);
+
+        const iso = `${anio}-${mes}-${dia}`;
+        const fechaValidada = new Date(iso);
+
+        const esValida =
+            fechaValidada.getFullYear() === Number(anio) &&
+            fechaValidada.getMonth() + 1 === Number(mes) &&
+            fechaValidada.getDate() === Number(dia);
+
+        setForm(prev => ({
+            ...prev,
+            fecha_vigencia: esValida ? iso : ''
+        }));
+
+    }
+    else {
+
+        setForm(prev => ({
+            ...prev,
+            fecha_vigencia: ''
+        }));
+
+    }
+
+};
+
 useEffect(() => {
 
     if (!visible) {
@@ -152,6 +207,7 @@ useEffect(() => {
     if (modo === 'NUEVO') {
 
         setForm(formInicial);
+        setFechaVigenciaDisplay('');
 
     }
     else {
@@ -584,16 +640,13 @@ item.descripcion
 </label>
 
                 <input
-                    type="date"
+                    type="text"
+                    placeholder="dd/mm/aaaa"
+                    maxLength={10}
+                    inputMode="numeric"
 					disabled={soloLectura}
-                    value={form.fecha_vigencia}
-                    onChange={(e)=>
-                        setForm({
-                            ...form,
-                            fecha_vigencia:
-                                e.target.value
-                        })
-                    }
+                    value={fechaVigenciaDisplay}
+                    onChange={handleFechaVigenciaChange}
                 />
 
                 <br/><br/>
