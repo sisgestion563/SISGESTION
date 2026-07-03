@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import MainLayout from '../layouts/MainLayout';
 import {buscarProveedor} from '../services/providers.service';
 import {listarPorGrupo} from '../services/documentos.service';
 import ModalDocumento from '../components/ModalDocumento';
@@ -21,12 +22,6 @@ const colors = {
 };
 
 const styles = {
-	page: {
-		padding: '24px',
-		background: colors.bg,
-		minHeight: '100vh',
-		fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-	},
 	card: {
 		background: colors.card,
 		border: `1px solid ${colors.border}`,
@@ -249,7 +244,7 @@ export default function DocumentsPage()
 		];
 
 		return (
-			<div style={styles.page}>
+			<MainLayout>
 				<div style={styles.card}>
 
 					<h2 style={styles.title}>Documentos</h2>
@@ -480,6 +475,6 @@ export default function DocumentsPage()
 					}
 
 				</div>
-			</div>
+			</MainLayout>
 		);
 	}
