@@ -360,6 +360,7 @@ async (proveedorId) => {
                              <th style={styles.th}>
                                 Razón Social
                             </th>
+							<th style={styles.th}>Actividad Económica</th>
 
                              <th style={styles.th}>
                                 Estado
@@ -404,6 +405,8 @@ async (proveedorId) => {
 							<td style={styles.td}>
 								{item.proveedor}
 							</td>
+							
+							<td style={styles.td}>{item.actividad_economica}</td>
 
 							<td style={styles.td}>
 								<span style={styles.badge(item.status === 'A')}>

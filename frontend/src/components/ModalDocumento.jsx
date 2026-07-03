@@ -370,7 +370,7 @@ if (modo === 'VER') {
                 </label>
 
                 <div className="campo-consulta">
-                    {documento.estado_documento}
+                    {documento.desc_estado_documento}
                 </div>
 
                 <br />

@@ -71,6 +71,11 @@ export default function ModalVerProveedor({
                             <td><b>Razón Social</b></td>
                             <td>{proveedor.razon_social}</td>
                         </tr>
+						
+						<tr>
+                            <td><b>Representante Legal</b></td>
+                            <td>{proveedor.representante_legal}</td>
+                        </tr>
 
                         <tr>
                             <td><b>Nombres</b></td>

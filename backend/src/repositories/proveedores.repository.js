@@ -2,31 +2,27 @@ const pool = require('../config/db');
 
 const listar = async () => {
 
-    const sql = `
-        SELECT MPRO.proveedor_id PROVEEDOR_ID
-	,MLV.DESCRIPCION TIPO_DOCUMENTO
-	,MPRO.nro_documento NRO_DOCUMENTO
-	,CASE 
-		WHEN MPRO.razon_social IS NOT NULL
-			AND TRIM(MPRO.razon_social) <> ''
-			THEN MPRO.razon_social
-		ELSE TRIM(COALESCE(MPRO.nombre, '') || ' ' || COALESCE(MPRO.apellido_paterno, '') || ' ' || COALESCE(MPRO.apellido_materno, ''))
-		END proveedor
-	,MPRO.correo CORREO
-	,MPRO.telefono TELEFONO
-	,MPRO.calificacion CALIFICACION
-	,MPRO.STATUS STATUS
-	,MPRO.ubigeo UBIGEO
-FROM "SISGES"."MAE_PROVEEDOR" MPRO
-JOIN "SISGES"."MAE_LISTA_VALORES" MLV ON MLV.CODIGO_VALOR = MPRO.TIPO_DOCUMENTO
-WHERE MLV.TIPO_GRUPO = 'TIPO_DOC_SUNAT'
-ORDER BY MPRO.proveedor_id DESC
-
-    `;
-
-    const result = await pool.query(sql);
-
-    return result.rows;
+    const sql = `SELECT	MPRO.proveedor_id PROVEEDOR_ID
+							,MLV.DESCRIPCION TIPO_DOCUMENTO
+							,MPRO.nro_documento NRO_DOCUMENTO
+							,CASE 
+								WHEN MPRO.razon_social IS NOT NULL
+									AND TRIM(MPRO.razon_social) <> ''
+									THEN MPRO.razon_social
+								ELSE TRIM(COALESCE(MPRO.nombre, '') || ' ' || COALESCE(MPRO.apellido_paterno, '') || ' ' || COALESCE(MPRO.apellido_materno, ''))
+							END proveedor
+							,MPRO.correo CORREO
+							,MPRO.telefono TELEFONO
+							,MPRO.calificacion CALIFICACION
+							,MPRO.STATUS STATUS
+							,MPRO.ubigeo UBIGEO
+							,MPRO.ciiu||'-'||MLV_CIUU.descripcion actividad_economica
+					 FROM	"SISGES"."MAE_PROVEEDOR" MPRO
+					 LEFT JOIN 	"SISGES"."MAE_LISTA_VALORES" MLV ON MLV.CODIGO_VALOR = MPRO.TIPO_DOCUMENTO and MLV.cod_grupo = '0001' and MLV.tipo_grupo = 'TIPO_DOC_SUNAT'
+					 LEFT JOIN 	"SISGES"."MAE_LISTA_VALORES" MLV_CIUU ON MLV_CIUU.CODIGO_VALOR = MPRO.ciiu and MLV_CIUU.cod_grupo = '0002' and MLV_CIUU.tipo_grupo = 'CODIGO_CIIU_SUNAT'
+					 ORDER BY MPRO.proveedor_id DESC`;
+		const result = await pool.query(sql);
+		return result.rows;
 };
 
 const obtenerPorId = async (proveedorId) => {
