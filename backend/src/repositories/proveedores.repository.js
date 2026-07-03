@@ -17,6 +17,10 @@ const listar = async () => {
 							,MPRO.STATUS STATUS
 							,MPRO.ubigeo UBIGEO
 							,MPRO.ciiu||'-'||MLV_CIUU.descripcion actividad_economica
+							,(	SELECT count(*)
+								FROM 	"SISGES"."MOV_DOCUMENTOS" MDOC 		
+								WHERE	MDOC.proveedor_id = MPRO.proveedor_id
+								AND		MDOC.estado_documento = 'C') doc_vencidos	
 					 FROM	"SISGES"."MAE_PROVEEDOR" MPRO
 					 LEFT JOIN 	"SISGES"."MAE_LISTA_VALORES" MLV ON MLV.CODIGO_VALOR = MPRO.TIPO_DOCUMENTO and MLV.cod_grupo = '0001' and MLV.tipo_grupo = 'TIPO_DOC_SUNAT'
 					 LEFT JOIN 	"SISGES"."MAE_LISTA_VALORES" MLV_CIUU ON MLV_CIUU.CODIGO_VALOR = MPRO.ciiu and MLV_CIUU.cod_grupo = '0002' and MLV_CIUU.tipo_grupo = 'CODIGO_CIIU_SUNAT'

@@ -120,14 +120,14 @@ const styles = {
         borderBottom: `1px solid ${colors.border}`,
     },
     badge: (ok) => ({
-        display: 'inline-block',
-        padding: '4px 12px',
-        borderRadius: '999px',
-        fontSize: '12px',
-        fontWeight: 700,
-        background: ok ? colors.successBg : colors.dangerBg,
-        color: ok ? colors.success : colors.danger,
-    }),
+    display: 'inline-block',
+    padding: '4px 12px',
+    borderRadius: '999px',
+    fontSize: '12px',
+    fontWeight: 700,
+    background: ok ? '#DCFCE7' : '#FEE2E2',
+    color: ok ? '#15803D' : '#DC2626',
+}),
     rowActions: {
         display: 'flex',
         gap: '8px',
@@ -159,21 +159,6 @@ const styles = {
         fontSize: '14px',
     },
 };
-
-const responsiveCSS = `
-    @media (max-width: 700px) {
-        .toolbar-divider { display: none; }
-        .toolbar-section { min-width: 100% !important; }
-    }
-    .table-scroll {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .table-scroll table {
-        min-width: 720px;
-    }
-`;
 
 export default function ProvidersPage(){
 
@@ -304,8 +289,6 @@ async (proveedorId) => {
 
         <MainLayout>
 
-            <style>{responsiveCSS}</style>
-
             <h1 style={styles.heading}>
                 Proveedores
             </h1>
@@ -314,7 +297,7 @@ async (proveedorId) => {
 
                 <div style={styles.toolbarRow}>
 
-                    <div className="toolbar-section" style={styles.toolbarSection}>
+                    <div style={styles.toolbarSection}>
 
                         <p style={styles.toolbarLabel}>Búsqueda</p>
 
@@ -335,9 +318,9 @@ async (proveedorId) => {
 
                     </div>
 
-                    <div className="toolbar-divider" style={styles.toolbarDivider} />
+                    <div style={styles.toolbarDivider} />
 
-                    <div className="toolbar-section" style={styles.toolbarSection}>
+                    <div style={styles.toolbarSection}>
 
                         <p style={styles.toolbarLabel}>Nuevo Registro</p>
 
@@ -360,8 +343,6 @@ async (proveedorId) => {
 
             <div style={{...styles.card, marginTop:'20px', padding:0}}>
 
-              <div className="table-scroll">
-
                 <table style={styles.table}>
 
                     <thead>
@@ -379,12 +360,17 @@ async (proveedorId) => {
                              <th style={styles.th}>
                                 Razón Social
                             </th>
+							
 							<th style={styles.th}>Actividad Económica</th>
-
-                             <th style={styles.th}>
-                                Estado
+														
+							<th style={styles.th}>
+                                Estado Documentos
                             </th>
 
+                            <th style={styles.th}>
+                                Estado
+                            </th>
+							
 							<th style={styles.th}>
                                 Acciones
                             </th>
@@ -426,6 +412,22 @@ async (proveedorId) => {
 							</td>
 							
 							<td style={styles.td}>{item.actividad_economica}</td>
+							
+							
+							<td style={styles.td}>
+    <span
+        style={{
+            background: item.doc_vencidos > 0 ? 'red' : 'green',
+            color: 'white',
+            padding: '5px 12px',
+            borderRadius: '20px',
+            fontWeight: 'bold'
+        }}
+    >
+        {item.doc_vencidos > 0 ? 'VENCIDOS' : 'VIGENTES'}
+    </span>
+</td>
+							
 
 							<td style={styles.td}>
 								<span style={styles.badge(item.status === 'A')}>
@@ -472,8 +474,6 @@ async (proveedorId) => {
                     </tbody>
 
                 </table>
-
-              </div>
 
             </div>
 
