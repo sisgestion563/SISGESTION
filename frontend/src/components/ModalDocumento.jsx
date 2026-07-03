@@ -126,6 +126,19 @@ const formatearFecha = (fecha) => {
 
 };
 
+// Para mostrar en pantalla (modo Consultar), no para inputs de tipo date
+const formatearFechaDisplay = (fecha) => {
+
+    const iso = formatearFecha(fecha);
+
+    if (!iso) return '';
+
+    const [anio, mes, dia] = iso.split('-');
+
+    return `${dia}/${mes}/${anio}`;
+
+};
+
 useEffect(() => {
 
     if (!visible) {
@@ -380,7 +393,7 @@ if (modo === 'VER') {
                 </label>
 
                 <div className="campo-consulta">
-                    {formatearFecha(documento.fecha_vigencia)}
+                    {formatearFechaDisplay(documento.fecha_vigencia)}
                 </div>
 
                 <br />
