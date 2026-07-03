@@ -432,8 +432,8 @@ async (proveedorId) => {
 							<td style={styles.td}>{item.actividad_economica}</td>
 
 							<td style={styles.td}>
-								<span style={styles.badge(!item.doc_vencidos)}>
-									{item.doc_vencidos > 0 ? 'VENCIDOS' : 'VIGENTES'}
+								<span style={styles.badge(Number(item.doc_vencidos) === 0)}>
+									{Number(item.doc_vencidos) > 0 ? 'VENCIDOS' : 'VIGENTES'}
 								</span>
 							</td>
 
@@ -505,7 +505,6 @@ async (proveedorId) => {
         cargarProveedores
     }
 />
-
 
 <ModalVerProveedor
 
