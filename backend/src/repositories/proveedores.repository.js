@@ -1,36 +1,153 @@
 const pool = require('../config/db');
 
-const listar = async () => {
+//EROMAN 07062026
+const SQL_PROVEEDOR = `
+CASE
+    WHEN MPRO.razon_social IS NOT NULL
+         AND TRIM(MPRO.razon_social) <> ''
+    THEN MPRO.razon_social
+    ELSE TRIM(
+        COALESCE(MPRO.nombre,'')
+        || ' ' ||
+        COALESCE(MPRO.apellido_paterno,'')
+        || ' ' ||
+        COALESCE(MPRO.apellido_materno,'')
+    )
+END
+`;
 
-    const sql = `SELECT	MPRO.proveedor_id PROVEEDOR_ID
-							,MLV.DESCRIPCION TIPO_DOCUMENTO
-							,MPRO.nro_documento NRO_DOCUMENTO
-							,CASE 
-								WHEN MPRO.razon_social IS NOT NULL
-									AND TRIM(MPRO.razon_social) <> ''
-									THEN MPRO.razon_social
-								ELSE TRIM(COALESCE(MPRO.nombre, '') || ' ' || COALESCE(MPRO.apellido_paterno, '') || ' ' || COALESCE(MPRO.apellido_materno, ''))
-							END proveedor
-							,MPRO.correo CORREO
-							,MPRO.telefono TELEFONO
-							,MPRO.calificacion CALIFICACION
-							,MPRO.STATUS STATUS
-							,MPRO.ubigeo UBIGEO
-							,MPRO.ciiu||'-'||MLV_CIUU.descripcion actividad_economica
-							,(	SELECT count(*)
-								FROM 	"SISGES"."MOV_DOCUMENTOS" MDOC 		
-								WHERE	MDOC.proveedor_id = MPRO.proveedor_id
-								AND		MDOC.estado_documento = 'C') doc_vencidos	
-					 FROM	"SISGES"."MAE_PROVEEDOR" MPRO
-					 LEFT JOIN 	"SISGES"."MAE_LISTA_VALORES" MLV ON MLV.CODIGO_VALOR = MPRO.TIPO_DOCUMENTO and MLV.cod_grupo = '0001' and MLV.tipo_grupo = 'TIPO_DOC_SUNAT'
-					 LEFT JOIN 	"SISGES"."MAE_LISTA_VALORES" MLV_CIUU ON MLV_CIUU.CODIGO_VALOR = MPRO.ciiu and MLV_CIUU.cod_grupo = '0002' and MLV_CIUU.tipo_grupo = 'CODIGO_CIIU_SUNAT'
-					 ORDER BY MPRO.proveedor_id DESC`;
-		const result = await pool.query(sql);
-		return result.rows;
+const CAMPOS_BUSQUEDA = {
+
+    proveedor:
+        SQL_PROVEEDOR,
+
+    nro_documento:
+        'MPRO.nro_documento',
+
+    tipo_documento:
+        'MLV.descripcion',
+
+    actividad_economica:
+        "MPRO.ciiu || '-' || MLV_CIUU.descripcion"
+
+};
+//EROMAN 07062026
+const listar = async (campo = 'ALL', valor = '') => {
+
+    const params = [];
+
+    let where = '';
+
+    if (valor.trim() !== '') {
+
+        params.push(`%${valor.trim()}%`);
+
+        if (campo === 'ALL') {
+
+            where = `
+            WHERE (
+
+                ${SQL_PROVEEDOR} ILIKE $1
+
+                OR MPRO.nro_documento::text ILIKE $1
+
+                OR MLV.descripcion ILIKE $1
+
+                OR (
+                    MPRO.ciiu || '-' || MLV_CIUU.descripcion
+                ) ILIKE $1
+
+            )
+            `;
+
+        }
+        else if (CAMPOS_BUSQUEDA[campo]) {
+
+            where = `
+            WHERE
+                ${CAMPOS_BUSQUEDA[campo]} ILIKE $1
+            `;
+
+        }
+
+    }
+
+    const sql = `
+
+        SELECT
+
+            MPRO.proveedor_id                 AS proveedor_id,
+
+            MLV.descripcion                   AS tipo_documento,
+
+            MPRO.nro_documento,
+
+            ${SQL_PROVEEDOR}                 AS proveedor,
+
+            MPRO.correo,
+
+            MPRO.telefono,
+
+            MPRO.calificacion,
+
+            MPRO.status,
+
+            MPRO.ubigeo,
+
+            MPRO.ciiu || '-' || MLV_CIUU.descripcion
+                AS actividad_economica,
+
+            (
+                SELECT COUNT(*)
+
+                FROM "SISGES"."MOV_DOCUMENTOS" MDOC
+
+                WHERE
+                    MDOC.proveedor_id = MPRO.proveedor_id
+
+                AND
+                    MDOC.estado_documento = 'C'
+
+            ) AS doc_vencidos
+
+        FROM "SISGES"."MAE_PROVEEDOR" MPRO
+
+        LEFT JOIN "SISGES"."MAE_LISTA_VALORES" MLV
+
+            ON MLV.codigo_valor = MPRO.tipo_documento
+
+           AND MLV.cod_grupo = '0001'
+
+           AND MLV.tipo_grupo = 'TIPO_DOC_SUNAT'
+
+        LEFT JOIN "SISGES"."MAE_LISTA_VALORES" MLV_CIUU
+
+            ON MLV_CIUU.codigo_valor = MPRO.ciiu
+
+           AND MLV_CIUU.cod_grupo = '0002'
+
+           AND MLV_CIUU.tipo_grupo = 'CODIGO_CIIU_SUNAT'
+
+        ${where}
+
+        ORDER BY
+            MPRO.proveedor_id DESC
+
+    `;
+
+    const result = await pool.query(
+
+        sql,
+
+        params
+
+    );
+
+    return result.rows;
+
 };
 
 const obtenerPorId = async (proveedorId) => {
-	
 
     const sql = `
         SELECT	p.*,
@@ -288,7 +405,7 @@ if(tipo === 'DOCUMENTO'){
 return result.rows;
 
 };
-
+//EROMAN 07062026
 
 module.exports = {
     listar,
@@ -299,4 +416,3 @@ module.exports = {
     obtenerPorUsuario,
 	buscarProveedor
 };
-
