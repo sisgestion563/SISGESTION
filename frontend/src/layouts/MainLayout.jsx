@@ -1,17 +1,16 @@
+import { Outlet } from 'react-router-dom';
+
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 
-export default function MainLayout(
-    {
-        children
-    }
-) {
+export default function MainLayout() {
 
     return (
 
         <div
             style={{
-                display: 'flex'
+                display: 'flex',
+                minHeight: '100vh'
             }}
         >
 
@@ -19,21 +18,25 @@ export default function MainLayout(
 
             <div
                 style={{
-                    flex: 1
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}
             >
 
                 <Header />
 
-                <div
+                <main
                     style={{
-                        padding: '20px'
+                        flex: 1,
+                        padding: '20px',
+                        overflow: 'auto'
                     }}
                 >
 
-                    {children}
+                    <Outlet />
 
-                </div>
+                </main>
 
             </div>
 

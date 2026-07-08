@@ -1,11 +1,16 @@
 const repository =
 require('../repositories/proveedores.repository');
 
-const listar = async () => {
-
-    return await repository.listar();
-
-};
+//EROMAN 06072026
+const listar = (
+    campo,
+    valor
+) =>
+    repository.listar(
+        campo,
+        valor
+    );
+//EROMAN 06072026
 
 const obtenerPorId = async (
     proveedorId
