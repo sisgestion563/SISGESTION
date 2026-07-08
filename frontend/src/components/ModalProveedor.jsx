@@ -887,8 +887,6 @@ Seleccione CIIU
     }
 />
 
-
-//EROMAN 07/07/2026
 <label
 	style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
 	Estado Proveedor
@@ -902,7 +900,6 @@ Seleccione CIIU
 	<option value="A">Activo</option>
 	<option value="I">Inactivo</option>	
 </select>
-//EROMAN 07/07/2026
 
 
 <label
