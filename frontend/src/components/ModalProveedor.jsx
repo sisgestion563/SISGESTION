@@ -887,6 +887,24 @@ Seleccione CIIU
     }
 />
 
+
+//EROMAN 07/07/2026
+<label
+	style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
+	Estado Proveedor
+</label>
+
+
+<select
+	style={{width:'100%',padding:'10px',border:'1px solid #D1D5DB',borderRadius:'6px',marginBottom:'15px'}}
+	value={form.status}
+	onChange={(e)=>setForm({...form,status:e.target.value})}>
+	<option value="A">Activo</option>
+	<option value="I">Inactivo</option>	
+</select>
+//EROMAN 07/07/2026
+
+
 <label
     style={{
         display:'block',
