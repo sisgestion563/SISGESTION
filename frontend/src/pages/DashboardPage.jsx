@@ -3,7 +3,8 @@ import {
     useState
 } from 'react';
 
-
+import MainLayout
+from '../layouts/MainLayout';
 
 
 import {
@@ -134,6 +135,35 @@ const urgencia = (dias) => {
     return { label: `${dias} días`, bg: colors.successBg, fg: colors.success };
 };
 
+const responsiveCSS = `
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-top: 30px;
+    }
+    @media (max-width: 900px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+        .stats-grid { grid-template-columns: 1fr; }
+    }
+    .pie-chart-wrap {
+        width: 60%;
+    }
+    @media (max-width: 700px) {
+        .pie-chart-wrap { width: 100%; }
+    }
+    .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table-scroll table {
+        min-width: 480px;
+    }
+`;
+
 export default function DashboardPage() {
 
     const [
@@ -221,7 +251,9 @@ setEstados(
 
     return (
 
-        <>
+        <MainLayout>
+
+            <style>{responsiveCSS}</style>
 
             <h1 style={styles.heading}>
                 Dashboard SISGESTION
@@ -230,14 +262,7 @@ setEstados(
             {
                 resumen && (
 
-                    <div
-                        style={{
-                            display:'grid',
-                            gridTemplateColumns:'repeat(3,1fr)',
-                            gap:'20px',
-                            marginTop:'30px'
-                        }}
-                    >
+                    <div className="stats-grid">
 
                         <div style={styles.statCard(colors.primary)}>
                             <p style={styles.statLabel}>Proveedores</p>
@@ -326,8 +351,10 @@ setEstados(
                 }}
             >
 
+                <div className="pie-chart-wrap">
+
                 <ResponsiveContainer
-                    width="60%"
+                    width="100%"
                     height={300}
                 >
 
@@ -362,6 +389,8 @@ setEstados(
 
                 </ResponsiveContainer>
 
+                </div>
+
             </div>
         </div>
 
@@ -384,6 +413,7 @@ setEstados(
         )
         :
         (
+            <div className="table-scroll">
             <table style={styles.table}>
                 <thead>
                     <tr>
@@ -430,11 +460,12 @@ setEstados(
                 </tbody>
 
             </table>
+            </div>
         )
     }
 
 </div>
-        </>
+        </MainLayout>
 
     );
 

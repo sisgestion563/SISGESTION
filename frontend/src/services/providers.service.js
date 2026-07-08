@@ -1,10 +1,7 @@
 import api from './api';
 
 export const obtenerProveedores =
-async (
-    campo = 'ALL',
-    valor = ''
-) => {
+async () => {
 
     const token =
         localStorage.getItem('token');
@@ -13,10 +10,6 @@ async (
         await api.get(
             '/proveedores',
             {
-                params: {
-                    campo,
-                    valor
-                },
                 headers:{
                     Authorization:
                     `Bearer ${token}`

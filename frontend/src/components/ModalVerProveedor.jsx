@@ -1,327 +1,12 @@
-import {
-    useState,
-    useEffect
-}
-from 'react';
-
-import {
-    obtenerDepartamentos,
-    obtenerProvincias,
-    obtenerDistritos
-}
-from '../services/ubigeos.service';
-
-import {
-    obtenerCatalogo
-}
-from '../services/catalogos.service';
-
-
-import {
-    crearProveedor,
-    actualizarProveedor
-}
-from '../services/providers.service';
-
-export default function ModalProveedor({
+export default function ModalVerProveedor({
     visible,
-    onClose,
-    onSuccess,
-    proveedorEditar
+    proveedor,
+    onClose
 }) {
 
-
-    const [form,setForm] = useState({
-
-    tipo_documento:'06',
-
-    nro_documento:'',
-
-    nombre:'',
-
-    apellido_paterno:'',
-
-    apellido_materno:'',
-
-    razon_social:'',
-
-    representante_legal:'',
-
-    correo:'',
-
-    telefono:'',
-
-    departamento:'',
-
-    provincia:'',
-
-    ciudad:'',
-
-    ubigeo:'',
-
-    direccion:'',
-
-    ciiu:'',
-
-    calificacion:'R',
-
-    status:'A'
-
-});
-
-
-const [
-    departamentos,
-    setDepartamentos
-] = useState([]);
-
-const [
-    provincias,
-    setProvincias
-] = useState([]);
-
-const [
-    ciudades,
-    setCiudades
-] = useState([]);
-
-const [
-    ciius,
-    setCiius
-] = useState([]);
-
-useEffect(() => {
-
-    cargarInicial();
-
-}, []);
-
-useEffect(() => {
-
-    const cargarProveedorEditar =
-    async () => {
-
-        if(!proveedorEditar){
-            return;
-        }
-
-        setForm({
-
-            tipo_documento:
-                proveedorEditar.tipo_documento || '06',
-
-            nro_documento:
-                proveedorEditar.nro_documento || '',
-
-            nombre:
-                proveedorEditar.nombre || '',
-
-            apellido_paterno:
-                proveedorEditar.apellido_paterno || '',
-
-            apellido_materno:
-                proveedorEditar.apellido_materno || '',
-
-            razon_social:
-                proveedorEditar.razon_social || '',
-
-            representante_legal:
-                proveedorEditar.representante_legal || '',
-
-            correo:
-                proveedorEditar.correo || '',
-
-            telefono:
-                proveedorEditar.telefono || '',
-
-            departamento:
-                proveedorEditar.departamento || '',
-
-            provincia:
-                proveedorEditar.provincia || '',
-
-            ciudad:
-                proveedorEditar.ciudad || '',
-
-            ubigeo:
-                String(
-                    proveedorEditar.ubigeo || ''
-                ),
-
-            direccion:
-                proveedorEditar.direccion || '',
-
-            ciiu:
-                proveedorEditar.ciiu || '',
-
-            calificacion:
-                proveedorEditar.calificacion || 'R',
-
-            status:
-                proveedorEditar.status || 'A'
-        });
-
-        const provinciasData =
-            await obtenerProvincias(
-                proveedorEditar.departamento
-            );
-
-        setProvincias(
-            provinciasData
-        );
-
-        const ciudadesData =
-            await obtenerDistritos(
-                proveedorEditar.departamento,
-                proveedorEditar.provincia
-            );
-
-        setCiudades(
-            ciudadesData
-        );
-
-    };
-
-    cargarProveedorEditar();
-
-}, [proveedorEditar]);
-
-
-const cargarInicial =
-async () => {
-
-    try {
-
-        const deps =
-            await obtenerDepartamentos();
-			console.log(
-    'DEPARTAMENTOS',
-    deps
-);
-
-        setDepartamentos(deps);
-
-        const ciiu =
-            await obtenerCatalogo(
-                '0002',
-                'CODIGO_CIIU_SUNAT'
-            );
-
-console.log(
-    'CIIUS',
-    ciiu
-);
-        setCiius(ciiu);
-
-    }
-    catch(error){
-
-        console.error(error);
-
-    }
-
-};
-
-const esEmpresa =
-    form.tipo_documento === '06';
-    if(!visible){
+    if (!visible || !proveedor) {
         return null;
     }
-
-    const guardar =
-async () => {
-
-    try {
-
-        const usuario =
-            JSON.parse(
-                localStorage.getItem(
-                    'usuario'
-                )
-            );
-			
-		console.log(
-    'DATOS A GRABAR',
-    form
-);	
-
-        if(proveedorEditar){
-
-    await actualizarProveedor(
-        proveedorEditar.proveedor_id,
-        {
-            ...form,
-            create_by:
-                usuario.usuario_id
-        }
-    );
-
-}
-else{
-
-    await crearProveedor({
-        ...form,
-        create_by:
-            usuario.usuario_id
-    });
-
-}
-		
-		setForm({
-
-    tipo_documento:'06',
-
-    nro_documento:'',
-
-    nombre:'',
-
-    apellido_paterno:'',
-
-    apellido_materno:'',
-
-    razon_social:'',
-
-    representante_legal:'',
-
-    correo:'',
-
-    telefono:'',
-
-    departamento:'',
-
-    provincia:'',
-
-    ciudad:'',
-
-    direccion:'',
-
-    calificacion:'R',
-
-    status:'A'
-
-});
-		
-		
-        alert(
-    proveedorEditar
-        ? 'Proveedor actualizado correctamente'
-        : 'Proveedor registrado correctamente'
-);
-        onSuccess();
-
-        onClose();
-
-    }
-    catch(error){
-
-        alert(
-            error.response?.data?.message ||
-            error.message
-        );
-
-    }
-
-};
 
     return (
 
@@ -335,634 +20,159 @@ else{
                 background:'rgba(0,0,0,0.4)',
                 display:'flex',
                 justifyContent:'center',
-                alignItems:'center'
+                alignItems:'center',
+                zIndex:999
             }}
         >
 
             <div
-    className="card"
-    style={{
-        width:'800px',
-        maxHeight:'90vh',
-        overflowY:'auto',
-        padding:'30px'
-    }}
->
-
-<h2>
-{
-    proveedorEditar
-    ?
-    'Editar Proveedor'
-    :
-    'Nuevo Proveedor'
-}
-</h2>
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Tipo Documento
-</label>
-
-<select
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.tipo_documento}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            tipo_documento:e.target.value
-        })
-    }
->
-
-    <option value="06">
-        RUC
-    </option>
-
-    <option value="01">
-        DNI
-    </option>
-
-    <option value="04">
-        Carnet Extranjería
-    </option>
-
-    <option value="07">
-        Pasaporte
-    </option>
-
-    <option value="A0">
-        Cédula Diplomática
-    </option>
-
-</select>
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Nro. Documento
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.nro_documento}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            nro_documento:e.target.value
-        })
-    }
-/>
-				{
-    esEmpresa
-    ?
-    <>
-        <label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Razón Social
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.razon_social}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            razon_social:e.target.value
-        })
-    }
-/>
-        <br/><br/>
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Representante Legal
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.representante_legal}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            representante_legal:e.target.value
-        })
-    }
-/>
-
-        <br/><br/>
-    </>
-    :
-    <>
-<label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-    Nombres
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.nombre}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            nombre:e.target.value
-        })
-    }
-/>
-
-        <br/><br/>
-
-<label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-    Apellido Paterno
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.apellido_paterno}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            apellido_paterno:e.target.value
-        })
-    }
-/>
-
-        <br/><br/>
-
-<label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-    Apellido Materno
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.apellido_materno}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            apellido_materno:e.target.value
-        })
-    }
-/>
-
-        <br/><br/>
-    </>
-}
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Correo
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.correo}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            correo:e.target.value
-        })
-    }
-/>
-
-                <br/><br/>
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Teléfono
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.telefono}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            telefono:e.target.value
-        })
-    }
-/>
-
-                <br/><br/>
-	
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    CIIU
-</label>
-	
-<select
-    value={form.ciiu || ''}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            ciiu:e.target.value
-        })
-    }
-style={{
-    width:'100%',
-    padding:'10px',
-    border:'1px solid #D1D5DB',
-    borderRadius:'6px',
-    marginBottom:'15px'
-}}
->
-
-<option value="">
-Seleccione CIIU
-</option>
-
-{
-    ciius.map(
-        item => (
-
-            <option
-                key={
-                    item.codigo_valor
-                }
-                value={
-                    item.codigo_valor
-                }
+                className="card"
+                style={{
+                    width:'700px',
+                    padding:'30px'
+                }}
             >
-                {
-                    item.codigo_valor
-                } - {
-                    item.descripcion
-                }
-            </option>
 
-        )
-    )
-}
+                <h2>
+                    Consulta de Proveedor
+                </h2>
 
-</select>	
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Departamento
-</label>
+                <table
+                    style={{
+                        width:'100%'
+                    }}
+                >
 
-<select
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.departamento}
-    onChange={async (e)=>{
+                    <tbody>
 
-        const departamento = e.target.value;
+                        <tr>
+                            <td><b>Código</b></td>
+                            <td>{proveedor.proveedor_id}</td>
+                        </tr>
 
-        setForm({
-            ...form,
-            departamento,
-            provincia:'',
-            ciudad:'',
-            ubigeo:''
-        });
-
-        const data =
-            await obtenerProvincias(
-                departamento
-            );
-
-        setProvincias(data);
-        setCiudades([]);
-
-    }}
->
-
-    <option value="">
-        Seleccione Departamento
-    </option>
-
-    {
-        departamentos.map(item => (
-
-            <option
-                key={item.departamento}
-                value={item.departamento}
-            >
-                {item.departamento}
-            </option>
-
-        ))
-    }
-
-</select>
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Provincia
-</label>
-
-<select
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.provincia}
-    onChange={async (e)=>{
-
-        const provincia = e.target.value;
-
-        setForm({
-            ...form,
-            provincia,
-            ciudad:'',
-            ubigeo:''
-        });
-
-        const data =
-            await obtenerDistritos(
-                form.departamento,
-                provincia
-            );
-
-        setCiudades(data);
-
-    }}
->
-
-    <option value="">
-        Seleccione Provincia
-    </option>
-
-    {
-        provincias.map(item => (
-
-            <option
-                key={item.provincia}
-                value={item.provincia}
-            >
-                {item.provincia}
-            </option>
-
-        ))
-    }
-
-</select>
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Distrito
-</label>
-
-<select
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.ubigeo || ''}
-    onChange={(e)=>{
-
-        const ubigeo = e.target.value;
-
-        const ciudadSeleccionada =
-            ciudades.find(
-                item =>
-                    item.ubigeo_inei === ubigeo
-            );
-
-        setForm({
-            ...form,
-            ciudad:
-                ciudadSeleccionada?.distrito || '',
-            ubigeo
-        });
-
-    }}
->
-
-    <option value="">
-        Seleccione Distrito
-    </option>
-
-    {
-        ciudades.map(item => (
-
-            <option
-                key={item.ubigeo_inei}
-                value={item.ubigeo_inei}
-            >
-                {item.distrito}
-            </option>
-
-        ))
-    }
-
-</select>
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Ubigeo
-</label>
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.ubigeo || ''}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            ubigeo:e.target.value
-        })
-    }
-/>
-
-<label
-	style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-	Estado
-</label>
-
-
-<select
-	style={{width:'100%',padding:'10px',border:'1px solid #D1D5DB',borderRadius:'6px',marginBottom:'15px'}}
-	value={form.status}
-	onChange={(e)=>setForm({...form,status:e.target.value})}>
-	<option value="A">Activo</option>
-	<option value="I">Inactivo</option>	
-</select>
-
-
-
-
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Dirección
-</label>
-
-<textarea
-    value={form.direccion}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            direccion:e.target.value
-        })
-    }
-    rows={3}
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        resize:'none',
-        marginBottom:'15px'
-    }}
-/>
-
-
-               <div
-    style={{
-        marginTop:'25px',
-        display:'flex',
-        gap:'10px'
-    }}
->
-
-    <button
-        className="btn-primary"
-        onClick={guardar}
-    >
+<td><b>Tipo Documento</b></td>                        
+						<td>
         {
-    proveedorEditar
-    ?
-    'Actualizar'
-    :
-    'Guardar'
-}
-    </button>
+            proveedor.tipo_documento
+            ?
+            `${proveedor.tipo_documento} - ${proveedor.descripcion_tipo_documento || ''}`
+            :
+            ''
+        }
+    </td>
+						
 
-    <button
-        onClick={onClose}
-    >
-        Cancelar
-    </button>
+                        <tr>
+                            <td><b>Nro Documento</b></td>
+                            <td>{proveedor.nro_documento}</td>
+                        </tr>
 
-</div>
+                        <tr>
+                            <td><b>Razón Social</b></td>
+                            <td>{proveedor.razon_social}</td>
+                        </tr>
+						
+						<tr>
+                            <td><b>Representante Legal</b></td>
+                            <td>{proveedor.representante_legal}</td>
+                        </tr>
+
+                        <tr>
+                            <td><b>Nombres</b></td>
+                            <td>{proveedor.nombre}</td>
+                        </tr>
+
+                        <tr>
+                            <td><b>Apellido Paterno</b></td>
+                            <td>{proveedor.apellido_paterno}</td>
+                        </tr>
+
+                        <tr>
+                            <td><b>Apellido Materno</b></td>
+                            <td>{proveedor.apellido_materno}</td>
+                        </tr>
+
+                        <tr>
+                            <td><b>Correo</b></td>
+                            <td>{proveedor.correo}</td>
+                        </tr>
+
+                        <tr>
+                            <td><b>Teléfono</b></td>
+                            <td>{proveedor.telefono}</td>
+                        </tr>
+						
+                        <tr>
+                            <td><b>Departamento</b></td>
+                            <td>{proveedor.departamento}</td>
+                        </tr>
+
+                        <tr>
+                            <td><b>Provincia</b></td>
+                            <td>{proveedor.provincia}</td>
+                        </tr>
+
+                        <tr>
+                            <td><b>Ciudad</b></td>
+                            <td>{proveedor.ciudad}</td>
+                        </tr>
+
+						<tr>
+                            <td><b>Ubigeo</b></td>
+                            <td>{proveedor.ubigeo}</td>
+                        </tr>
+
+                        <tr>
+                            <td><b>Dirección</b></td>
+                            <td>{proveedor.direccion}</td>
+                        </tr>
+												
+
+                        <tr>
+    <td>
+        <b>CIIU</b>
+    </td>
+
+    <td>
+        {
+            proveedor.ciiu
+        } - {
+            proveedor.descripcion_ciiu
+        }
+    </td>
+</tr>
+
+<tr>
+    <td>
+        <b>Estado</b>
+    </td>
+
+    <td>
+        {
+            proveedor.status
+        } - {
+            proveedor.descripcion_status_prov
+        }
+    </td>
+</tr>
+                    </tbody>
+
+                </table>
+
+                <div
+                    style={{
+                        marginTop:'20px'
+                    }}
+                >
+
+                    <button
+                        className="btn-primary"
+                        onClick={onClose}
+                    >
+                        Cerrar
+                    </button>
+
+                </div>
 
             </div>
 

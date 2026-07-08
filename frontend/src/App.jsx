@@ -2,18 +2,22 @@ import {
     BrowserRouter,
     Routes,
     Route
-} from 'react-router-dom';
+}
+from 'react-router-dom';
 
-import LoginPage from './pages/LoginPage';
+import LoginPage
+from './pages/LoginPage';
 
-import MainLayout from './layouts/MainLayout';
+import DashboardPage
+from './pages/DashboardPage';
 
-import DashboardPage from './pages/DashboardPage';
-import ProvidersPage from './pages/ProvidersPage';
+
 import DocumentsPage from './pages/DocumentsPage';
 import AlertsPage from './pages/AlertsPage';
 import ReportsPage from './pages/ReportsPage';
 import ProcessesPage from './pages/ProcessesPage';
+import ProvidersPage from './pages/ProvidersPage';
+
 
 function App() {
 
@@ -23,50 +27,42 @@ function App() {
 
             <Routes>
 
-                {/* Login */}
-
                 <Route
                     path="/"
                     element={<LoginPage />}
                 />
 
-                {/* Layout Principal */}
-
                 <Route
-                    element={<MainLayout />}
-                >
+                    path="/dashboard"
+                    element={<DashboardPage />}
+                />
+				
+				<Route
+					path="/providers"
+					element={<ProvidersPage />}
+				/>
+  
+  
 
-                    <Route
-                        path="/dashboard"
-                        element={<DashboardPage />}
-                    />
+<Route
+    path="/documents"
+    element={<DocumentsPage />}
+/>
 
-                    <Route
-                        path="/providers"
-                        element={<ProvidersPage />}
-                    />
+<Route
+    path="/alerts"
+    element={<AlertsPage />}
+/>
 
-                    <Route
-                        path="/documents"
-                        element={<DocumentsPage />}
-                    />
+<Route
+    path="/reports"
+    element={<ReportsPage />}
+/>
 
-                    <Route
-                        path="/alerts"
-                        element={<AlertsPage />}
-                    />
-
-                    <Route
-                        path="/reports"
-                        element={<ReportsPage />}
-                    />
-
-                    <Route
-                        path="/processes"
-                        element={<ProcessesPage />}
-                    />
-
-                </Route>
+<Route
+    path="/processes"
+    element={<ProcessesPage />}
+/>
 
             </Routes>
 
