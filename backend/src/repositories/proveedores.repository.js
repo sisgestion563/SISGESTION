@@ -30,6 +30,7 @@ const listar = async () => {
 };
 
 const obtenerPorId = async (proveedorId) => {
+	
 
     const sql = `
         SELECT	p.*,

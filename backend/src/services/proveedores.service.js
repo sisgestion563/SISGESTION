@@ -15,6 +15,7 @@ const obtenerPorId = async (
         proveedorId
     );
 
+
 };
 
 const crear = async (

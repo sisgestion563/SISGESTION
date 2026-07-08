@@ -7,6 +7,7 @@ export default function ModalVerProveedor({
     if (!visible || !proveedor) {
         return null;
     }
+	
 
     return (
 
