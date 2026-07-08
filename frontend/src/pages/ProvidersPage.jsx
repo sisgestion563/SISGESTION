@@ -4,6 +4,9 @@ import {
 }
 from 'react';
 
+import MainLayout
+from '../layouts/MainLayout';
+
 import {
     obtenerProveedores
 }
@@ -117,14 +120,14 @@ const styles = {
         borderBottom: `1px solid ${colors.border}`,
     },
     badge: (ok) => ({
-    display: 'inline-block',
-    padding: '4px 12px',
-    borderRadius: '999px',
-    fontSize: '12px',
-    fontWeight: 700,
-    background: ok ? '#DCFCE7' : '#FEE2E2',
-    color: ok ? '#15803D' : '#DC2626',
-}),
+        display: 'inline-block',
+        padding: '4px 12px',
+        borderRadius: '999px',
+        fontSize: '12px',
+        fontWeight: 700,
+        background: ok ? colors.successBg : colors.dangerBg,
+        color: ok ? colors.success : colors.danger,
+    }),
     rowActions: {
         display: 'flex',
         gap: '8px',
@@ -155,78 +158,22 @@ const styles = {
         color: colors.textMuted,
         fontSize: '14px',
     },
-	
-	searchControls: {
-
-    display: 'flex',
-
-    gap: '12px',
-
-    alignItems: 'center'
-
-},
-
-searchSelect: {
-
-    width: '240px',
-
-    padding: '10px 12px',
-
-    border: `1px solid ${colors.border}`,
-
-    borderRadius: '8px',
-
-    fontSize: '14px',
-
-    background: '#fff',
-
-    color: colors.text,
-
-    outline: 'none'
-
-},
-	
 };
 
-const CAMPOS_BUSQUEDA = [
-
-    {
-        value: 'ALL',
-        label: 'Todos los campos'
-    },
-
-    {
-        value: 'proveedor',
-        label: 'Razón Social'
-    },
-
-    {
-        value: 'nro_documento',
-        label: 'N° Documento'
-    },
-
-    {
-        value: 'tipo_documento',
-        label: 'Tipo Documento'
-    },
-
-    {
-        value: 'actividad_economica',
-        label: 'Actividad Económica'
-    },
-
-    {
-        value: 'estado_documentos',
-        label: 'Estado Documentos'
-    },
-
-    {
-        value: 'status',
-        label: 'Estado'
+const responsiveCSS = `
+    @media (max-width: 700px) {
+        .toolbar-divider { display: none; }
+        .toolbar-section { min-width: 100% !important; }
     }
-
-];
-
+    .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table-scroll table {
+        min-width: 720px;
+    }
+`;
 
 export default function ProvidersPage(){
 
@@ -236,62 +183,46 @@ export default function ProvidersPage(){
     ] = useState([]);
 
     const [
-    campoBusqueda,
-    setCampoBusqueda
-] = useState('ALL');
+        filtro,
+        setFiltro
+    ] = useState('');
 
-const [
-    valorBusqueda,
-    setValorBusqueda
-] = useState('');
+    useEffect(() => {
 
-useEffect(() => {
+        cargarProveedores();
 
-    const timer = setTimeout(() => {
+    }, []);
 
-        cargarProveedores(
-            campoBusqueda,
-            valorBusqueda
-        );
+    const cargarProveedores =
+    async () => {
 
-    }, valorBusqueda.trim() === '' ? 0 : 400);
+        try {
 
-    return () => clearTimeout(timer);
+            const data =
+                await obtenerProveedores();
 
-}, [
-    campoBusqueda,
-    valorBusqueda
-]);
+            setProveedores(data);
 
-   const cargarProveedores =
-async (
-    campo = 'ALL',
-    valor = ''
-) => {
+        }
+        catch(error){
 
-    try {
+            console.error(error);
 
-        const data =
-            await obtenerProveedores(
-                campo,
-                valor
-            );
+        }
 
-        setProveedores(data);
+    };
 
-    }
-    catch(error){
-
-        console.error(error);
-
-    }
-
-};
-
-   const proveedoresFiltrados =
-    proveedores;
-
-    
+    const proveedoresFiltrados =
+    proveedores.filter(
+        item =>
+            (
+                item.proveedor || ''
+            )
+            .toLowerCase()
+            .includes(
+                filtro.toLowerCase()
+            )
+    );
 
 	const [
     modalVisible,
@@ -371,7 +302,9 @@ async (proveedorId) => {
 
     return (
 
-        <>
+        <MainLayout>
+
+            <style>{responsiveCSS}</style>
 
             <h1 style={styles.heading}>
                 Proveedores
@@ -381,87 +314,30 @@ async (proveedorId) => {
 
                 <div style={styles.toolbarRow}>
 
-                    <div style={styles.toolbarSection}>
+                    <div className="toolbar-section" style={styles.toolbarSection}>
 
                         <p style={styles.toolbarLabel}>Búsqueda</p>
 
-
-
-                       <div style={styles.searchControls}>
-
-    <select
-
-        value={campoBusqueda}
-
-        onChange={(e)=>
-
-            setCampoBusqueda(
-                e.target.value
-            )
-
-        }
-
-        style={styles.searchSelect}
-
-    >
-
-        {
-
-            CAMPOS_BUSQUEDA.map(
-
-                campo => (
-
-                    <option
-
-                        key={campo.value}
-
-                        value={campo.value}
-
-                    >
-
-                        {campo.label}
-
-                    </option>
-
-                )
-
-            )
-
-        }
-
-    </select>
-
-    <input
-
-        type="text"
-
-        placeholder="Ingrese criterio de búsqueda..."
-
-        value={valorBusqueda}
-
-        onChange={(e)=>
-
-            setValorBusqueda(
-                e.target.value
-            )
-
-        }
-
-        style={styles.searchInput}
-
-    />
-
-</div>
-						
-						
-						
-						
+                        <div style={styles.searchWrap}>
+                            <input
+                                type="text"
+                                placeholder="Buscar Razón Social..."
+                                value={filtro}
+                                onChange={
+                                    (e)=>
+                                    setFiltro(
+                                        e.target.value
+                                    )
+                                }
+                                style={styles.searchInput}
+                            />
+                        </div>
 
                     </div>
 
-                    <div style={styles.toolbarDivider} />
+                    <div className="toolbar-divider" style={styles.toolbarDivider} />
 
-                    <div style={styles.toolbarSection}>
+                    <div className="toolbar-section" style={styles.toolbarSection}>
 
                         <p style={styles.toolbarLabel}>Nuevo Registro</p>
 
@@ -484,6 +360,8 @@ async (proveedorId) => {
 
             <div style={{...styles.card, marginTop:'20px', padding:0}}>
 
+              <div className="table-scroll">
+
                 <table style={styles.table}>
 
                     <thead>
@@ -501,17 +379,16 @@ async (proveedorId) => {
                              <th style={styles.th}>
                                 Razón Social
                             </th>
-							
 							<th style={styles.th}>Actividad Económica</th>
-														
-							<th style={styles.th}>
-                                Estado Documentos
-                            </th>
 
-                            <th style={styles.th}>
+							<th style={styles.th}>
+								Estado Documentos
+							</th>
+
+                             <th style={styles.th}>
                                 Estado
                             </th>
-							
+
 							<th style={styles.th}>
                                 Acciones
                             </th>
@@ -526,7 +403,7 @@ async (proveedorId) => {
                         proveedoresFiltrados.length === 0 ? (
 
                             <tr>
-                                <td colSpan={5} style={styles.emptyState}>
+                                <td colSpan={7} style={styles.emptyState}>
                                     No se encontraron proveedores.
                                 </td>
                             </tr>
@@ -553,22 +430,12 @@ async (proveedorId) => {
 							</td>
 							
 							<td style={styles.td}>{item.actividad_economica}</td>
-							
-							
+
 							<td style={styles.td}>
-    <span
-        style={{
-            background: item.doc_vencidos > 0 ? 'red' : 'green',
-            color: 'white',
-            padding: '5px 12px',
-            borderRadius: '20px',
-            fontWeight: 'bold'
-        }}
-    >
-        {item.doc_vencidos > 0 ? 'VENCIDOS' : 'VIGENTES'}
-    </span>
-</td>
-							
+								<span style={styles.badge(Number(item.doc_vencidos) === 0)}>
+									{Number(item.doc_vencidos) > 0 ? 'VENCIDOS' : 'VIGENTES'}
+								</span>
+							</td>
 
 							<td style={styles.td}>
 								<span style={styles.badge(item.status === 'A')}>
@@ -616,22 +483,26 @@ async (proveedorId) => {
 
                 </table>
 
+              </div>
+
             </div>
 
 			<ModalProveedor
     visible={modalVisible}
-    proveedorEditar={proveedorEditar}
+    proveedorEditar={
+        proveedorEditar
+    }
     onClose={() => {
 
         setModalVisible(false);
-        setProveedorEditar(null);
+
+        setProveedorEditar(
+            null
+        );
 
     }}
-    onSuccess={() =>
-        cargarProveedores(
-            campoBusqueda,
-            valorBusqueda
-        )
+    onSuccess={
+        cargarProveedores
     }
 />
 
@@ -653,7 +524,7 @@ async (proveedorId) => {
 
 />
 
-        </>
+        </MainLayout>
 
     );
 
