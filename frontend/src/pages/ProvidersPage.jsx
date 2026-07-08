@@ -10,6 +10,7 @@ import {
 } from '../services/providers.service';
 
 import ModalProveedor from '../components/ModalProveedor';
+
 import ModalVerProveedor from '../components/ModalVerProveedor';
 
 import {
@@ -168,47 +169,79 @@ const styles = {
     },
 };
 
-const responsiveCSS = `
-    @media (max-width: 700px) {
-        .toolbar-divider { display: none; }
-        .toolbar-section { min-width: 100% !important; }
-    }
-    .table-scroll {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .table-scroll table {
-        min-width: 720px;
-    }
-`;
-
 const CAMPOS_BUSQUEDA = [
-    { value: 'ALL', label: 'Todos los campos' },
-    { value: 'proveedor', label: 'Razón Social' },
-    { value: 'nro_documento', label: 'N° Documento' },
-    { value: 'tipo_documento', label: 'Tipo Documento' },
-    { value: 'actividad_economica', label: 'Actividad Económica' },
-    { value: 'estado_documentos', label: 'Estado Documentos' },
-    { value: 'status', label: 'Estado' }
+    {
+        value: 'ALL',
+        label: 'Todos los campos'
+    },
+    {
+        value: 'proveedor',
+        label: 'Razón Social'
+    },
+    {
+        value: 'nro_documento',
+        label: 'N° Documento'
+    },
+    {
+        value: 'tipo_documento',
+        label: 'Tipo Documento'
+    },
+    {
+        value: 'actividad_economica',
+        label: 'Actividad Económica'
+    },
+    {
+        value: 'estado_documentos',
+        label: 'Estado Documentos'
+    },
+    {
+        value: 'status',
+        label: 'Estado'
+    }
 ];
 
 export default function ProvidersPage(){
-    const [proveedores, setProveedores] = useState([]);
-    const [campoBusqueda, setCampoBusqueda] = useState('ALL');
-    const [valorBusqueda, setValorBusqueda] = useState('');
+    const [
+        proveedores,
+        setProveedores
+    ] = useState([]);
+
+    const [
+        campoBusqueda,
+        setCampoBusqueda
+    ] = useState('ALL');
+
+    const [
+        valorBusqueda,
+        setValorBusqueda
+    ] = useState('');
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            cargarProveedores(campoBusqueda, valorBusqueda);
+            cargarProveedores(
+                campoBusqueda,
+                valorBusqueda
+            );
         }, valorBusqueda.trim() === '' ? 0 : 400);
 
         return () => clearTimeout(timer);
-    }, [campoBusqueda, valorBusqueda]);
+    }, [
+        campoBusqueda,
+        valorBusqueda
+    ]);
 
-    const cargarProveedores = async (campo = 'ALL', valor = '') => {
+    const cargarProveedores =
+    async (
+        campo = 'ALL',
+        valor = ''
+    ) => {
         try {
-            const data = await obtenerProveedores(campo, valor);
+            const data =
+                await obtenerProveedores(
+                    campo,
+                    valor
+                );
+
             setProveedores(data);
         }
         catch(error){
@@ -216,7 +249,6 @@ export default function ProvidersPage(){
         }
     };
 
-    // Función auxiliar para formatear los códigos de documento a texto legible
     const obtenerTextoDocumento = (tipo) => {
         switch (tipo) {
             case '06': return 'RUC';
@@ -230,33 +262,70 @@ export default function ProvidersPage(){
 
     const proveedoresFiltrados = proveedores;
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [modalConsultaVisible, setModalConsultaVisible] = useState(false);
-    const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
-    const [proveedorEditar, setProveedorEditar] = useState(null);
+    const [
+        modalVisible,
+        setModalVisible
+    ] = useState(false);
 
-    const consultarProveedor = async (proveedorId) => {
+    const [
+        modalConsultaVisible,
+        setModalConsultaVisible
+    ] = useState(false);
+
+    const [
+        proveedorSeleccionado,
+        setProveedorSeleccionado
+    ] = useState(null);
+
+    const consultarProveedor =
+    async (proveedorId) => {
         try {
-            const data = await obtenerProveedorPorId(proveedorId);
-            setProveedorSeleccionado(data);
-            setModalConsultaVisible(true);
+            const data =
+                await obtenerProveedorPorId(
+                    proveedorId
+                );
+
+            setProveedorSeleccionado(
+                data
+            );
+
+            setModalConsultaVisible(
+                true
+            );
         }
-        catch(error){ console.error(error); }
+        catch(error){
+            console.error(error);
+        }
     };
 
-    const editarProveedor = async (proveedorId) => {
+    const [
+        proveedorEditar,
+        setProveedorEditar
+    ] = useState(null);
+
+    const editarProveedor =
+    async (proveedorId) => {
         try {
-            const data = await obtenerProveedorPorId(proveedorId);
-            setProveedorEditar(data);
-            setModalVisible(true);
+            const data =
+                await obtenerProveedorPorId(
+                    proveedorId
+                );
+
+            setProveedorEditar(
+                data
+            );
+
+            setModalVisible(
+                true
+            );
         }
-        catch(error){ console.error(error); }
+        catch(error){
+            console.error(error);
+        }
     };
 
     return (
         <MainLayout>
-            <style>{responsiveCSS}</style>
-
             <h1 style={styles.heading}>
                 Proveedores
             </h1>
@@ -268,20 +337,34 @@ export default function ProvidersPage(){
                         <div style={styles.searchControls}>
                             <select
                                 value={campoBusqueda}
-                                onChange={(e)=> setCampoBusqueda(e.target.value)}
+                                onChange={(e)=>
+                                    setCampoBusqueda(
+                                        e.target.value
+                                    )
+                                }
                                 style={styles.searchSelect}
                             >
-                                {CAMPOS_BUSQUEDA.map(campo => (
-                                    <option key={campo.value} value={campo.value}>
-                                        {campo.label}
-                                    </option>
-                                ))}
+                                {CAMPOS_BUSQUEDA.map(
+                                    campo => (
+                                        <option
+                                            key={campo.value}
+                                            value={campo.value}
+                                        >
+                                            {campo.label}
+                                        </option>
+                                    )
+                                )}
                             </select>
+
                             <input
                                 type="text"
                                 placeholder="Ingrese criterio de búsqueda..."
                                 value={valorBusqueda}
-                                onChange={(e)=> setValorBusqueda(e.target.value)}
+                                onChange={(e)=>
+                                    setValorBusqueda(
+                                        e.target.value
+                                    )
+                                }
                                 style={styles.searchInput}
                             />
                         </div>
@@ -293,7 +376,9 @@ export default function ProvidersPage(){
                         <p style={styles.toolbarLabel}>Nuevo Registro</p>
                         <button
                             style={{...styles.btnPrimary, alignSelf:'flex-start'}}
-                            onClick={() => setModalVisible(true)}
+                            onClick={() => {
+                                setModalVisible(true);
+                            }}
                         >
                             + Nuevo Proveedor
                         </button>
@@ -302,83 +387,92 @@ export default function ProvidersPage(){
             </div>
 
             <div style={{...styles.card, marginTop:'20px', padding:0}}>
-                <div className="table-scroll">
-                    <table style={styles.table}>
-                        <thead>
+                <table style={styles.table}>
+                    <thead>
+                        <tr>
+                            <th style={styles.th}>Tipo Documento</th>
+                            <th style={styles.th}>Nro Documento</th>
+                            <th style={styles.th}>Razón Social</th>
+                            <th style={styles.th}>Actividad Económica</th>
+                            <th style={styles.th}>Estado Documentos</th>
+                            <th style={styles.th}>Estado</th>
+                            <th style={styles.th}>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {
+                        proveedoresFiltrados.length === 0 ? (
                             <tr>
-                                <th style={styles.th}>Tipo Documento</th>
-                                <th style={styles.th}>Nro Documento</th>
-                                <th style={styles.th}>Razón Social</th>
-                                <th style={styles.th}>Actividad Económica</th>
-                                <th style={styles.th}>Estado Documentos</th>
-                                <th style={styles.th}>Estado</th>
-                                <th style={styles.th}>Acciones</th>
+                                <td colSpan={7} style={styles.emptyState}>
+                                    No se encontraron proveedores.
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                        {
-                            proveedoresFiltrados.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} style={styles.emptyState}>
-                                        No se encontraron proveedores.
-                                    </td>
-                                </tr>
-                            ) : proveedoresFiltrados.map(item => (
-                                <tr key={item.proveedor_id}>
+                        ) : proveedoresFiltrados.map(
+                            item => (
+                                <tr
+                                    key={
+                                        item.proveedor_id
+                                    }
+                                >
                                     <td style={styles.td}>
                                         {obtenerTextoDocumento(item.tipo_documento)}
                                     </td>
+
                                     <td style={styles.td}>
                                         {item.nro_documento}
                                     </td>
+
                                     <td style={styles.td}>
                                         {item.proveedor}
                                     </td>
+                                    
                                     <td style={styles.td}>
                                         {item.actividad_economica}
                                     </td>
+                                    
                                     <td style={styles.td}>
-                                        <span
-                                            style={{
-                                                background: item.doc_vencidos > 0 ? '#DC2626' : '#15803D',
-                                                color: 'white',
-                                                padding: '5px 12px',
-                                                borderRadius: '20px',
-                                                fontWeight: 'bold',
-                                                fontSize: '12px',
-                                                display: 'inline-block'
-                                            }}
-                                        >
-                                            {item.doc_vencidos > 0 ? 'VENCIDOS' : 'VIGENTES'}
+                                        <span style={styles.badge(Number(item.doc_vencidos) === 0)}>
+                                            {Number(item.doc_vencidos) > 0 ? 'VENCIDOS' : 'VIGENTES'}
                                         </span>
                                     </td>
+
                                     <td style={styles.td}>
                                         <span style={styles.badge(item.status === 'A')}>
                                             {item.status === 'A' ? 'ACTIVO' : 'INACTIVO'}
                                         </span>
                                     </td>
+
                                     <td style={styles.td}>
                                         <div style={styles.rowActions}>
                                             <button
                                                 style={styles.linkBtn}
-                                                onClick={() => consultarProveedor(item.proveedor_id)}
+                                                onClick={() =>
+                                                    consultarProveedor(
+                                                        item.proveedor_id
+                                                    )
+                                                }
                                             >
                                                 Ver
                                             </button>
+
                                             <button
                                                 style={styles.linkBtnAmber}
-                                                onClick={() => editarProveedor(item.proveedor_id)}
+                                                onClick={() =>
+                                                    editarProveedor(
+                                                        item.proveedor_id
+                                                    )
+                                                }
                                             >
                                                 Editar
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                            ))
-                        }
-                        </tbody>
-                    </table>
-                </div>
+                            )
+                        )
+                    }
+                    </tbody>
+                </table>
             </div>
 
             <ModalProveedor
@@ -388,13 +482,26 @@ export default function ProvidersPage(){
                     setModalVisible(false);
                     setProveedorEditar(null);
                 }}
-                onSuccess={() => cargarProveedores(campoBusqueda, valorBusqueda)}
+                onSuccess={() =>
+                    cargarProveedores(
+                        campoBusqueda,
+                        valorBusqueda
+                    )
+                }
             />
 
             <ModalVerProveedor
-                visible={modalConsultaVisible}
-                proveedor={proveedorSeleccionado}
-                onClose={() => setModalConsultaVisible(false)}
+                visible={
+                    modalConsultaVisible
+                }
+                proveedor={
+                    proveedorSeleccionado
+                }
+                onClose={() =>
+                    setModalConsultaVisible(
+                        false
+                    )
+                }
             />
         </MainLayout>
     );
