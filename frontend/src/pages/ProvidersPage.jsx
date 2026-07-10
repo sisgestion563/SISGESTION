@@ -363,34 +363,40 @@ export default function ProvidersPage() {
                                     No se encontraron proveedores.
                                 </td>
                             </tr>
-                        ) : proveedores.map(item => (
-                            <tr key={item.proveedor_id}>
-                                <td style={styles.td}>{item.tipo_documento}</td>
-                                <td style={styles.td}>{item.nro_documento}</td>
-                                <td style={styles.td}>{item.proveedor}</td>
-                                <td style={styles.td}>{item.actividad_economica}</td>
-                                <td style={styles.td}>
-                                    <span style={styles.badge(item.estado_documentos !== 'VENCIDOS')}>
-                                        {item.estado_documentos || 'VIGENTES'}
-                                    </span>
-                                </td>
-                                <td style={styles.td}>
-                                    <span style={styles.badge(item.estado === 'ACTIVO')}>
-                                        {item.estado || 'INACTIVO'}
-                                    </span>
-                                </td>
-                                <td style={styles.td}>
-                                    <div style={styles.rowActions}>
-                                        <button style={styles.linkBtn} onClick={() => consultarProveedor(item.proveedor_id)}>
-                                            Ver
-                                        </button>
-                                        <button style={styles.linkBtnAmber} onClick={() => editarProveedor(item.proveedor_id)}>
-                                            Editar
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                        ) : proveedores.map(item => {
+                            // Retornamos exactamente la lógica estricta que tenías en producción
+                            const esVigente = item.estado_documentos !== 'VENCIDOS';[cite: 2]
+                            const esActivo = item.estado === 'ACTIVO';[cite: 2]
+
+                            return (
+                                <tr key={item.proveedor_id}>
+                                    <td style={styles.td}>{item.tipo_documento}</td>
+                                    <td style={styles.td}>{item.nro_documento}</td>
+                                    <td style={styles.td}>{item.proveedor}</td>
+                                    <td style={styles.td}>{item.actividad_economica}</td>
+                                    <td style={styles.td}>
+                                        <span style={styles.badge(esVigente)}>
+                                            {item.estado_documentos}[cite: 2]
+                                        </span>
+                                    </td>
+                                    <td style={styles.td}>
+                                        <span style={styles.badge(esActivo)}>
+                                            {item.estado}[cite: 2]
+                                        </span>
+                                    </td>
+                                    <td style={styles.td}>
+                                        <div style={styles.rowActions}>
+                                            <button style={styles.linkBtn} onClick={() => consultarProveedor(item.proveedor_id)}>
+                                                Ver
+                                            </button>
+                                            <button style={styles.linkBtnAmber} onClick={() => editarProveedor(item.proveedor_id)}>
+                                                Editar
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
