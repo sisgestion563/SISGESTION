@@ -364,9 +364,8 @@ export default function ProvidersPage() {
                                 </td>
                             </tr>
                         ) : proveedores.map(item => {
-                            // Se corrige el mapeo de producción usando item.doc_vencidos e item.status
-                            const tieneVencidos = Number(item.doc_vencidos) > 0;[cite: 1]
-                            const esActivo = item.status === 'A';[cite: 1]
+                            const tieneVencidos = Number(item.doc_vencidos) > 0;
+                            const esActivo = item.status === 'A';
 
                             return (
                                 <tr key={item.proveedor_id}>
@@ -376,12 +375,12 @@ export default function ProvidersPage() {
                                     <td style={styles.td}>{item.actividad_economica}</td>
                                     <td style={styles.td}>
                                         <span style={styles.badge(!tieneVencidos)}>
-                                            {tieneVencidos ? 'VENCIDOS' : 'VIGENTES'}[cite: 1]
+                                            {tieneVencidos ? 'VENCIDOS' : 'VIGENTES'}
                                         </span>
                                     </td>
                                     <td style={styles.td}>
                                         <span style={styles.badge(esActivo)}>
-                                            {esActivo ? 'ACTIVO' : 'INACTIVO'}[cite: 1]
+                                            {esActivo ? 'ACTIVO' : 'INACTIVO'}
                                         </span>
                                     </td>
                                     <td style={styles.td}>
