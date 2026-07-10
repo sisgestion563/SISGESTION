@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import MainLayout from '../layouts/MainLayout';
 import { obtenerProveedores } from '../services/providers.service';
 import ModalProveedor from '../components/ModalProveedor';
 import ModalVerProveedor from '../components/ModalVerProveedor';
@@ -294,7 +295,7 @@ export default function ProvidersPage() {
     };
 
     return (
-        <>
+        <MainLayout>
             <h1 style={styles.heading}>Proveedores</h1>
 
             <div style={{ ...styles.card, marginTop: '20px' }}>
@@ -409,6 +410,6 @@ export default function ProvidersPage() {
                 proveedor={proveedorSeleccionado}
                 onClose={() => setModalConsultaVisible(false)}
             />
-        </>
+        </MainLayout>
     );
 }
