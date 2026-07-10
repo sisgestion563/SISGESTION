@@ -15,11 +15,13 @@ async (
             {
                 params: {
                     campo,
-                    valor
+                    valor,
+					_: Date.now()
                 },
                 headers:{
                     Authorization:
-                    `Bearer ${token}`
+                    `Bearer ${token}`,					
+            "Cache-Control":"no-cache"
                 }
             }
         );

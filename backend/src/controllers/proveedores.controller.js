@@ -2,10 +2,23 @@ const service = require('../services/proveedores.service');
 const listar = async (req,res) => 
 {
 	try {
-			//EROMAN 06072026
-			const data = await service.listar(req.query.campo || 'ALL',req.query.valor || '');  
-			//EROMAN 06072026
-			return res.status(200).json({success:true,data});
+			console.log('====================================');
+			console.log('CAMPO :', req.query.campo);
+			console.log('VALOR :', req.query.valor);
+			console.log('====================================');
+			
+			const data =
+    await service.listar(
+        req.query.campo || 'ALL',
+        req.query.valor || ''
+    );
+
+console.log("REGISTROS :", data.length);
+
+return res.status(200).json({
+    success:true,
+    data
+});
 		}
 	catch(error)
 		{

@@ -16,57 +16,118 @@ CASE
 END
 `;
 
-const CAMPOS_BUSQUEDA = {
+const SQL_ACTIVIDAD = `
+MPRO.ciiu || '-' || MLV_CIUU.descripcion
+`;
 
-    proveedor:
-        SQL_PROVEEDOR,
+const SQL_ESTADO = `
+CASE
+    WHEN MPRO.status = 'A'
+    THEN 'ACTIVO'
+    ELSE 'INACTIVO'
+END
+`;
 
-    nro_documento:
-        'MPRO.nro_documento',
+const SQL_ESTADO_DOCUMENTOS = `
+CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM "SISGES"."MOV_DOCUMENTOS" MD
+        WHERE MD.proveedor_id = MPRO.proveedor_id
+          AND MD.estado_documento = 'C'
+    )
+    THEN 'VENCIDOS'
+    ELSE 'VIGENTES'
+END
+`;
 
-    tipo_documento:
-        'MLV.descripcion',
-
-    actividad_economica:
-        "MPRO.ciiu || '-' || MLV_CIUU.descripcion"
-
-};
-//EROMAN 07062026
 const listar = async (campo = 'ALL', valor = '') => {
 
-    const params = [];
-
     let where = '';
+    const params = [];
 
     if (valor.trim() !== '') {
 
-        params.push(`%${valor.trim()}%`);
+        const texto = `%${valor.trim()}%`;
+        const exacto = valor.trim().toUpperCase();
 
-        if (campo === 'ALL') {
+        switch (campo) {
 
-            where = `
-            WHERE (
+            case 'proveedor':
 
-                ${SQL_PROVEEDOR} ILIKE $1
+                params.push(texto);
 
-                OR MPRO.nro_documento::text ILIKE $1
+                where = `
+                    WHERE ${SQL_PROVEEDOR} ILIKE $1
+                `;
+                break;
 
-                OR MLV.descripcion ILIKE $1
+            case 'nro_documento':
 
-                OR (
-                    MPRO.ciiu || '-' || MLV_CIUU.descripcion
-                ) ILIKE $1
+                params.push(texto);
 
-            )
-            `;
+                where = `
+                    WHERE MPRO.nro_documento::text ILIKE $1
+                `;
+                break;
 
-        }
-        else if (CAMPOS_BUSQUEDA[campo]) {
+            case 'tipo_documento':
 
-            where = `
-            WHERE
-                ${CAMPOS_BUSQUEDA[campo]} ILIKE $1
-            `;
+                params.push(texto);
+
+                where = `
+                    WHERE MLV.descripcion ILIKE $1
+                `;
+                break;
+
+            case 'actividad_economica':
+
+                params.push(texto);
+
+                where = `
+                    WHERE ${SQL_ACTIVIDAD} ILIKE $1
+                `;
+                break;
+
+            case 'estado':
+
+                params.push(exacto);
+
+                where = `
+                    WHERE ${SQL_ESTADO} = $1
+                `;
+                break;
+
+            case 'estado_documentos':
+
+                params.push(exacto);
+
+                where = `
+                    WHERE ${SQL_ESTADO_DOCUMENTOS} = $1
+                `;
+                break;
+
+            default:
+
+                params.push(texto);
+
+                where = `
+                WHERE (
+
+                    ${SQL_PROVEEDOR} ILIKE $1
+
+                    OR MPRO.nro_documento::text ILIKE $1
+
+                    OR MLV.descripcion ILIKE $1
+
+                    OR ${SQL_ACTIVIDAD} ILIKE $1
+
+                    OR ${SQL_ESTADO} ILIKE $1
+
+                    OR ${SQL_ESTADO_DOCUMENTOS} ILIKE $1
+
+                )
+                `;
 
         }
 
@@ -76,13 +137,13 @@ const listar = async (campo = 'ALL', valor = '') => {
 
         SELECT
 
-            MPRO.proveedor_id                 AS proveedor_id,
+            MPRO.proveedor_id,
 
-            MLV.descripcion                   AS tipo_documento,
+            MLV.descripcion AS tipo_documento,
 
             MPRO.nro_documento,
 
-            ${SQL_PROVEEDOR}                 AS proveedor,
+            ${SQL_PROVEEDOR} AS proveedor,
 
             MPRO.correo,
 
@@ -90,58 +151,33 @@ const listar = async (campo = 'ALL', valor = '') => {
 
             MPRO.calificacion,
 
-            MPRO.status,
-
             MPRO.ubigeo,
 
-            MPRO.ciiu || '-' || MLV_CIUU.descripcion
-                AS actividad_economica,
+            ${SQL_ACTIVIDAD} AS actividad_economica,
 
-            (
-                SELECT COUNT(*)
+            ${SQL_ESTADO_DOCUMENTOS} AS estado_documentos,
 
-                FROM "SISGES"."MOV_DOCUMENTOS" MDOC
-
-                WHERE
-                    MDOC.proveedor_id = MPRO.proveedor_id
-
-                AND
-                    MDOC.estado_documento = 'C'
-
-            ) AS doc_vencidos
+            ${SQL_ESTADO} AS estado
 
         FROM "SISGES"."MAE_PROVEEDOR" MPRO
 
         LEFT JOIN "SISGES"."MAE_LISTA_VALORES" MLV
-
-            ON MLV.codigo_valor = MPRO.tipo_documento
-
-           AND MLV.cod_grupo = '0001'
-
-           AND MLV.tipo_grupo = 'TIPO_DOC_SUNAT'
+               ON MLV.codigo_valor = MPRO.tipo_documento
+              AND MLV.cod_grupo='0001'
+              AND MLV.tipo_grupo='TIPO_DOC_SUNAT'
 
         LEFT JOIN "SISGES"."MAE_LISTA_VALORES" MLV_CIUU
-
-            ON MLV_CIUU.codigo_valor = MPRO.ciiu
-
-           AND MLV_CIUU.cod_grupo = '0002'
-
-           AND MLV_CIUU.tipo_grupo = 'CODIGO_CIIU_SUNAT'
+               ON MLV_CIUU.codigo_valor = MPRO.ciiu
+              AND MLV_CIUU.cod_grupo='0002'
+              AND MLV_CIUU.tipo_grupo='CODIGO_CIIU_SUNAT'
 
         ${where}
 
-        ORDER BY
-            MPRO.proveedor_id DESC
+        ORDER BY MPRO.proveedor_id DESC
 
     `;
 
-    const result = await pool.query(
-
-        sql,
-
-        params
-
-    );
+    const result = await pool.query(sql, params);
 
     return result.rows;
 
