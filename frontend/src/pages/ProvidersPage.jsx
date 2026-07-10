@@ -1,23 +1,10 @@
-import {
-    useEffect,
-    useState
-} from 'react';
-
-import MainLayout from '../layouts/MainLayout';
-
-import {
-    obtenerProveedores
-} from '../services/providers.service';
-
+import { useEffect, useState } from 'react';
+import { obtenerProveedores } from '../services/providers.service';
 import ModalProveedor from '../components/ModalProveedor';
-
 import ModalVerProveedor from '../components/ModalVerProveedor';
+import { obtenerProveedorPorId } from '../services/providers.service';
+import { exportarExcel } from '../utils/exportExcel';
 
-import {
-    obtenerProveedorPorId
-} from '../services/providers.service';
-
-// Misma paleta usada en Documentos y Dashboard
 const colors = {
     card: '#ffffff',
     border: '#e5e7eb',
@@ -69,10 +56,6 @@ const styles = {
         background: colors.border,
         alignSelf: 'stretch',
     },
-    searchWrap: {
-        position: 'relative',
-        width: '100%',
-    },
     searchInput: {
         width: '100%',
         padding: '10px 12px',
@@ -85,6 +68,17 @@ const styles = {
     },
     btnPrimary: {
         background: colors.primary,
+        color: '#fff',
+        border: 'none',
+        borderRadius: '8px',
+        padding: '10px 20px',
+        fontSize: '14px',
+        fontWeight: 600,
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+    },
+    btnSuccess: {
+        background: colors.success,
         color: '#fff',
         border: 'none',
         borderRadius: '8px',
@@ -119,8 +113,8 @@ const styles = {
         borderRadius: '999px',
         fontSize: '12px',
         fontWeight: 700,
-        background: ok ? '#DCFCE7' : '#FEE2E2',
-        color: ok ? '#15803D' : '#DC2626',
+        background: ok ? colors.successBg : colors.dangerBg,
+        color: ok ? colors.success : colors.danger,
     }),
     rowActions: {
         display: 'flex',
@@ -170,223 +164,185 @@ const styles = {
 };
 
 const CAMPOS_BUSQUEDA = [
-    {
-        value: 'ALL',
-        label: 'Todos los campos'
-    },
-    {
-        value: 'proveedor',
-        label: 'Razón Social'
-    },
-    {
-        value: 'nro_documento',
-        label: 'N° Documento'
-    },
-    {
-        value: 'tipo_documento',
-        label: 'Tipo Documento'
-    },
-    {
-        value: 'actividad_economica',
-        label: 'Actividad Económica'
-    },
-    {
-        value: 'estado_documentos',
-        label: 'Estado Documentos'
-    },
-    {
-        value: 'status',
-        label: 'Estado'
-    }
+    { value: 'ALL', label: 'Todos los campos' },
+    { value: 'proveedor', label: 'Razón Social' },
+    { value: 'nro_documento', label: 'N° Documento' },
+    { value: 'tipo_documento', label: 'Tipo Documento' },
+    { value: 'actividad_economica', label: 'Actividad Económica' },
+    { value: 'estado_documentos', label: 'Estado Documentos' },
+    { value: 'estado', label: 'Estado' }
 ];
 
-export default function ProvidersPage(){
-    const [
-        proveedores,
-        setProveedores
-    ] = useState([]);
+const OPCIONES_ESTADO = [
+    { value: '', label: '-- Seleccione --' },
+    { value: 'ACTIVO', label: 'ACTIVO' },
+    { value: 'INACTIVO', label: 'INACTIVO' }
+];
 
-    const [
-        campoBusqueda,
-        setCampoBusqueda
-    ] = useState('ALL');
+const OPCIONES_ESTADO_DOCUMENTOS = [
+    { value: '', label: '-- Seleccione --' },
+    { value: 'VIGENTES', label: 'VIGENTES' },
+    { value: 'VENCIDOS', label: 'VENCIDOS' }
+];
 
-    const [
-        valorBusqueda,
-        setValorBusqueda
-    ] = useState('');
+export default function ProvidersPage() {
+    const [proveedores, setProveedores] = useState([]);
+    const [campoBusqueda, setCampoBusqueda] = useState('ALL');
+    const [valorBusqueda, setValorBusqueda] = useState('');
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalConsultaVisible, setModalConsultaVisible] = useState(false);
+    const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
+    const [proveedorEditar, setProveedorEditar] = useState(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            cargarProveedores(
-                campoBusqueda,
-                valorBusqueda
-            );
+            cargarProveedores(campoBusqueda, valorBusqueda);
         }, valorBusqueda.trim() === '' ? 0 : 400);
 
         return () => clearTimeout(timer);
-    }, [
-        campoBusqueda,
-        valorBusqueda
-    ]);
+    }, [campoBusqueda, valorBusqueda]);
 
-    const cargarProveedores =
-    async (
-        campo = 'ALL',
-        valor = ''
-    ) => {
+    const cargarProveedores = async (campo = 'ALL', valor = '') => {
         try {
-            const data =
-                await obtenerProveedores(
-                    campo,
-                    valor
-                );
-
+            const data = await obtenerProveedores(campo, valor);
             setProveedores(data);
-        }
-        catch(error){
+        } catch (error) {
             console.error(error);
         }
     };
 
-    const obtenerTextoDocumento = (tipo) => {
-        switch (tipo) {
-            case '06': return 'RUC';
-            case '01': return 'DNI';
-            case '04': return 'Carnet Extranjería';
-            case '07': return 'Pasaporte';
-            case 'A0': return 'Cédula Diplomática';
-            default: return tipo;
-        }
+    const exportarListado = () => {
+        exportarExcel({
+            nombreArchivo: 'PROVEEDORES',
+            nombreHoja: 'PROVEEDORES',
+            titulo: 'SISGESTION',
+            subtitulo: 'Listado de Proveedores',
+            columnas: [
+                { titulo: 'Tipo Documento', campo: 'tipo_documento', ancho: 35 },
+                { titulo: 'N° Documento', campo: 'nro_documento', ancho: 20 },
+                { titulo: 'Razón Social', campo: 'proveedor', ancho: 45 },
+                { titulo: 'Actividad Económica', campo: 'actividad_economica', ancho: 50 },
+                { titulo: 'Estado Documentos', campo: 'estado_documentos', ancho: 20 },
+                { titulo: 'Estado', campo: 'estado', ancho: 15 }
+            ],
+            datos: proveedores
+        });
     };
 
-    const proveedoresFiltrados = proveedores;
-
-    const [
-        modalVisible,
-        setModalVisible
-    ] = useState(false);
-
-    const [
-        modalConsultaVisible,
-        setModalConsultaVisible
-    ] = useState(false);
-
-    const [
-        proveedorSeleccionado,
-        setProveedorSeleccionado
-    ] = useState(null);
-
-    const consultarProveedor =
-    async (proveedorId) => {
+    const consultarProveedor = async (proveedorId) => {
         try {
-            const data =
-                await obtenerProveedorPorId(
-                    proveedorId
-                );
-
-            setProveedorSeleccionado(
-                data
-            );
-
-            setModalConsultaVisible(
-                true
-            );
-        }
-        catch(error){
+            const data = await obtenerProveedorPorId(proveedorId);
+            setProveedorSeleccionado(data);
+            setModalConsultaVisible(true);
+        } catch (error) {
             console.error(error);
         }
     };
 
-    const [
-        proveedorEditar,
-        setProveedorEditar
-    ] = useState(null);
-
-    const editarProveedor =
-    async (proveedorId) => {
+    const editarProveedor = async (proveedorId) => {
         try {
-            const data =
-                await obtenerProveedorPorId(
-                    proveedorId
-                );
-
-            setProveedorEditar(
-                data
-            );
-
-            setModalVisible(
-                true
-            );
-        }
-        catch(error){
+            const data = await obtenerProveedorPorId(proveedorId);
+            setProveedorEditar(data);
+            setModalVisible(true);
+        } catch (error) {
             console.error(error);
         }
+    };
+
+    const renderControlBusqueda = () => {
+        if (campoBusqueda === 'estado') {
+            return (
+                <select
+                    value={valorBusqueda}
+                    onChange={(e) => setValorBusqueda(e.target.value)}
+                    style={styles.searchInput}
+                >
+                    {OPCIONES_ESTADO.map((item) => (
+                        <option key={item.value} value={item.value}>
+                            {item.label}
+                        </option>
+                    ))}
+                </select>
+            );
+        }
+
+        if (campoBusqueda === 'estado_documentos') {
+            return (
+                <select
+                    value={valorBusqueda}
+                    onChange={(e) => setValorBusqueda(e.target.value)}
+                    style={styles.searchInput}
+                >
+                    {OPCIONES_ESTADO_DOCUMENTOS.map((item) => (
+                        <option key={item.value} value={item.value}>
+                            {item.label}
+                        </option>
+                    ))}
+                </select>
+            );
+        }
+
+        return (
+            <input
+                type="text"
+                value={valorBusqueda}
+                onChange={(e) => setValorBusqueda(e.target.value)}
+                placeholder="Ingrese el criterio de búsqueda..."
+                style={styles.searchInput}
+            />
+        );
     };
 
     return (
-        <MainLayout>
-            <h1 style={styles.heading}>
-                Proveedores
-            </h1>
+        <>
+            <h1 style={styles.heading}>Proveedores</h1>
 
-            <div style={{...styles.card, marginTop:'20px'}}>
+            <div style={{ ...styles.card, marginTop: '20px' }}>
                 <div style={styles.toolbarRow}>
                     <div style={styles.toolbarSection}>
                         <p style={styles.toolbarLabel}>Búsqueda</p>
                         <div style={styles.searchControls}>
                             <select
                                 value={campoBusqueda}
-                                onChange={(e)=>
-                                    setCampoBusqueda(
-                                        e.target.value
-                                    )
-                                }
+                                onChange={(e) => {
+                                    setCampoBusqueda(e.target.value);
+                                    setValorBusqueda('');
+                                }}
                                 style={styles.searchSelect}
                             >
-                                {CAMPOS_BUSQUEDA.map(
-                                    campo => (
-                                        <option
-                                            key={campo.value}
-                                            value={campo.value}
-                                        >
-                                            {campo.label}
-                                        </option>
-                                    )
-                                )}
+                                {CAMPOS_BUSQUEDA.map(campo => (
+                                    <option key={campo.value} value={campo.value}>
+                                        {campo.label}
+                                    </option>
+                                ))}
                             </select>
-
-                            <input
-                                type="text"
-                                placeholder="Ingrese criterio de búsqueda..."
-                                value={valorBusqueda}
-                                onChange={(e)=>
-                                    setValorBusqueda(
-                                        e.target.value
-                                    )
-                                }
-                                style={styles.searchInput}
-                            />
+                            {renderControlBusqueda()}
                         </div>
                     </div>
 
                     <div style={styles.toolbarDivider} />
 
                     <div style={styles.toolbarSection}>
-                        <p style={styles.toolbarLabel}>Nuevo Registro</p>
-                        <button
-                            style={{...styles.btnPrimary, alignSelf:'flex-start'}}
-                            onClick={() => {
-                                setModalVisible(true);
-                            }}
-                        >
-                            + Nuevo Proveedor
-                        </button>
+                        <p style={styles.toolbarLabel}>Acciones de Registro</p>
+                        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                            <button
+                                style={styles.btnPrimary}
+                                onClick={() => setModalVisible(true)}
+                            >
+                                + Nuevo Proveedor
+                            </button>
+                            <button
+                                style={styles.btnSuccess}
+                                onClick={exportarListado}
+                            >
+                                Exportar Excel
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div style={{...styles.card, marginTop:'20px', padding:0}}>
+            <div style={{ ...styles.card, marginTop: '20px', padding: 0, overflowX: 'auto' }}>
                 <table style={styles.table}>
                     <thead>
                         <tr>
@@ -400,77 +356,40 @@ export default function ProvidersPage(){
                         </tr>
                     </thead>
                     <tbody>
-                    {
-                        proveedoresFiltrados.length === 0 ? (
+                        {proveedores.length === 0 ? (
                             <tr>
                                 <td colSpan={7} style={styles.emptyState}>
                                     No se encontraron proveedores.
                                 </td>
                             </tr>
-                        ) : proveedoresFiltrados.map(
-                            item => (
-                                <tr
-                                    key={
-                                        item.proveedor_id
-                                    }
-                                >
-                                    <td style={styles.td}>
-                                        {obtenerTextoDocumento(item.tipo_documento)}
-                                    </td>
-
-                                    <td style={styles.td}>
-                                        {item.nro_documento}
-                                    </td>
-
-                                    <td style={styles.td}>
-                                        {item.proveedor}
-                                    </td>
-                                    
-                                    <td style={styles.td}>
-                                        {item.actividad_economica}
-                                    </td>
-                                    
-                                    <td style={styles.td}>
-                                        <span style={styles.badge(Number(item.doc_vencidos) === 0)}>
-                                            {Number(item.doc_vencidos) > 0 ? 'VENCIDOS' : 'VIGENTES'}
-                                        </span>
-                                    </td>
-
-                                    <td style={styles.td}>
-                                        <span style={styles.badge(item.status === 'A')}>
-                                            {item.status === 'A' ? 'ACTIVO' : 'INACTIVO'}
-                                        </span>
-                                    </td>
-
-                                    <td style={styles.td}>
-                                        <div style={styles.rowActions}>
-                                            <button
-                                                style={styles.linkBtn}
-                                                onClick={() =>
-                                                    consultarProveedor(
-                                                        item.proveedor_id
-                                                    )
-                                                }
-                                            >
-                                                Ver
-                                            </button>
-
-                                            <button
-                                                style={styles.linkBtnAmber}
-                                                onClick={() =>
-                                                    editarProveedor(
-                                                        item.proveedor_id
-                                                    )
-                                                }
-                                            >
-                                                Editar
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )
-                        )
-                    }
+                        ) : proveedores.map(item => (
+                            <tr key={item.proveedor_id}>
+                                <td style={styles.td}>{item.tipo_documento}</td>
+                                <td style={styles.td}>{item.nro_documento}</td>
+                                <td style={styles.td}>{item.proveedor}</td>
+                                <td style={styles.td}>{item.actividad_economica}</td>
+                                <td style={styles.td}>
+                                    <span style={styles.badge(item.estado_documentos !== 'VENCIDOS')}>
+                                        {item.estado_documentos}
+                                    </span>
+                                </td>
+                                <td style={styles.td}>
+                                    <span style={styles.badge(item.estado === 'ACTIVO')}>
+                                        {item.estado}
+                                    </span>
+                                </td>
+                                <td style={styles.td}>
+                                    <div style={styles.rowActions}>
+                                        <button style={styles.linkBtn} onClick={() => consultarProveedor(item.proveedor_id)}>
+                                            Ver
+                                        </button>
+                                        <button style={styles.linkBtnAmber} onClick={() => editarProveedor(item.proveedor_id)}>
+                                            Editar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -482,27 +401,14 @@ export default function ProvidersPage(){
                     setModalVisible(false);
                     setProveedorEditar(null);
                 }}
-                onSuccess={() =>
-                    cargarProveedores(
-                        campoBusqueda,
-                        valorBusqueda
-                    )
-                }
+                onSuccess={() => cargarProveedores(campoBusqueda, valorBusqueda)}
             />
 
             <ModalVerProveedor
-                visible={
-                    modalConsultaVisible
-                }
-                proveedor={
-                    proveedorSeleccionado
-                }
-                onClose={() =>
-                    setModalConsultaVisible(
-                        false
-                    )
-                }
+                visible={modalConsultaVisible}
+                proveedor={proveedorSeleccionado}
+                onClose={() => setModalConsultaVisible(false)}
             />
-        </MainLayout>
+        </>
     );
 }
