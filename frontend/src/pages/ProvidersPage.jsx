@@ -364,9 +364,8 @@ export default function ProvidersPage() {
                                 </td>
                             </tr>
                         ) : proveedores.map(item => {
-                            // Retornamos exactamente la lógica estricta que tenías en producción
-                            const esVigente = item.estado_documentos !== 'VENCIDOS';[cite: 2]
-                            const esActivo = item.estado === 'ACTIVO';[cite: 2]
+                            const esVigente = item.estado_documentos !== 'VENCIDOS';
+                            const esActivo = item.estado === 'ACTIVO';
 
                             return (
                                 <tr key={item.proveedor_id}>
@@ -376,12 +375,12 @@ export default function ProvidersPage() {
                                     <td style={styles.td}>{item.actividad_economica}</td>
                                     <td style={styles.td}>
                                         <span style={styles.badge(esVigente)}>
-                                            {item.estado_documentos}[cite: 2]
+                                            {item.estado_documentos}
                                         </span>
                                     </td>
                                     <td style={styles.td}>
                                         <span style={styles.badge(esActivo)}>
-                                            {item.estado}[cite: 2]
+                                            {item.estado}
                                         </span>
                                     </td>
                                     <td style={styles.td}>
