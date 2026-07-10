@@ -371,12 +371,12 @@ export default function ProvidersPage() {
                                 <td style={styles.td}>{item.actividad_economica}</td>
                                 <td style={styles.td}>
                                     <span style={styles.badge(item.estado_documentos !== 'VENCIDOS')}>
-                                        {item.estado_documentos}
+                                        {item.estado_documentos || 'VIGENTES'}
                                     </span>
                                 </td>
                                 <td style={styles.td}>
                                     <span style={styles.badge(item.estado === 'ACTIVO')}>
-                                        {item.estado}
+                                        {item.estado || 'INACTIVO'}
                                     </span>
                                 </td>
                                 <td style={styles.td}>
