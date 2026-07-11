@@ -404,17 +404,36 @@ export default function ProvidersPage() {
                 visible={modalVisible}
                 proveedorEditar={proveedorEditar}
                 onClose={() => {
-                    setModalVisible(false);
-                    setProveedorEditar(null);
-                }}
-                onSuccess={() => cargarProveedores(campoBusqueda, valorBusqueda)}
-            />
+        setModalVisible(false);
+        setProveedorEditar(null);
 
-            <ModalVerProveedor
-                visible={modalConsultaVisible}
-                proveedor={proveedorSeleccionado}
-                onClose={() => setModalConsultaVisible(false)}
-            />
+    }}
+    onSuccess={() =>
+        cargarProveedores(
+            campoBusqueda,
+            valorBusqueda
+        )
+    }
+/>
+
+<ModalVerProveedor
+
+    visible={
+        modalConsultaVisible
+    }
+
+    proveedor={
+        proveedorSeleccionado
+    }
+
+    onClose={() =>
+        setModalConsultaVisible(
+            false
+        )
+    }
+
+/>
+
         </MainLayout>
     );
 }
