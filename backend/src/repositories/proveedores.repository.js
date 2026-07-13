@@ -178,6 +178,8 @@ const listar = async (campo = 'ALL', valor = '') => {
     `;
 
     const result = await pool.query(sql, params);
+	
+	console.table(result.rows);
 
     return result.rows;
 

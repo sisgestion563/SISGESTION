@@ -205,7 +205,7 @@ export default function ProvidersPage() {
 
     const cargarProveedores = async (campo = 'ALL', valor = '') => {
         try {
-            const data = await obtenerProveedores(campo, valor);
+            const data = await obtenerProveedores(campo, valor);			
             setProveedores(data);
         } catch (error) {
             console.error(error);
@@ -230,6 +230,8 @@ export default function ProvidersPage() {
         });
     };
 
+    const proveedoresFiltrados =     proveedores;
+
     const consultarProveedor = async (proveedorId) => {
         try {
             const data = await obtenerProveedorPorId(proveedorId);
@@ -249,6 +251,8 @@ export default function ProvidersPage() {
             console.error(error);
         }
     };
+
+    console.log("PROVEEDORES:", proveedores.length);
 
     const renderControlBusqueda = () => {
         if (campoBusqueda === 'estado') {
@@ -293,10 +297,10 @@ export default function ProvidersPage() {
             />
         );
     };
-
+	
     return (
         <MainLayout>
-            <h1 style={styles.heading}>Proveedores</h1>
+           <h1 style={styles.heading}>Proveedores</h1>
 
             <div style={{ ...styles.card, marginTop: '20px' }}>
                 <div style={styles.toolbarRow}>
@@ -304,13 +308,12 @@ export default function ProvidersPage() {
                         <p style={styles.toolbarLabel}>Búsqueda</p>
                         <div style={styles.searchControls}>
                             <select
-                                value={campoBusqueda}
-                                onChange={(e) => {
-                                    setCampoBusqueda(e.target.value);
-                                    setValorBusqueda('');
-                                }}
-                                style={styles.searchSelect}
-                            >
+								value={campoBusqueda}
+								onChange={(e)=>{const nuevoCampo = e.target.value;
+											setCampoBusqueda(nuevoCampo);
+											setValorBusqueda('');}}
+								style={styles.searchSelect}>
+								
                                 {CAMPOS_BUSQUEDA.map(campo => (
                                     <option key={campo.value} value={campo.value}>
                                         {campo.label}
@@ -327,11 +330,11 @@ export default function ProvidersPage() {
                         <p style={styles.toolbarLabel}>Acciones de Registro</p>
                         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                             <button
-                                style={styles.btnPrimary}
-                                onClick={() => setModalVisible(true)}
-                            >
-                                + Nuevo Proveedor
-                            </button>
+                            style={{...styles.btnPrimary, alignSelf:'flex-start'}}
+                            onClick={() => {setModalVisible(true);}}
+                        >
+                            + Nuevo Proveedor
+                        </button>
                             <button
                                 style={styles.btnSuccess}
                                 onClick={exportarListado}
@@ -343,7 +346,7 @@ export default function ProvidersPage() {
                 </div>
             </div>
 
-            <div style={{ ...styles.card, marginTop: '20px', padding: 0, overflowX: 'auto' }}>
+            <div style={{...styles.card, marginTop:'20px', padding:0}}>
                 <table style={styles.table}>
                     <thead>
                         <tr>
@@ -357,47 +360,64 @@ export default function ProvidersPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {proveedores.length === 0 ? (
-                            <tr>
-                                <td colSpan={7} style={styles.emptyState}>
-                                    No se encontraron proveedores.
-                                </td>
-                            </tr>
-                        ) : proveedores.map(item => {
-                            const tieneVencidos = Number(item.doc_vencidos) > 0;
-                            const esActivo = item.status === 'A';
+	{
+		proveedoresFiltrados.length === 0 ? 
+			(
+				<tr>
+					<td colSpan={7} style={styles.emptyState}>No se encontraron proveedores.</td>
+				</tr>
+			) : 
+		proveedoresFiltrados.map(
+		
+		
+									item => {	
+									console.log(item);
 
-                            return (
-                                <tr key={item.proveedor_id}>
-                                    <td style={styles.td}>{item.tipo_documento}</td>
-                                    <td style={styles.td}>{item.nro_documento}</td>
-                                    <td style={styles.td}>{item.proveedor}</td>
-                                    <td style={styles.td}>{item.actividad_economica}</td>
-                                    <td style={styles.td}>
-                                        <span style={styles.badge(!tieneVencidos)}>
-                                            {tieneVencidos ? 'VENCIDOS' : 'VIGENTES'}
-                                        </span>
-                                    </td>
-                                    <td style={styles.td}>
-                                        <span style={styles.badge(esActivo)}>
-                                            {esActivo ? 'ACTIVO' : 'INACTIVO'}
-                                        </span>
-                                    </td>
-                                    <td style={styles.td}>
-                                        <div style={styles.rowActions}>
-                                            <button style={styles.linkBtn} onClick={() => consultarProveedor(item.proveedor_id)}>
-                                                Ver
-                                            </button>
-                                            <button style={styles.linkBtnAmber} onClick={() => editarProveedor(item.proveedor_id)}>
-                                                Editar
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+									
+							
+							return(
+									
+												<tr key={item.proveedor_id}>
+													<td style={styles.td}>{item.tipo_documento}</td>
+													<td style={styles.td}>{item.nro_documento}</td>
+													<td style={styles.td}>{item.proveedor}</td>							
+													<td style={styles.td}>{item.actividad_economica}</td>	
+
+													<td style={styles.td}>
+														<span style={styles.badge(item.estado_documentos === 'VIGENTES')}>
+															{item.estado_documentos}
+														</span>
+													</td>
+
+													<td style={styles.td}>
+														<span style={styles.badge(item.estado === 'ACTIVO')}>
+															{item.estado}
+														</span>
+													</td>										
+							
+													
+
+													<td style={styles.td}>
+														<div style={styles.rowActions}>
+															<button
+																style={styles.linkBtn}
+																onClick={() => consultarProveedor(item.proveedor_id)}>
+																	Ver
+															</button>
+															<button
+																style={styles.linkBtnAmber}
+																onClick={() => editarProveedor(item.proveedor_id)}>
+																Editar
+															</button>
+														</div>
+													</td>
+												</tr>
+
                             );
-                        })}
+                   })}
+
                     </tbody>
-                </table>
+                </table>                               
             </div>
 
             <ModalProveedor
