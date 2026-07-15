@@ -411,21 +411,21 @@ export default function ModalDocumento({visible,
                 <div className="modal-doc-grid" style={styles.grid}>
 				
 					<div style={styles.field}>
-										<label style={styles.label}>Alcance</label>
-											<select
-												value={form.alcance}
-												disabled={soloLectura}
-												style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-												onChange={(e)=>setForm({...form,alcance: e.target.value})}>
-												<option value="">Seleccione...</option>
-												{
-													alcances.map(item => (	<option key={item.codigo_valor} value={item.codigo_valor}>
-																				{item.descripcion}
-																			</option>)
-																)
-												}
-											</select>
-									</div>
+						<label style={styles.label}>Alcance</label>
+						<select
+							value={form.alcance}
+							disabled={soloLectura}
+							style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
+							onChange={(e)=>setForm({...form,alcance: e.target.value})}>
+							<option value="">Seleccione...</option>
+							{
+								alcances.map(item => (	<option key={item.codigo_valor} value={item.codigo_valor}>
+															{item.descripcion}
+														</option>)
+											)
+							}
+						</select>
+					</div>
 
                     <div style={styles.field}>
                         <label style={styles.label}>Tipo Documento</label>
@@ -484,31 +484,6 @@ export default function ModalDocumento({visible,
                                 })
                             }
                         />
-                    </div>
-
-                    <div style={styles.field}>
-                        <label style={styles.label}>Alcance</label>
-                        <select
-                            value={form.alcance}
-                            disabled={soloLectura}
-                            style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-                            onChange={(e)=>
-                                setForm({
-                                    ...form,
-                                    alcance: e.target.value
-                                })
-                            }
-                        >
-                            <option value="">Seleccione...</option>
-
-                            {
-                                alcances.map(item => (
-                                    <option key={item.codigo_valor} value={item.codigo_valor}>
-                                        {item.descripcion}
-                                    </option>
-                                ))
-                            }
-                        </select>
                     </div>
 
                     <div style={styles.field}>
