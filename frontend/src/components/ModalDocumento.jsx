@@ -1,6 +1,20 @@
-import {useState,useEffect} from 'react';
-import {crearDocumento,actualizarDocumento} from '../services/documentos.service';
-import {obtenerCatalogo} from '../services/catalogos.service';
+import {
+    useState,
+    useEffect
+}
+from 'react';
+
+import {
+
+    crearDocumento,
+    actualizarDocumento
+
+} from '../services/documentos.service';
+
+import {
+    obtenerCatalogo
+}
+from '../services/catalogos.service';
 
 // Misma paleta usada en el resto del sistema (Documentos, Dashboard, Proveedores)
 const colors = {
@@ -149,346 +163,509 @@ const responsiveCSS = `
     }
 `;
 
-export default function ModalDocumento({visible,
-										onClose,
-										onSuccess,
-										proveedorId,
-										grupoDocumento,
-										modo = 'NUEVO',
-										documento = null})
-	{
+export default function ModalDocumento({
 
-		const formInicial = {tipo_documento_id: '',
-							 tipo_documento: '',
-							 fecha_inicio: '',
-							 fecha_fin: '',
-							 fecha_vigencia: '',
-							 alcance: '',
-							 ruta_documento: '',
-							 observaciones: ''};
+    visible,
+    onClose,
+    onSuccess,
 
-		const [form, setForm] = useState(formInicial);
-		const [tiposDocumento,setTiposDocumento] = useState([]);
-		const [alcances, setAlcances] = useState([]);
+    proveedorId,
+    grupoDocumento,
 
-		const cargarCatalogos = async () => 
-			{
-				try
-					{
-						if (grupoDocumento === 'DOC_NOR')
-							{
-								const tipos = await obtenerCatalogo('0001','TIPO_DOC_NORMATIVO');
-								setTiposDocumento(tipos);
-							}
-						else
-							{
-								setTiposDocumento([]);
-							}
+    modo = 'NUEVO',
 
-						const alc = await obtenerCatalogo('0099','TIPO_GESTION');
-						setAlcances(alc);
-					}
-				catch (error)
-					{
-						console.error(error);
-					}
-			};
+    documento = null
 
-			const cargarFormulario = () =>
-				{
-					if (!documento) 
-						{	
-							setForm(formInicial);
-							return;
-						}
+}) {
 
-					setForm({tipo_documento_id: documento.tipo_documento_id || '',
-							tipo_documento: documento.tipo_documento || '',
-							fecha_inicio: formatearFecha(documento.fecha_inicio) || '',
-							fecha_fin: formatearFecha(documento.fecha_fin) || '',
-							fecha_vigencia: formatearFecha(documento.fecha_vigencia) || '',
-							alcance: documento.alcance || '',
-							ruta_documento: documento.ruta_documento || '',
-							observaciones: documento.observaciones || ''
-							});
-				};
+	const formInicial = {
 
-			const formatearFecha = (fecha) =>
-				{
-					if (!fecha) return '';
-					return new Date(fecha).toISOString().split('T')[0];
-				};
+    tipo_documento_id: '',
+    tipo_documento: '',
+    fecha_inicio: '',
+    fecha_fin: '',
+    fecha_vigencia: '',
+    alcance: '',
+    ruta_documento: '',
+    observaciones: ''
 
-			// Para mostrar en pantalla (modo Consultar), no para inputs de tipo date
-			const formatearFechaDisplay = (fecha) =>
-				{
-					const iso = formatearFecha(fecha);
-					if (!iso) return '';
+};
 
-					const [anio, mes, dia] = iso.split('-');
-					return `${dia}/${mes}/${anio}`;
-				};
+const [form, setForm] = useState(formInicial);
 
-			useEffect(() =>
-				{
-					if (!visible) {return;}
 
-					cargarCatalogos();
-					if (modo === 'NUEVO')
-						{
-							setForm(formInicial);
-						}
-					else
-						{
-							cargarFormulario();
-						}
-				},[visible,grupoDocumento,modo,documento]);
 
-			if(!visible){return null;}
+const [
+    tiposDocumento,
+    setTiposDocumento
+] = useState([]);
 
-			const guardar = async () =>
-				{
-					try
-						{
-							const usuario = JSON.parse(localStorage.getItem('usuario'));
-							
-							const datosDocumento = {...form,
-													proveedor_id: proveedorId,
-													grupo_documentos: grupoDocumento,
-													fecha_inicio: form.fecha_inicio || null,
-													fecha_fin: form.fecha_fin || null,
-													update_by: usuario.usuario_id
-													};
+const [alcances, setAlcances] = useState([]);
 
-							if (grupoDocumento === 'DOC_NOR') 
-								{
-									datosDocumento.tipo_documento = '';
-								}
-							else
-								{
-									datosDocumento.tipo_documento_id = '';
-								}
-								
-							if (modo === 'NUEVO')
-								{
-									await crearDocumento(datosDocumento);
-								}
-							else
-								{
-									await actualizarDocumento(documento.documento_id,datosDocumento);
-								}
+const cargarCatalogos = async () => {
 
-							alert('Documento registrado correctamente');
-							onSuccess();
-							cerrarModal();
-						}
-					catch(error)
-						{
-							alert(error.response?.data?.message ||error.message);
-						}
-				};
+    try {
 
-			const GRUPOS_DOCUMENTOS = 
-				{
-					DOC_NOR:'DOCUMENTOS NORMATIVOS',
-					DOC_EXT_NOR:'DOCUMENTOS EXTRA NORMATIVOS',
-					DOC_REQ_ESTATAL:'DOCUMENTOS REQUERIMIENTO ESTATAL',
-					DOC_OTROS:'DOCUMENTOS OTROS'
-				};
+        if (grupoDocumento === 'DOC_NOR') {
 
-			const cerrarModal = () =>
-				{
-					setForm({tipo_documento_id:'',
-							tipo_documento:'',
-							fecha_inicio:'',
-							fecha_fin:'',
-							fecha_vigencia:'',
-							ruta_documento:'',
-							observaciones:'',
-							alcance:''});
-					onClose();
-				};
+            const tipos = await obtenerCatalogo(
+                '0001',
+                'TIPO_DOC_NORMATIVO'
+            );
 
-			const soloLectura = modo === 'VER';
+            setTiposDocumento(tipos);
 
-			const TITULOS = 
-				{
-					NUEVO:'Nuevo Documento',
-					EDITAR:'Editar Documento',
-					VER:'Consultar Documento'
-				};
+        }
+        else {
 
-			if (modo === 'VER')
-				{
-					return (
-								<div style={styles.overlay}>
-									<style>{responsiveCSS}</style>
-									<div style={styles.modal}>
-									
-										<h2 style={styles.headerTitle}>{TITULOS[modo]}</h2>
-										<p style={styles.headerSubtitle}>{GRUPOS_DOCUMENTOS[grupoDocumento]}</p>
-										<hr style={styles.divider} />
+            setTiposDocumento([]);
 
-										<div className="modal-doc-grid" style={styles.grid}>										
-										
-											<div style={styles.field}>
-												<label style={styles.label}>Alcance</label>
-												<div style={styles.readOnlyValue}>
-													{documento.descripcion_alcance}
-												</div>
-											</div>
+        }
 
-											<div style={styles.field}>
-												<label style={styles.label}>Tipo Documento</label>
-												<div style={styles.readOnlyValue}>
-													{
-														documento.tipo_documento ||
-														documento.descripcion_tipo_documento
-													}
-												</div>
-											</div>
+        const alc = await obtenerCatalogo(
+            '0099',
+            'TIPO_GESTION'
+        );
 
-											<div style={styles.field}>
-												<label style={styles.label}>Estado</label>
-												<div style={styles.readOnlyValue}>
-													{documento.desc_estado_documento}
-												</div>
-											</div>
+        setAlcances(alc);
 
-											<div style={styles.field}>
-												<label style={styles.label}>Fecha Vigencia</label>
-												<div style={styles.readOnlyValue}>
-													{formatearFechaDisplay(documento.fecha_vigencia)}
-												</div>
-											</div>
+    }
+    catch (error) {
 
-											<div style={{...styles.field, ...styles.fieldFull}}>
-												<label style={styles.label}>Ruta Documento</label>
-												<div style={styles.readOnlyValue}>
-													{documento.ruta_documento}
-												</div>
-											</div>
+        console.error(error);
 
-											<div style={{...styles.field, ...styles.fieldFull}}>
-												<label style={styles.label}>Observaciones</label>
-												<div
-													style={{...styles.readOnlyValue,minHeight: '90px',whiteSpace: 'pre-wrap'}}>
-													{documento.observaciones}
-												</div>
-											</div>
-										</div>
+    }
 
-										<div style={styles.actions}>
-											<button style={styles.btnPrimary} onClick={cerrarModal}>
-												Cerrar
-											</button>
-										</div>
-									</div>
-								</div>
-						   );
-				}
+};
 
-			return (
-						<div style={styles.overlay}>
-							<style>{responsiveCSS}</style>
-							<div style={styles.modal}>
-							
-								<h2 style={styles.headerTitle}>{TITULOS[modo]}</h2>
-								<p style={styles.headerSubtitle}>{GRUPOS_DOCUMENTOS[grupoDocumento]}</p>
+const cargarFormulario = () => {
 
-								<hr style={styles.divider}/>
+    if (!documento) {
 
-								<div className="modal-doc-grid" style={styles.grid}>
-								
-									<div style={styles.field}>
-										<label style={styles.label}>Alcance</label>
-											<select
-												value={form.alcance}
-												disabled={soloLectura}
-												style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-												onChange={(e)=>setForm({...form,alcance: e.target.value})}>
-												<option value="">Seleccione...</option>
-												{
-													alcances.map(item => (	<option key={item.codigo_valor} value={item.codigo_valor}>
-																				{item.descripcion}
-																			</option>)
-																)
-												}
-											</select>
-									</div>
-								
-									<div style={styles.field}>
-										<label style={styles.label}>Tipo Documento</label>
-										{	grupoDocumento === 'DOC_NOR' ?
-																			<select
-																				disabled={soloLectura}
-																				value={form.tipo_documento_id}
-																				style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-																				onChange={(e)=>setForm({...form,tipo_documento_id: e.target.value})}>
-																					<option value="">Seleccione</option>
-																						{
-																							tiposDocumento.map(item => (<option key={item.codigo_valor} value={item.codigo_valor}>
-																															{item.codigo_valor} - {item.descripcion}
-																														</option>)
-																											  )
-																						}
-																			</select>
-																	:
-																			<input
-																				value={form.tipo_documento}
-																				disabled={soloLectura}
-																				style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-																				onChange={(e)=>setForm({...form,tipo_documento: e.target.value})}
-																				placeholder="Tipo Documento"/>
-										}
-									</div>
+        setForm(formInicial);
 
-									<div style={styles.field}>
-										<label style={styles.label}>Fecha Vigencia</label>
-										<input
-											type="date"
-											disabled={soloLectura}
-											style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-											value={form.fecha_vigencia}
-											onChange={(e)=>setForm({...form,fecha_vigencia: e.target.value})}/>
-									</div>
+        return;
 
-									<div style={styles.field}>
-										<label style={styles.label}>Ruta Documento</label>
-										<input
-											placeholder="Ruta Documento"
-											disabled={soloLectura}
-											style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-											value={form.ruta_documento}
-											onChange={(e)=>setForm({...form,ruta_documento: e.target.value})}/>
-									</div>
+    }
 
-									<div style={{...styles.field, ...styles.fieldFull}}>
-										<label style={styles.label}>Observaciones</label>
-										<textarea
-											rows={4}
-											placeholder="Observaciones"
-											disabled={soloLectura}
-											style={{...styles.textarea, ...(soloLectura ? styles.inputDisabled : {})}}
-											value={form.observaciones}
-											onChange={(e)=>setForm({...form,observaciones: e.target.value})}/>
-									</div>
-								</div>
+    setForm({
 
-								<div style={styles.actions}>
-									{
-										modo !== 'VER' && (
-																<button style={styles.btnPrimary} onClick={guardar}>
-																	{modo === 'NUEVO' ? 'Guardar' : 'Actualizar'}
-																</button>
-														  )
-									}
+        tipo_documento_id: documento.tipo_documento_id || '',
+        tipo_documento: documento.tipo_documento || '',
+        fecha_inicio: formatearFecha(documento.fecha_inicio) || '',
+        fecha_fin: formatearFecha(documento.fecha_fin) || '',
+        fecha_vigencia: formatearFecha(documento.fecha_vigencia) || '',
+        alcance: documento.alcance || '',
+        ruta_documento: documento.ruta_documento || '',
+        observaciones: documento.observaciones || ''
 
-									<button style={styles.btnGhost} onClick={cerrarModal}>
-										{modo === 'VER' ? 'Cerrar' : 'Cancelar'}
-									</button>
-								</div>
-							</div>
-						</div>
+    });
+
+};
+
+const formatearFecha = (fecha) => {
+
+    if (!fecha) return '';
+
+    return new Date(fecha)
+        .toISOString()
+        .split('T')[0];
+
+};
+
+// Para mostrar en pantalla (modo Consultar), no para inputs de tipo date
+const formatearFechaDisplay = (fecha) => {
+
+    const iso = formatearFecha(fecha);
+
+    if (!iso) return '';
+
+    const [anio, mes, dia] = iso.split('-');
+
+    return `${dia}/${mes}/${anio}`;
+
+};
+
+useEffect(() => {
+
+    if (!visible) {
+
+        return;
+
+    }
+
+    cargarCatalogos();
+
+    if (modo === 'NUEVO') {
+
+        setForm(formInicial);
+
+    }
+    else {
+
+        cargarFormulario();
+
+    }
+
+}, [
+
+    visible,
+    grupoDocumento,
+    modo,
+    documento
+
+]);
+
+if(!visible){
+    return null;
+}
+
+    const guardar =
+    async () => {
+
+        try {
+
+            const usuario =
+                JSON.parse(
+                    localStorage.getItem(
+                        'usuario'
+                    )
+                );
+
+const datosDocumento = {
+    ...form,
+    proveedor_id: proveedorId,
+    grupo_documentos: grupoDocumento,
+
+	fecha_inicio: form.fecha_inicio || null,
+    fecha_fin: form.fecha_fin || null,
+    update_by: usuario.usuario_id
+};
+
+if (grupoDocumento === 'DOC_NOR') {
+    datosDocumento.tipo_documento = '';
+} else {
+    datosDocumento.tipo_documento_id = '';
+}
+if (modo === 'NUEVO') {
+
+    await crearDocumento(datosDocumento);
+
+}
+else {
+
+    await actualizarDocumento(
+    documento.documento_id,
+    datosDocumento
+);
+
+}
+
+            alert(
+                'Documento registrado correctamente'
+            );
+
+            onSuccess();
+
+            cerrarModal();
+
+        }
+        catch(error){
+
+            alert(
+                error.response?.data?.message ||
+                error.message
+            );
+
+        }
+
+    };
+
+const GRUPOS_DOCUMENTOS = {
+
+    DOC_NOR:
+        'DOCUMENTOS NORMATIVOS',
+
+    DOC_EXT_NOR:
+        'DOCUMENTOS EXTRA NORMATIVOS',
+
+    DOC_REQ_ESTATAL:
+        'DOCUMENTOS REQUERIMIENTO ESTATAL',
+
+    DOC_OTROS:
+        'DOCUMENTOS OTROS'
+
+};
+
+const cerrarModal = () => {
+
+    setForm({
+
+        tipo_documento_id:'',
+        tipo_documento:'',
+        fecha_inicio:'',
+        fecha_fin:'',
+        fecha_vigencia:'',
+        ruta_documento:'',
+        observaciones:'',
+        alcance:''
+
+    });
+
+    onClose();
+
+};
+
+const soloLectura = modo === 'VER';
+
+const TITULOS = {
+
+    NUEVO:'Nuevo Documento',
+
+    EDITAR:'Editar Documento',
+
+    VER:'Consultar Documento'
+
+};
+
+if (modo === 'VER') {
+
+    return (
+
+        <div style={styles.overlay}>
+
+            <style>{responsiveCSS}</style>
+
+            <div style={styles.modal}>
+
+                <h2 style={styles.headerTitle}>{TITULOS[modo]}</h2>
+                <p style={styles.headerSubtitle}>{GRUPOS_DOCUMENTOS[grupoDocumento]}</p>
+
+                <hr style={styles.divider} />
+
+                <div className="modal-doc-grid" style={styles.grid}>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Tipo Documento</label>
+                        <div style={styles.readOnlyValue}>
+                            {
+                                documento.tipo_documento ||
+                                documento.descripcion_tipo_documento
+                            }
+                        </div>
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Estado</label>
+                        <div style={styles.readOnlyValue}>
+                            {documento.desc_estado_documento}
+                        </div>
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Fecha Vigencia</label>
+                        <div style={styles.readOnlyValue}>
+                            {formatearFechaDisplay(documento.fecha_vigencia)}
+                        </div>
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Alcance</label>
+                        <div style={styles.readOnlyValue}>
+                            {documento.descripcion_alcance}
+                        </div>
+                    </div>
+
+                    <div style={{...styles.field, ...styles.fieldFull}}>
+                        <label style={styles.label}>Ruta Documento</label>
+                        <div style={styles.readOnlyValue}>
+                            {documento.ruta_documento}
+                        </div>
+                    </div>
+
+                    <div style={{...styles.field, ...styles.fieldFull}}>
+                        <label style={styles.label}>Observaciones</label>
+                        <div
+                            style={{
+                                ...styles.readOnlyValue,
+                                minHeight: '90px',
+                                whiteSpace: 'pre-wrap'
+                            }}
+                        >
+                            {documento.observaciones}
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style={styles.actions}>
+                    <button style={styles.btnPrimary} onClick={cerrarModal}>
+                        Cerrar
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
     );
+
+}
+
+    return (
+
+        <div style={styles.overlay}>
+
+            <style>{responsiveCSS}</style>
+
+            <div style={styles.modal}>
+
+                <h2 style={styles.headerTitle}>{TITULOS[modo]}</h2>
+                <p style={styles.headerSubtitle}>{GRUPOS_DOCUMENTOS[grupoDocumento]}</p>
+
+                <hr style={styles.divider} />
+
+                <div className="modal-doc-grid" style={styles.grid}>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Tipo Documento</label>
+
+                        {
+                            grupoDocumento === 'DOC_NOR'
+                            ?
+                            <select
+                                disabled={soloLectura}
+                                value={form.tipo_documento_id}
+                                style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
+                                onChange={(e)=>
+                                    setForm({
+                                        ...form,
+                                        tipo_documento_id: e.target.value
+                                    })
+                                }
+                            >
+                                <option value="">Seleccione</option>
+
+                                {
+                                    tiposDocumento.map(item => (
+                                        <option key={item.codigo_valor} value={item.codigo_valor}>
+                                            {item.codigo_valor} - {item.descripcion}
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                            :
+                            <input
+                                value={form.tipo_documento}
+                                disabled={soloLectura}
+                                style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
+                                onChange={(e)=>
+                                    setForm({
+                                        ...form,
+                                        tipo_documento: e.target.value
+                                    })
+                                }
+                                placeholder="Tipo Documento"
+                            />
+                        }
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Fecha Vigencia</label>
+                        <input
+                            type="date"
+                            disabled={soloLectura}
+                            style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
+                            value={form.fecha_vigencia}
+                            onChange={(e)=>
+                                setForm({
+                                    ...form,
+                                    fecha_vigencia: e.target.value
+                                })
+                            }
+                        />
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Alcance</label>
+                        <select
+                            value={form.alcance}
+                            disabled={soloLectura}
+                            style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
+                            onChange={(e)=>
+                                setForm({
+                                    ...form,
+                                    alcance: e.target.value
+                                })
+                            }
+                        >
+                            <option value="">Seleccione...</option>
+
+                            {
+                                alcances.map(item => (
+                                    <option key={item.codigo_valor} value={item.codigo_valor}>
+                                        {item.descripcion}
+                                    </option>
+                                ))
+                            }
+                        </select>
+                    </div>
+
+                    <div style={styles.field}>
+                        <label style={styles.label}>Ruta Documento</label>
+                        <input
+                            placeholder="Ruta Documento"
+                            disabled={soloLectura}
+                            style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
+                            value={form.ruta_documento}
+                            onChange={(e)=>
+                                setForm({
+                                    ...form,
+                                    ruta_documento: e.target.value
+                                })
+                            }
+                        />
+                    </div>
+
+                    <div style={{...styles.field, ...styles.fieldFull}}>
+                        <label style={styles.label}>Observaciones</label>
+                        <textarea
+                            rows={4}
+                            placeholder="Observaciones"
+                            disabled={soloLectura}
+                            style={{...styles.textarea, ...(soloLectura ? styles.inputDisabled : {})}}
+                            value={form.observaciones}
+                            onChange={(e)=>
+                                setForm({
+                                    ...form,
+                                    observaciones: e.target.value
+                                })
+                            }
+                        />
+                    </div>
+
+                </div>
+
+                <div style={styles.actions}>
+
+                    {
+                        modo !== 'VER' && (
+                            <button style={styles.btnPrimary} onClick={guardar}>
+                                {modo === 'NUEVO' ? 'Guardar' : 'Actualizar'}
+                            </button>
+                        )
+                    }
+
+                    <button style={styles.btnGhost} onClick={cerrarModal}>
+                        {modo === 'VER' ? 'Cerrar' : 'Cancelar'}
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    );
+
 }

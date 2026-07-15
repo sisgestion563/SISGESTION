@@ -1,82 +1,126 @@
-const repository = require('../repositories/documentos.repository');
-const {calcularEstadoDocumento} = require('../utils/documento.utils');
+const repository =
+require('../repositories/documentos.repository');
 
-const listarPorProveedor = async (proveedorId) =>
-	{
-		return await repository.listarPorProveedor(proveedorId);
-	};
+const {
+    calcularEstadoDocumento
+} = require('../utils/documento.utils');
 
-const obtenerPorId = async (documentoId) =>
-	{
-		return await repository.obtenerPorId(documentoId);
-	};
+const listarPorProveedor =
+async (proveedorId) => {
 
-const crear = async (documento) => 
-	{
-		if (!documento.grupo_documentos)
-			{
-				throw new Error('Grupo Documento es obligatorio');
-			}
+    return await repository
+        .listarPorProveedor(
+            proveedorId
+        );
+};
 
-		if (!documento.fecha_vigencia) 
-			{
-				throw new Error('Fecha Vigencia es obligatoria');
-			}
+const obtenerPorId =
+async (documentoId) => {
 
-		switch(documento.grupo_documentos)
-			{        
-				case 'DOC_NOR':
-					if (!documento.alcance === 'GSG')
-						{
-							throw new Error('Alcance NO permitido en este Grupo de Documentos');
-						}
-				
-				
-					if(!documento.tipo_documento_id)
-						{
-							throw new Error('Tipo Documento es obligatorio para Documentos Normativos');
-						}
-					break;
-				case 'DOC_EXT_NOR':
-				case 'DOC_REQ_ESTATAL':
-				case 'DOC_OTROS':
-				
-					if (documento.alcance === 'GSG')
-						{
-							throw new Error('Alcance NO permitido en este Grupo de Documentos');
-						}
-						
-					
-					if(!documento.tipo_documento)
-						{
-							throw new Error('Tipo Documento es obligatorio');
-						}
-					break;
-			}
+    return await repository
+        .obtenerPorId(
+            documentoId
+        );
+};
 
-		documento.estado_documento = calcularEstadoDocumento(documento.fecha_vigencia);
-		return await repository.crear(documento);
-	};
+const crear =
+async (documento) => {
 
-const actualizar = async (documentoId,documento) => 
-	{
-		if (!documento.alcance)
-			{
-				throw new Error('El Alcance es obligatorio');
-			}
+    if (!documento.grupo_documentos) {
 
-		documento.estado_documento =calcularEstadoDocumento(documento.fecha_vigencia);
-		await repository.actualizar(documentoId,documento);
+        throw new Error(
+            'Grupo Documento es obligatorio'
+        );
+    }
 
-	};
+    if (!documento.fecha_vigencia) {
 
-const listarPorGrupo = async (proveedorId,grupo) =>
-	{
-		return await repository.listarPorGrupo(proveedorId,grupo);
-	};
+        throw new Error(
+            'Fecha Vigencia es obligatoria'
+        );
+    }
 
-module.exports = {	listarPorProveedor,
-					obtenerPorId,
-					crear,
-					actualizar,
-					listarPorGrupo};
+    switch(documento.grupo_documentos){
+
+        case 'DOC_NOR':
+
+            if(!documento.tipo_documento_id){
+
+                throw new Error(
+                    'Tipo Documento es obligatorio para Documentos Normativos'
+                );
+
+            }
+
+            break;
+
+        case 'DOC_EXT_NOR':
+        case 'DOC_REQ_ESTATAL':
+        case 'DOC_OTROS':
+
+            if(!documento.tipo_documento){
+
+                throw new Error(
+                    'Tipo Documento es obligatorio'
+                );
+
+            }
+
+            break;
+
+    }
+
+    documento.estado_documento =
+        calcularEstadoDocumento(
+            documento.fecha_vigencia
+        );
+
+    return await repository.crear(
+        documento
+    );
+};
+
+const actualizar = async (
+    documentoId,
+    documento
+) => {
+
+    if (!documento.alcance) {
+        throw new Error(
+            'El Alcance es obligatorio'
+        );
+    }
+
+    documento.estado_documento =
+        calcularEstadoDocumento(
+            documento.fecha_vigencia
+        );
+
+    await repository.actualizar(
+        documentoId,
+        documento
+    );
+
+};
+
+const listarPorGrupo =
+async (
+    proveedorId,
+    grupo
+) => {
+
+    return await repository
+        .listarPorGrupo(
+            proveedorId,
+            grupo
+        );
+
+};
+
+module.exports = {
+    listarPorProveedor,
+    obtenerPorId,
+    crear,
+    actualizar,
+	listarPorGrupo
+};
