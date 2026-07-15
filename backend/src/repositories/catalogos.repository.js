@@ -38,6 +38,7 @@ const obtenerValores = async (
     const result = await pool.query(
         sql,
         [codGrupo, tipoGrupo]
+		
     );
 
     return result.rows;
