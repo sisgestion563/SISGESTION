@@ -416,7 +416,7 @@ export default function DocumentsPage()
 									
 										<td style={styles.td}>{item.descripcion_alcance}</td>
 
-										<tr key={item.documento_id}>
+										<tr key={item.documento_id}>)
 
 											<td style={styles.td}>
 												{
