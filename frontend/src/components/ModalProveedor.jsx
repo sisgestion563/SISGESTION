@@ -44,8 +44,6 @@ export default function ModalProveedor({
     apellido_materno:'',
 
     razon_social:'',
-	
-	pagina_web:'',
 
     representante_legal:'',
 
@@ -126,9 +124,6 @@ useEffect(() => {
 
             razon_social:
                 proveedorEditar.razon_social || '',
-				
-			pagina_web:
-                proveedorEditar.pagina_web || '',	
 
             representante_legal:
                 proveedorEditar.representante_legal || '',
@@ -285,8 +280,6 @@ else{
     apellido_materno:'',
 
     razon_social:'',
-	
-	pagina_web:'',
 
     representante_legal:'',
 
@@ -472,37 +465,6 @@ else{
     }
 />
         <br/><br/>
-		
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Pagina Web
-</label>		
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.pagina_web}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            pagina_web:e.target.value
-        })
-    }
-/>
-        <br/><br/>		
-		
-		
-		
 
 <label
     style={{

@@ -17,7 +17,6 @@ const obtenerGrupos = async () => {
     return result.rows;
 };
 
-
 const obtenerValores = async (
     codGrupo,
     tipoGrupo
@@ -26,13 +25,11 @@ const obtenerValores = async (
     const sql = `
         SELECT
             codigo_valor,
-            descripcion,
-            "TEXTO_BOTON" as texto_boton,
-            orden
+            descripcion
         FROM "SISGES"."MAE_LISTA_VALORES"
         WHERE cod_grupo = $1
           AND tipo_grupo = $2
-        ORDER BY orden
+        ORDER BY codigo_valor
     `;
 
     const result = await pool.query(
@@ -43,10 +40,7 @@ const obtenerValores = async (
     return result.rows;
 };
 
-
 module.exports = {
     obtenerGrupos,
     obtenerValores
 };
-
-
