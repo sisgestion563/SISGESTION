@@ -222,9 +222,10 @@ export default function ProvidersPage() {
                 { titulo: 'Tipo Documento', campo: 'tipo_documento', ancho: 35 },
                 { titulo: 'N° Documento', campo: 'nro_documento', ancho: 20 },
                 { titulo: 'Razón Social', campo: 'proveedor', ancho: 45 },
+				{ titulo: 'Página Web', campo: 'pagina_web', ancho: 45 },
                 { titulo: 'Actividad Económica', campo: 'actividad_economica', ancho: 50 },
                 { titulo: 'Estado Documentos', campo: 'estado_documentos', ancho: 20 },
-                { titulo: 'Estado', campo: 'estado', ancho: 15 }
+                { titulo: 'Estado Proveedor', campo: 'estado', ancho: 15 }
             ],
             datos: proveedores
         });
@@ -353,9 +354,10 @@ export default function ProvidersPage() {
                             <th style={styles.th}>Tipo Documento</th>
                             <th style={styles.th}>Nro Documento</th>
                             <th style={styles.th}>Razón Social</th>
+							<th style={styles.th}>Página Web</th>
                             <th style={styles.th}>Actividad Económica</th>
                             <th style={styles.th}>Estado Documentos</th>
-                            <th style={styles.th}>Estado</th>
+                            <th style={styles.th}>Estado Proveedor</th>
                             <th style={styles.th}>Acciones</th>
                         </tr>
                     </thead>
@@ -380,7 +382,8 @@ export default function ProvidersPage() {
 												<tr key={item.proveedor_id}>
 													<td style={styles.td}>{item.tipo_documento}</td>
 													<td style={styles.td}>{item.nro_documento}</td>
-													<td style={styles.td}>{item.proveedor}</td>							
+													<td style={styles.td}>{item.proveedor}</td>
+													<td style={styles.td}>{item.pagina_web}</td>
 													<td style={styles.td}>{item.actividad_economica}</td>	
 
 													<td style={styles.td}>

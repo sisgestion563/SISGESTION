@@ -73,6 +73,11 @@ export default function ModalVerProveedor({
                         </tr>
 						
 						<tr>
+                            <td><b>Página Web</b></td>
+                            <td>{proveedor.pagina_web}</td>
+                        </tr>
+						
+						<tr>
                             <td><b>Representante Legal</b></td>
                             <td>{proveedor.representante_legal}</td>
                         </tr>
@@ -144,7 +149,7 @@ export default function ModalVerProveedor({
 
 <tr>
     <td>
-        <b>Estado</b>
+        <b>Estado Proveedor</b>
     </td>
 
     <td>

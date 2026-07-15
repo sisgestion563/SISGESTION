@@ -144,6 +144,8 @@ const listar = async (campo = 'ALL', valor = '') => {
             MPRO.nro_documento,
 
             ${SQL_PROVEEDOR} AS proveedor,
+			
+			MPRO.pagina_web,
 
             MPRO.correo,
 
