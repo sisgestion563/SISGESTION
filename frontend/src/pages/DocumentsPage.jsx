@@ -275,8 +275,8 @@ export default function DocumentsPage()
 						if(data.length > 0)
 							{
 								setGrupoSeleccionado(data[0].codigo_valor);
-								// CORRECCIÓN: Se asigna la descripción explicativa de la base de datos por defecto
-								setTextoGrupo(data[0].descripcion);
+								// CORRECCIÓN: Asigna TEXTO_BOTON (mapeado en JS como texto_boton) al iniciar la carga
+								setTextoGrupo(data[0].texto_boton);
 							}
 					}
 				catch(error)
@@ -409,17 +409,16 @@ export default function DocumentsPage()
 
 								{grupos.map(g => (
 									<button
-										// CORRECCIÓN: key asignado con propiedad correcta de base de datos
 										key={g.codigo_valor}
 										style={grupoSeleccionado === g.codigo_valor ? styles.btnGhostActive : styles.btnGhost}
 										onClick={async ()=>{
 											setGrupoSeleccionado(g.codigo_valor);
-											// CORRECCIÓN: Se asigna g.descripcion para mostrar la ayuda correspondiente al cambiar de pestaña
-											setTextoGrupo(g.descripcion);
+											// CORRECCIÓN: Al cambiar de pestaña, guardamos el campo 'texto_boton' en el estado
+											setTextoGrupo(g.texto_boton);
 											await cargarDocumentos(proveedorSeleccionado.proveedor_id,g.codigo_valor);
 										}}>
-										{/* CORRECCIÓN: Mostramos el texto corto del botón mapeado */}
-										{g.texto_boton || g.descripcion}
+										{/* CORRECCIÓN: Las pestañas superiores ahora usan el título de 'g.descripcion' */}
+										{g.descripcion}
 									</button>
 								))}
 
