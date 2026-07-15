@@ -264,26 +264,28 @@ export default function DocumentsPage()
 					}
 			};
 			
-		const cargarGrupos = async () => 
+const cargarGrupos = async () => 
 			{
 				try 
 					{
 						const data = await obtenerCatalogo('0005','GRUPO_DOCUMENTO');
-						console.log("CATALOGO",data);
+						console.log("CATALOGO", data);
 						setGrupos(data);
 
 						if(data.length > 0)
 							{
 								setGrupoSeleccionado(data[0].codigo_valor);
-								// CORRECCIÓN: Asigna TEXTO_BOTON (mapeado en JS como texto_boton) al iniciar la carga
-								setTextoGrupo(data[0].texto_boton);
+								
+								// CORRECCIÓN: Buscamos texto_boton o TEXTO_BOTON. Si no existen, usamos la descripción como respaldo para que no quede vacío.
+								const primerTexto = data[0].texto_boton || data[0].TEXTO_BOTON || data[0].descripcion || '';
+								setTextoGrupo(primerTexto);
 							}
 					}
 				catch(error)
 					{
 						console.error(error);
 					}
-			};	
+			};
 			
 
 		const [modalDocumentoVisible,setModalDocumentoVisible] = useState(false);
@@ -405,19 +407,21 @@ export default function DocumentsPage()
 
 							<h3 style={styles.sectionTitle}>Documentos del Proveedor</h3>
 
-							<div style={styles.tabsRow}>
+<div style={styles.tabsRow}>
 
 								{grupos.map(g => (
 									<button
 										key={g.codigo_valor}
 										style={grupoSeleccionado === g.codigo_valor ? styles.btnGhostActive : styles.btnGhost}
 										onClick={async ()=>{
-											setGrupoSeleccionado(g.codigo_valor);
-											// CORRECCIÓN: Al cambiar de pestaña, guardamos el campo 'texto_boton' en el estado
-											setTextoGrupo(g.texto_boton);
-											await cargarDocumentos(proveedorSeleccionado.proveedor_id,g.codigo_valor);
-										}}>
-										{/* CORRECCIÓN: Las pestañas superiores ahora usan el título de 'g.descripcion' */}
+															setGrupoSeleccionado(g.codigo_valor);
+															
+															// CORRECCIÓN: Compatibilidad con mayúsculas/minúsculas y respaldo seguro
+															const textoAux = g.texto_boton || g.TEXTO_BOTON || g.descripcion || '';
+															setTextoGrupo(textoAux);
+															
+															await cargarDocumentos(proveedorSeleccionado.proveedor_id, g.codigo_valor);
+														}}>
 										{g.descripcion}
 									</button>
 								))}
