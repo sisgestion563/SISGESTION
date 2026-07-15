@@ -402,8 +402,8 @@ export default function DocumentsPage()
 
 								<thead>
 									<tr>
-										<th style={styles.th}>Tipo Documento</th>
 										<th style={styles.th}>Alcance</th>
+										<th style={styles.th}>Tipo Documento</th>										
 										<th style={styles.th}>Fecha Vigencia</th>
 										<th style={styles.th}>Estado</th>
 										<th style={styles.th}>Acciones</th>
@@ -413,6 +413,8 @@ export default function DocumentsPage()
 								<tbody>
 
 									{documentos.map(item => (
+									
+										<td style={styles.td}>{item.descripcion_alcance}</td>
 
 										<tr key={item.documento_id}>
 
