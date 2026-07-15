@@ -1,25 +1,8 @@
-const repository =
-require('../repositories/catalogos.repository');
+import api from './api';
 
-const obtenerGrupos = async () => {
-
-    return await repository.obtenerGrupos();
-
-};
-
-const obtenerValores = async (
-    codGrupo,
-    tipoGrupo
-) => {
-
-    return await repository.obtenerValores(
-        codGrupo,
-        tipoGrupo
-    );
-
-};
-
-module.exports = {
-    obtenerGrupos,
-    obtenerValores
-};
+export const obtenerCatalogo = async (codGrupo,tipoGrupo) =>
+	{
+		const token = localStorage.getItem('token');
+		const response = await api.get(`/catalogos/${codGrupo}/${tipoGrupo}`,{headers:{Authorization:`Bearer ${token}`}});
+		return response.data.data;
+	};

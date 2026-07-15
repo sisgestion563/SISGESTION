@@ -1,8 +1,10 @@
-import {useState} from 'react';
+import { useState, useEffect } from 'react';
 import MainLayout from '../layouts/MainLayout';
 import {buscarProveedor} from '../services/providers.service';
 import {listarPorGrupo} from '../services/documentos.service';
 import ModalDocumento from '../components/ModalDocumento';
+import {obtenerCatalogo} from '../services/catalogos.service';
+
 
 // Paleta tomada del layout general del sistema (sidebar navy + acentos azul/ámbar)
 const colors = {
@@ -183,6 +185,21 @@ const styles = {
 		fontWeight: 600,
 		cursor: 'pointer',
 	},
+	infoGrupo: {
+    marginTop: '16px',
+    marginBottom: '18px',
+    padding: '14px 18px',
+    minHeight: '70px',
+    background: '#F8FAFC',
+    border: '1px solid #D8DEE9',
+    borderLeft: '5px solid #2563EB',
+    borderRadius: '8px',
+    color: '#374151',
+    fontSize: '14px',
+    lineHeight: '1.6',
+    whiteSpace: 'pre-wrap'
+},
+	
 };
 
 const responsiveCSS = `
@@ -207,8 +224,10 @@ export default function DocumentsPage()
 		const [valorBusqueda,setValorBusqueda] = useState('');
 		const [proveedores,setProveedores] = useState([]);
 		const [proveedorSeleccionado,setProveedorSeleccionado] = useState(null);
-		const [grupoSeleccionado,setGrupoSeleccionado] = useState('DOCUMENTOS NORMATIVOS');
+		const [grupoSeleccionado,setGrupoSeleccionado] = useState('');
 		const [documentos,setDocumentos] = useState([]);
+		const [grupos,setGrupos] = useState([]);
+		const [textoGrupo,setTextoGrupo] = useState('');
 
 		const buscar = async () =>
 			{	try
@@ -244,6 +263,29 @@ export default function DocumentsPage()
 						console.error(error);
 					}
 			};
+			
+		const cargarGrupos = async () => 
+			{
+				try 
+					{
+						const data = await obtenerCatalogo('0005','GRUPO_DOCUMENTO');
+						console.log("CATALOGO",data);
+						setGrupos(data);
+
+						if(data.length > 0)
+							{
+								setGrupoSeleccionado(data[0].codigo_valor);
+								setTextoGrupo(data[0].texto_boton);
+							}
+					}
+				catch(error)
+					{
+						console.error(error);
+						return res.status(500).json({success:false,message:error.message});
+
+					}
+			};	
+			
 
 		const [modalDocumentoVisible,setModalDocumentoVisible] = useState(false);
 
@@ -252,12 +294,7 @@ export default function DocumentsPage()
 		const [documentoSeleccionado, setDocumentoSeleccionado] = useState(null);
 
 
-		const grupos = [
-			{ codigo:'DOC_NOR', nombre:'Doc. Normativos' },
-			{ codigo:'DOC_EXT_NOR', nombre:'Doc. Extra Normativos' },
-			{ codigo:'DOC_REQ_ESTATAL', nombre:'Doc. Req. Estatal' },
-			{ codigo:'DOC_OTROS', nombre:'Doc. Otros' },
-		];
+		useEffect(() => {cargarGrupos();},[]);
 
 		return (
 			<MainLayout>
@@ -374,16 +411,18 @@ export default function DocumentsPage()
 								{grupos.map(g => (
 									<button
 										key={g.codigo}
-										style={grupoSeleccionado === g.codigo ? styles.btnGhostActive : styles.btnGhost}
-										onClick={async ()=>{
-											setGrupoSeleccionado(g.codigo);
-											await cargarDocumentos(proveedorSeleccionado.proveedor_id, g.codigo);
-										}}
-									>
-										{g.nombre}
+										style={grupoSeleccionado === g.codigo_valor ? styles.btnGhostActive : styles.btnGhost}
+										onClick={async ()=>{setGrupoSeleccionado(g.codigo_valor);
+															setTextoGrupo(g.texto_boton);
+															await cargarDocumentos(proveedorSeleccionado.proveedor_id,g.codigo_valor);}}>
+										{g.descripcion}
 									</button>
 								))}
 
+							</div>
+							
+							<div style={styles.infoGrupo}>
+								{textoGrupo}
 							</div>
 
 							<button
@@ -413,10 +452,10 @@ export default function DocumentsPage()
 								<tbody>
 
 									{documentos.map(item => (
-									
-									<tr key={item.documento_id}>)
-									
-									<td style={styles.td}>{item.descripcion_alcance}</td>
+
+										<tr key={item.documento_id}>
+										
+											<td style={styles.td}>{item.descripcion_alcance}</td>
 
 											<td style={styles.td}>
 												{
@@ -425,8 +464,6 @@ export default function DocumentsPage()
 													item.tipo_documento_id
 												}
 											</td>
-
-											<td style={styles.td}>{item.descripcion_alcance}</td>
 
 											<td style={styles.td}>
 												{new Date(item.fecha_vigencia).toLocaleDateString('es-PE')}
