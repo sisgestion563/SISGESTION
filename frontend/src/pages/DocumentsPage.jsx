@@ -414,7 +414,7 @@ export default function DocumentsPage()
 
 									{documentos.map(item => (
 									
-									<tr key={item.documento_id}>)}
+									<tr key={item.documento_id}>)
 									
 									<td style={styles.td}>{item.descripcion_alcance}</td>
 
