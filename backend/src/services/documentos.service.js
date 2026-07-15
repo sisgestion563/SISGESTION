@@ -1,25 +1,82 @@
-import api from './api';
+const repository = require('../repositories/documentos.repository');
+const {calcularEstadoDocumento} = require('../utils/documento.utils');
 
-export const listarPorGrupo = async (proveedorId,grupo) =>
+const listarPorProveedor = async (proveedorId) =>
 	{
-		const response = await api.get(`/documentos/proveedor/${proveedorId}/grupo/${grupo}`);
-		return response.data.data;
+		return await repository.listarPorProveedor(proveedorId);
 	};
 
-export const crearDocumento = async (documento) => 
+const obtenerPorId = async (documentoId) =>
 	{
-		const response = await api.post('/documentos',documento);
-		return response.data;
+		return await repository.obtenerPorId(documentoId);
 	};
 
-export const actualizarDocumento = async(documentoId,documento) =>
+const crear = async (documento) => 
 	{
-		const response = await api.put(`/documentos/${documentoId}`,documento);
-		return response.data;
+		if (!documento.grupo_documentos)
+			{
+				throw new Error('Grupo Documento es obligatorio');
+			}
+
+		if (!documento.fecha_vigencia) 
+			{
+				throw new Error('Fecha Vigencia es obligatoria');
+			}
+
+		switch(documento.grupo_documentos)
+			{        
+				case 'DOC_NOR':
+					if (!documento.alcance === 'GSG')
+						{
+							throw new Error('Alcance NO permitido en este Grupo de Documentos');
+						}
+				
+				
+					if(!documento.tipo_documento_id)
+						{
+							throw new Error('Tipo Documento es obligatorio para Documentos Normativos');
+						}
+					break;
+				case 'DOC_EXT_NOR':
+				case 'DOC_REQ_ESTATAL':
+				case 'DOC_OTROS':
+				
+					if (documento.alcance === 'GSG')
+						{
+							throw new Error('Alcance NO permitido en este Grupo de Documentos');
+						}
+						
+					
+					if(!documento.tipo_documento)
+						{
+							throw new Error('Tipo Documento es obligatorio');
+						}
+					break;
+			}
+
+		documento.estado_documento = calcularEstadoDocumento(documento.fecha_vigencia);
+		return await repository.crear(documento);
 	};
 
-export const obtenerDocumentoPorId = async (documentoId) =>
+const actualizar = async (documentoId,documento) => 
 	{
-		const response = await api.get(`/documentos/${documentoId}`);
-		return response.data.data;
+		if (!documento.alcance)
+			{
+				throw new Error('El Alcance es obligatorio');
+			}
+
+		documento.estado_documento =calcularEstadoDocumento(documento.fecha_vigencia);
+		await repository.actualizar(documentoId,documento);
+
 	};
+
+const listarPorGrupo = async (proveedorId,grupo) =>
+	{
+		return await repository.listarPorGrupo(proveedorId,grupo);
+	};
+
+module.exports = {	listarPorProveedor,
+					obtenerPorId,
+					crear,
+					actualizar,
+					listarPorGrupo};
