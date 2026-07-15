@@ -269,16 +269,14 @@ const cargarGrupos = async () =>
 				try 
 					{
 						const data = await obtenerCatalogo('0005','GRUPO_DOCUMENTO');
-						console.log("CATALOGO", data);
+						console.log("CATALOGO",data);
 						setGrupos(data);
 
 						if(data.length > 0)
 							{
 								setGrupoSeleccionado(data[0].codigo_valor);
-								
-								// CORRECCIÓN: Buscamos texto_boton o TEXTO_BOTON. Si no existen, usamos la descripción como respaldo para que no quede vacío.
-								const primerTexto = data[0].texto_boton || data[0].TEXTO_BOTON || data[0].descripcion || '';
-								setTextoGrupo(primerTexto);
+								// CORRECCIÓN: Leemos directamente la propiedad en MAYÚSCULAS
+								setTextoGrupo(data[0].TEXTO_BOTON || data[0].descripcion);
 							}
 					}
 				catch(error)
@@ -415,13 +413,9 @@ const cargarGrupos = async () =>
 										style={grupoSeleccionado === g.codigo_valor ? styles.btnGhostActive : styles.btnGhost}
 										onClick={async ()=>{
 															setGrupoSeleccionado(g.codigo_valor);
-															
-															// CORRECCIÓN: Compatibilidad con mayúsculas/minúsculas y respaldo seguro
-															const textoAux = g.texto_boton || g.TEXTO_BOTON || g.descripcion || '';
-															setTextoGrupo(textoAux);
-															
-															await cargarDocumentos(proveedorSeleccionado.proveedor_id, g.codigo_valor);
-														}}>
+															// CORRECCIÓN: Leemos directamente la propiedad en MAYÚSCULAS al hacer click
+															setTextoGrupo(g.TEXTO_BOTON || g.descripcion);
+															await cargarDocumentos(proveedorSeleccionado.proveedor_id,g.codigo_valor);}}>
 										{g.descripcion}
 									</button>
 								))}

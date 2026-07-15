@@ -22,12 +22,11 @@ const obtenerValores = async (
     tipoGrupo
 ) => {
 
-    // CORRECCIÓN: Se agrega "TEXTO_BOTON" con alias 'texto_boton' para que viaje al frontend
     const sql = `
         SELECT
             codigo_valor,
             descripcion,
-            "TEXTO_BOTON" AS texto_boton
+            "TEXTO_BOTON"
         FROM "SISGES"."MAE_LISTA_VALORES"
         WHERE cod_grupo = $1
           AND tipo_grupo = $2
