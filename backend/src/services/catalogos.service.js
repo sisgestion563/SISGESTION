@@ -1,25 +1,13 @@
-const repository =
-require('../repositories/catalogos.repository');
+const repository = require('../repositories/catalogos.repository');
 
-const obtenerGrupos = async () => {
+const obtenerGrupos = async () =>
+	{
+		return await repository.obtenerGrupos();
+	};
 
-    return await repository.obtenerGrupos();
+const obtenerValores = async (codGrupo,tipoGrupo) =>
+	{
+		return await repository.obtenerValores(codGrupo,tipoGrupo);
+	};
 
-};
-
-const obtenerValores = async (
-    codGrupo,
-    tipoGrupo
-) => {
-
-    return await repository.obtenerValores(
-        codGrupo,
-        tipoGrupo
-    );
-
-};
-
-module.exports = {
-    obtenerGrupos,
-    obtenerValores
-};
+module.exports = {obtenerGrupos,obtenerValores};
