@@ -264,7 +264,7 @@ export default function DocumentsPage()
 					}
 			};
 			
-const cargarGrupos = async () => 
+		const cargarGrupos = async () => 
 			{
 				try 
 					{
@@ -275,15 +275,16 @@ const cargarGrupos = async () =>
 						if(data.length > 0)
 							{
 								setGrupoSeleccionado(data[0].codigo_valor);
-								// CORRECCIÓN: Leemos directamente la propiedad en MAYÚSCULAS
-								setTextoGrupo(data[0].TEXTO_BOTON || data[0].descripcion);
+								setTextoGrupo(data[0].texto_boton);
 							}
 					}
 				catch(error)
 					{
 						console.error(error);
+						return res.status(500).json({success:false,message:error.message});
+
 					}
-			};
+			};	
 			
 
 		const [modalDocumentoVisible,setModalDocumentoVisible] = useState(false);
@@ -405,16 +406,14 @@ const cargarGrupos = async () =>
 
 							<h3 style={styles.sectionTitle}>Documentos del Proveedor</h3>
 
-<div style={styles.tabsRow}>
+							<div style={styles.tabsRow}>
 
 								{grupos.map(g => (
 									<button
-										key={g.codigo_valor}
+										key={g.codigo}
 										style={grupoSeleccionado === g.codigo_valor ? styles.btnGhostActive : styles.btnGhost}
-										onClick={async ()=>{
-															setGrupoSeleccionado(g.codigo_valor);
-															// CORRECCIÓN: Leemos directamente la propiedad en MAYÚSCULAS al hacer click
-															setTextoGrupo(g.TEXTO_BOTON || g.descripcion);
+										onClick={async ()=>{setGrupoSeleccionado(g.codigo_valor);
+															setTextoGrupo(g.texto_boton);
 															await cargarDocumentos(proveedorSeleccionado.proveedor_id,g.codigo_valor);}}>
 										{g.descripcion}
 									</button>
