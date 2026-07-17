@@ -220,7 +220,7 @@ const responsiveCSS = `
 
 export default function DocumentsPage()
 	{
-		const [tipoBusqueda,setTipoBusqueda] = useState('DOCUMENTO');
+		const [tipoBusqueda,setTipoBusqueda] = useState('RAZON');
 		const [valorBusqueda,setValorBusqueda] = useState('');
 		const [proveedores,setProveedores] = useState([]);
 		const [proveedorSeleccionado,setProveedorSeleccionado] = useState(null);
