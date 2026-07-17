@@ -28,7 +28,6 @@ const crear = async (documento) =>
 				case 'DOC_NOR':
 					if (documento.alcance != 'GSG' && documento.alcance != 'GMA')
 						{
-							throw new Error('Alcance NO permitido en este Grupo de Documentos');
 							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión SST y/o Gestión Ambiental" para el campo ALCANCE');
 						}
 				
@@ -38,12 +37,18 @@ const crear = async (documento) =>
 							throw new Error('Tipo Documento es obligatorio para Documentos Normativos');
 						}
 					break;
+					
 				case 'DOC_EXT_NOR':
-					if (documento.alcance != 'GCA')
+					if (documento.alcance === 'GSG' || documento.alcance === 'GMA' || documento.alcance === 'GLG' || documento.alcance === 'GIN')
 						{
 							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestion de Calidad" para el campo ALCANCE');
 						}
-				
+						
+					if(!documento.tipo_documento)
+						{
+							throw new Error('Tipo Documento es obligatorio');
+						}						
+					break;
 				
 				
 				case 'DOC_REQ_ESTATAL':
