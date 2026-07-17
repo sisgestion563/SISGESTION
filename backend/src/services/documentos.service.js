@@ -26,9 +26,10 @@ const crear = async (documento) =>
 		switch(documento.grupo_documentos)
 			{        
 				case 'DOC_NOR':
-					if (!documento.alcance === 'GSG')
+					if (documento.alcance != 'GSG' && documento.alcance != 'GMA')
 						{
 							throw new Error('Alcance NO permitido en este Grupo de Documentos');
+							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión SST y/o Gestión Ambiental" para el campo ALCANCE');
 						}
 				
 				
@@ -38,12 +39,19 @@ const crear = async (documento) =>
 						}
 					break;
 				case 'DOC_EXT_NOR':
+					if (documento.alcance != 'GCA')
+						{
+							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestion de Calidad" para el campo ALCANCE');
+						}
+				
+				
+				
 				case 'DOC_REQ_ESTATAL':
 				case 'DOC_OTROS':
 				
-					if (documento.alcance === 'GSG')
+					if (documento.alcance === 'GSG' || documento.alcance === 'GMA' || documento.alcance === 'GCA')
 						{
-							throw new Error('Alcance NO permitido en este Grupo de Documentos');
+							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión Industrial y/o Gestión Legal" para el campo ALCANCE');
 						}
 						
 					

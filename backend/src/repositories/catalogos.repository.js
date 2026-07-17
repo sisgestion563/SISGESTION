@@ -27,7 +27,7 @@ const obtenerValores = async (
         SELECT
             codigo_valor,
             descripcion,
-            "TEXTO_BOTON" as texto_boton,
+            "TEXTO_BOTON"||chr(10)||"TEXTO_BOTON_2" as texto_boton,
             orden
         FROM "SISGES"."MAE_LISTA_VALORES"
         WHERE cod_grupo = $1

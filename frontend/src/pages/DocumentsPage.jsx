@@ -304,16 +304,18 @@ export default function DocumentsPage()
 					<h2 style={styles.title}>Documentos</h2>
 
 					<div style={styles.radioRow}>
+					
+						<label style={styles.radioLabel}>
+							<input type="radio" checked={tipoBusqueda ==='RAZON'} onChange={()=>setTipoBusqueda('RAZON')}/>
+							Razón Social
+						</label>
 
 						<label style={styles.radioLabel}>
 							<input type="radio" checked={tipoBusqueda ==='DOCUMENTO'} onChange={()=>setTipoBusqueda('DOCUMENTO')}/>
 							Documento
 						</label>
 
-						<label style={styles.radioLabel}>
-							<input type="radio" checked={tipoBusqueda ==='RAZON'} onChange={()=>setTipoBusqueda('RAZON')}/>
-							Razón Social
-						</label>
+						
 
 					</div>
 
@@ -336,7 +338,7 @@ export default function DocumentsPage()
 
 							<thead>
 								<tr>
-									<th style={styles.th}>Documento</th>
+									<th style={styles.th}>Nº Documento</th>
 									<th style={styles.th}>Razón Social</th>
 									<th style={styles.th}>Acción</th>
 								</tr>
