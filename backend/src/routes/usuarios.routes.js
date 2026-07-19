@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/db'); // Apunta directo a tu archivo de conexión con las variables .env
-const bcrypt = require('bcryptjs'); // Importamos bcryptjs para encriptar las claves
+const bcrypt = require('bcrypt'); // Usa bcrypt (nativo) instalado en package.json
 
 // 1. GET: Listar usuarios (Para tu tabla en UsersPage.jsx)
 router.get('/usuarios', async (req, res) => {

@@ -14,6 +14,7 @@ const proveedoresRoutes = require('./routes/proveedores.routes');
 const documentosRoutes = require('./routes/documentos.routes');
 const procesosRoutes = require('./routes/procesos.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const usuariosRoutes = require('./routes/usuarios.routes');
 
 
 app.use(cors());
@@ -32,6 +33,7 @@ app.use('/api',proveedoresRoutes);
 app.use('/api',documentosRoutes);
 app.use('/api',procesosRoutes);
 app.use('/api',dashboardRoutes);
+app.use('/api',usuariosRoutes);
 
 module.exports = app;
 
