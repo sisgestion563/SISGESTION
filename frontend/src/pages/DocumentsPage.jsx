@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import MainLayout from '../layouts/MainLayout';
-import {buscarProveedor} from '../services/providers.service';
+import {buscarProveedor, obtenerProveedorPorId} from '../services/providers.service';
 import {listarPorGrupo} from '../services/documentos.service';
 import ModalDocumento from '../components/ModalDocumento';
 import {obtenerCatalogo} from '../services/catalogos.service';
@@ -340,8 +340,8 @@ export default function DocumentsPage() {
 				if (!miProveedorId) return;
 				setCargandoProveedor(true);
 				try {
-						// Usamos buscarProveedor por documento para obtener la ficha completa
-						const fichaData = await buscarProveedor('DOCUMENTO', miProveedorId);
+						// Usamos obtenerProveedorPorId con el ID interno del proveedor (viene del token JWT)
+						const fichaData = await obtenerProveedorPorId(miProveedorId);
 						if (fichaData) {
 							setProveedorSeleccionado(fichaData);
 						}
