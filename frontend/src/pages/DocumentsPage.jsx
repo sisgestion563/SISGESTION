@@ -35,6 +35,11 @@ const styles = {
 		fontSize: '22px',
 		fontWeight: 700,
 		color: colors.text,
+		margin: '0 0 4px 0',
+	},
+	subtitle: {
+		fontSize: '14px',
+		color: colors.textMuted,
 		margin: '0 0 20px 0',
 	},
 	sectionTitle: {
@@ -139,6 +144,17 @@ const styles = {
 		background: ok ? colors.successBg : colors.dangerBg,
 		color: ok ? colors.success : colors.danger,
 	}),
+	roleBadge: (color) => ({
+		display: 'inline-block',
+		padding: '3px 10px',
+		borderRadius: '999px',
+		fontSize: '11px',
+		fontWeight: 700,
+		background: color === 'primary' ? '#dbeafe' : color === 'amber' ? '#fef3c7' : '#f3f4f6',
+		color: color === 'primary' ? colors.primary : color === 'amber' ? '#b45309' : colors.textMuted,
+		marginLeft: '8px',
+		verticalAlign: 'middle',
+	}),
 	infoBlock: {
 		marginTop: '20px',
 		marginBottom: '20px',
@@ -186,19 +202,35 @@ const styles = {
 		cursor: 'pointer',
 	},
 	infoGrupo: {
-    marginTop: '16px',
-    marginBottom: '18px',
-    padding: '14px 18px',
-    minHeight: '70px',
-    background: '#F8FAFC',
-    border: '1px solid #D8DEE9',
-    borderLeft: '5px solid #2563EB',
-    borderRadius: '8px',
-    color: '#374151',
-    fontSize: '14px',
-    lineHeight: '1.6',
-    whiteSpace: 'pre-wrap'
-},
+        marginTop: '16px',
+        marginBottom: '18px',
+        padding: '14px 18px',
+        minHeight: '70px',
+        background: '#F8FAFC',
+        border: '1px solid #D8DEE9',
+        borderLeft: '5px solid #2563EB',
+        borderRadius: '8px',
+        color: '#374151',
+        fontSize: '14px',
+        lineHeight: '1.6',
+        whiteSpace: 'pre-wrap'
+    },
+	emptyState: {
+		padding: '32px 16px',
+		textAlign: 'center',
+		color: colors.textMuted,
+		fontSize: '14px',
+	},
+	alertInfo: {
+		background: '#eff6ff',
+		border: '1px solid #bfdbfe',
+		borderLeft: '4px solid #2563eb',
+		borderRadius: '8px',
+		padding: '14px 18px',
+		fontSize: '14px',
+		color: '#1e40af',
+		marginBottom: '20px',
+	},
 	
 };
 
@@ -218,8 +250,29 @@ const responsiveCSS = `
     }
 `;
 
-export default function DocumentsPage()
-	{
+// ── Helpers de rol ─────────────────────────────────────────────────────────────
+const obtenerUsuario = () => {
+	try {
+		const raw = localStorage.getItem('usuario');
+		return raw ? JSON.parse(raw) : null;
+	} catch {
+		return null;
+	}
+};
+
+export default function DocumentsPage() {
+		// ── Identidad del usuario logueado ──────────────────────────────────────
+		const usuarioLogueado = obtenerUsuario();
+		const rolCodigo       = usuarioLogueado?.rol_codigo || '';
+		const esProveedor     = rolCodigo === 'PROVEEDOR';
+		const esConsultor     = rolCodigo === 'CONSULTOR';
+		const miProveedorId   = usuarioLogueado?.proveedor_id;
+
+		// Solo ADMIN puede agregar/editar; PROVEEDOR puede agregar/editar sus propios docs;
+		// CONSULTOR solo puede ver.
+		const puedeEscribir = !esConsultor;
+
+		// ── Estado ──────────────────────────────────────────────────────────────
 		const [tipoBusqueda,setTipoBusqueda] = useState('RAZON');
 		const [valorBusqueda,setValorBusqueda] = useState('');
 		const [proveedores,setProveedores] = useState([]);
@@ -228,105 +281,166 @@ export default function DocumentsPage()
 		const [documentos,setDocumentos] = useState([]);
 		const [grupos,setGrupos] = useState([]);
 		const [textoGrupo,setTextoGrupo] = useState('');
-
-		const buscar = async () =>
-			{	try
-					{
-						const data =await buscarProveedor(tipoBusqueda,valorBusqueda);
-						if(tipoBusqueda === 'DOCUMENTO')
-							{
-								setProveedorSeleccionado(data);
-								setProveedores([]);
-								await cargarDocumentos(data.proveedor_id,grupoSeleccionado);
-							}
-						else
-							{
-								setProveedores(data);
-								setProveedorSeleccionado(null);
-							}
-					}
-				catch(error)
-					{
-						alert(error.response?.data?.message ||error.message);
-					}
-			};
-
-		const cargarDocumentos = async (proveedorId,grupo) =>
-			{
-				try
-					{
-						const data =await listarPorGrupo(proveedorId,grupo);
-						console.log("istarPorGrupo",data);
-						setDocumentos(data);
-					}
-				catch(error)
-					{
-						console.error(error);
-					}
-			};
-			
-		const cargarGrupos = async () => 
-			{
-				try 
-					{
-						const data = await obtenerCatalogo('0005','GRUPO_DOCUMENTO');
-						console.log("CATALOGO",data);
-						setGrupos(data);
-
-						if(data.length > 0)
-							{
-								setGrupoSeleccionado(data[0].codigo_valor);
-								setTextoGrupo(data[0].texto_boton);
-							}
-					}
-				catch(error)
-					{
-						console.error(error);
-						return res.status(500).json({success:false,message:error.message});
-
-					}
-			};	
-			
+		const [cargandoProveedor, setCargandoProveedor] = useState(false);
 
 		const [modalDocumentoVisible,setModalDocumentoVisible] = useState(false);
 		const [modoDocumento, setModoDocumento] = useState('NUEVO');
 		const [documentoSeleccionado, setDocumentoSeleccionado] = useState(null);
-		useEffect(() => {cargarGrupos();},[]);
+
+		// ── Carga catálogo de grupos ─────────────────────────────────────────────
+		const cargarGrupos = async () => {
+				try {
+						const data = await obtenerCatalogo('0005','GRUPO_DOCUMENTO');
+						console.log("CATALOGO",data);
+						setGrupos(data);
+
+						if(data.length > 0) {
+								setGrupoSeleccionado(data[0].codigo_valor);
+								setTextoGrupo(data[0].texto_boton);
+						}
+					}
+				catch(error) {
+						console.error(error);
+					}
+			};
+
+		// ── Carga documentos ────────────────────────────────────────────────────
+		const cargarDocumentos = async (proveedorId,grupo) => {
+				try {
+						const data = await listarPorGrupo(proveedorId,grupo);
+						console.log("listarPorGrupo",data);
+						setDocumentos(data);
+					}
+				catch(error) {
+						console.error(error);
+					}
+			};
+
+		// ── Búsqueda (solo ADMIN / CONSULTOR) ───────────────────────────────────
+		const buscar = async () => {
+				try {
+						const data = await buscarProveedor(tipoBusqueda,valorBusqueda);
+						if(tipoBusqueda === 'DOCUMENTO') {
+								setProveedorSeleccionado(data);
+								setProveedores([]);
+								await cargarDocumentos(data.proveedor_id,grupoSeleccionado);
+							}
+						else {
+								setProveedores(data);
+								setProveedorSeleccionado(null);
+							}
+					}
+				catch(error) {
+						alert(error.response?.data?.message || error.message);
+					}
+			};
+
+		// ── Auto-carga para PROVEEDOR ────────────────────────────────────────────
+		const cargarDatosProveedor = async () => {
+				if (!miProveedorId) return;
+				setCargandoProveedor(true);
+				try {
+						// Usamos buscarProveedor por documento para obtener la ficha completa
+						const fichaData = await buscarProveedor('DOCUMENTO', miProveedorId);
+						if (fichaData) {
+							setProveedorSeleccionado(fichaData);
+						}
+						await cargarDocumentos(miProveedorId, grupoSeleccionado || grupos[0]?.codigo_valor || '');
+					}
+				catch(error) {
+						console.error("Error cargando datos del proveedor:", error);
+					}
+				finally {
+						setCargandoProveedor(false);
+					}
+			};
+
+		// ── Efectos iniciales ────────────────────────────────────────────────────
+		useEffect(() => {
+			cargarGrupos();
+		}, []);
+
+		// Una vez que los grupos están listos, si es PROVEEDOR auto-cargamos sus docs
+		useEffect(() => {
+			if (esProveedor && grupos.length > 0) {
+				cargarDatosProveedor();
+			}
+		}, [esProveedor, grupos]);
+
+		// ── Etiqueta del rol para mostrar en el título ───────────────────────────
+		const rolLabel = esProveedor ? 'PROVEEDOR' : esConsultor ? 'CONSULTOR' : 'ADMIN';
+		const rolColor = esProveedor ? 'primary' : esConsultor ? 'amber' : 'gray';
 
 		return (
 			<MainLayout>
 				<style>{responsiveCSS}</style>
 				<div className="documentos-card" style={styles.card}>
 
-					<h2 style={styles.title}>Documentos</h2>
+					<h2 style={styles.title}>
+						Documentos
+						<span style={styles.roleBadge(rolColor)}>{rolLabel}</span>
+					</h2>
 
-					<div style={styles.radioRow}>
-					
-						<label style={styles.radioLabel}>
-							<input type="radio" checked={tipoBusqueda ==='RAZON'} onChange={()=>setTipoBusqueda('RAZON')}/>
-							Razón Social
-						</label>
+					{/* Subtítulo contextual por rol */}
+					<p style={styles.subtitle}>
+						{esProveedor
+							? 'Gestión de sus expedientes documentales. Puede agregar y editar sus propios documentos.'
+							: esConsultor
+								? 'Consulta de expedientes documentales de proveedores. Acceso de solo lectura.'
+								: 'Búsqueda y gestión de expedientes documentales por proveedor.'}
+					</p>
 
-						<label style={styles.radioLabel}>
-							<input type="radio" checked={tipoBusqueda ==='DOCUMENTO'} onChange={()=>setTipoBusqueda('DOCUMENTO')}/>
-							Documento
-						</label>
+					{/* ── Aviso para CONSULTOR ──────────────────────────────────── */}
+					{esConsultor && (
+						<div style={styles.alertInfo}>
+							⚠️ <strong>Modo consulta:</strong> Usted tiene acceso de solo lectura. No puede agregar ni editar documentos.
+						</div>
+					)}
 
-						
+					{/* ── Aviso sin ficha para PROVEEDOR ───────────────────────── */}
+					{esProveedor && !miProveedorId && (
+						<div style={styles.emptyState}>
+							Por favor, complete su registro de Ficha Informativa en la sección de Proveedores para gestionar sus documentos.
+						</div>
+					)}
 
-					</div>
+					{/* ── Buscador (solo para ADMIN y CONSULTOR) ───────────────── */}
+					{!esProveedor && (
+						<>
+							<div style={styles.radioRow}>
 
-					<div className="documentos-search-row" style={styles.searchRow}>
-						<input
-							style={styles.input}
-							value={valorBusqueda}
-							onChange={(e)=> setValorBusqueda(e.target.value)}
-							placeholder="Valor búsqueda"
-						/>
+								<label style={styles.radioLabel}>
+									<input type="radio" checked={tipoBusqueda ==='RAZON'} onChange={()=>setTipoBusqueda('RAZON')}/>
+									Razón Social
+								</label>
 
-						<button style={styles.btnPrimary} onClick={buscar}>Buscar</button>
-					</div>
+								<label style={styles.radioLabel}>
+									<input type="radio" checked={tipoBusqueda ==='DOCUMENTO'} onChange={()=>setTipoBusqueda('DOCUMENTO')}/>
+									Documento
+								</label>
 
+							</div>
+
+							<div className="documentos-search-row" style={styles.searchRow}>
+								<input
+									style={styles.input}
+									value={valorBusqueda}
+									onChange={(e)=> setValorBusqueda(e.target.value)}
+									placeholder="Valor búsqueda"
+									onKeyDown={(e) => e.key === 'Enter' && buscar()}
+								/>
+
+								<button style={styles.btnPrimary} onClick={buscar}>Buscar</button>
+							</div>
+						</>
+					)}
+
+					{/* ── Indicador de carga (PROVEEDOR) ───────────────────────── */}
+					{esProveedor && cargandoProveedor && (
+						<div style={styles.emptyState}>Cargando sus documentos…</div>
+					)}
+
+					{/* ── Lista de resultados de búsqueda ──────────────────────── */}
 					{
 						proveedores.length > 0 &&
 
@@ -362,10 +476,12 @@ export default function DocumentsPage()
 									</tr>
 								))}
 							</tbody>
+
 						</table>
 						</div>
 					}
 
+					{/* ── Detalle del proveedor + documentos ───────────────────── */}
 					{
 						proveedorSeleccionado &&
 
@@ -403,7 +519,9 @@ export default function DocumentsPage()
 
 							<hr style={styles.divider}/>
 
-							<h3 style={styles.sectionTitle}>Documentos del Proveedor</h3>
+							<h3 style={styles.sectionTitle}>
+								{esProveedor ? 'Mis Documentos' : 'Documentos del Proveedor'}
+							</h3>
 
 							<div style={styles.tabsRow}>
 
@@ -412,8 +530,8 @@ export default function DocumentsPage()
 										key={g.codigo}
 										style={grupoSeleccionado === g.codigo_valor ? styles.btnGhostActive : styles.btnGhost}
 										onClick={async ()=>{setGrupoSeleccionado(g.codigo_valor);
-															setTextoGrupo(g.texto_boton);
-															await cargarDocumentos(proveedorSeleccionado.proveedor_id,g.codigo_valor);}}>
+																		setTextoGrupo(g.texto_boton);
+																		await cargarDocumentos(proveedorSeleccionado.proveedor_id,g.codigo_valor);}}>
 										{g.descripcion}
 									</button>
 								))}
@@ -424,16 +542,19 @@ export default function DocumentsPage()
 								{textoGrupo}
 							</div>
 
-							<button
-								style={styles.btnPrimary}
-								onClick={() => {
-									setDocumentoSeleccionado(null);
-									setModoDocumento('NUEVO');
-									setModalDocumentoVisible(true);
-								}}
-							>
-								Agregar Documento
-							</button>
+							{/* Botón Agregar: solo para ADMIN y PROVEEDOR */}
+							{puedeEscribir && (
+								<button
+									style={styles.btnPrimary}
+									onClick={() => {
+										setDocumentoSeleccionado(null);
+										setModoDocumento('NUEVO');
+										setModalDocumentoVisible(true);
+									}}
+								>
+									Agregar Documento
+								</button>
+							)}
 
 							<div className="table-scroll">
 							<table style={styles.table}>
@@ -441,7 +562,7 @@ export default function DocumentsPage()
 								<thead>
 									<tr>
 										<th style={styles.th}>Alcance</th>
-										<th style={styles.th}>Tipo Documento</th>										
+										<th style={styles.th}>Tipo Documento</th>											
 										<th style={styles.th}>Fecha Vigencia</th>
 										<th style={styles.th}>Estado</th>
 										<th style={styles.th}>Acciones</th>
@@ -449,6 +570,14 @@ export default function DocumentsPage()
 								</thead>
 
 								<tbody>
+
+									{documentos.length === 0 && (
+										<tr>
+											<td colSpan={5} style={{...styles.td, textAlign:'center', color: colors.textMuted}}>
+												No hay documentos registrados en este grupo.
+											</td>
+										</tr>
+									)}
 
 									{documentos.map(item => (
 
@@ -477,6 +606,7 @@ export default function DocumentsPage()
 											<td style={styles.td}>
 												<div style={styles.rowActions}>
 
+													{/* Botón VER: disponible para todos los roles */}
 													<button
 														style={styles.linkBtn}
 														onClick={() => {
@@ -488,16 +618,19 @@ export default function DocumentsPage()
 														Ver
 													</button>
 
-													<button
-														style={styles.linkBtnAmber}
-														onClick={() => {
-															setDocumentoSeleccionado(item);
-															setModoDocumento('EDITAR');
-															setModalDocumentoVisible(true);
-														}}
-													>
-														Editar
-													</button>
+													{/* Botón EDITAR: solo para ADMIN y PROVEEDOR */}
+													{puedeEscribir && (
+														<button
+															style={styles.linkBtnAmber}
+															onClick={() => {
+																setDocumentoSeleccionado(item);
+																setModoDocumento('EDITAR');
+																setModalDocumentoVisible(true);
+															}}
+														>
+															Editar
+														</button>
+													)}
 
 												</div>
 											</td>

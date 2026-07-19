@@ -3,10 +3,7 @@ import {
     useState
 } from 'react';
 
-import MainLayout
-from '../layouts/MainLayout';
-
-
+import MainLayout from '../layouts/MainLayout';
 
 import {
     BarChart,
@@ -25,8 +22,10 @@ import {
     obtenerDocumentosPorGrupo,
     obtenerDocumentosPorEstado,
     obtenerProximosVencer
-}
-from '../services/dashboard.service';
+} from '../services/dashboard.service';
+
+// Reutilizamos el servicio para listar los expedientes por grupo corporativo
+import { listarPorGrupo } from '../services/documentos.service';
 
 // Misma paleta usada en DocumentsPage (navy sidebar + acentos azul/ámbar)
 const colors = {
@@ -165,85 +164,122 @@ const responsiveCSS = `
     }
 `;
 
+// ── Helper seguro para leer el usuario del localStorage ───────────────────────
+const obtenerUsuario = () => {
+    try {
+        const raw = localStorage.getItem('usuario');
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+};
+
+// ── Grupos documentales fijos para el dashboard del PROVEEDOR ─────────────────
+const CODIGOS_GRUPOS = ['DOC_NOR', 'DOC_EXT_NOR', 'DOC_REQ_ESTATAL', 'DOC_OTROS'];
+const NOMBRES_GRUPOS = {
+    'DOC_NOR':        'Doc. Normativos',
+    'DOC_EXT_NOR':    'Doc. Extra Normativos',
+    'DOC_REQ_ESTATAL':'Doc. Req. Estatal',
+    'DOC_OTROS':      'Doc. Otros'
+};
+
 export default function DashboardPage() {
 
-    const [
-        resumen,
-        setResumen
-    ] = useState(null);
+    const [resumen, setResumen] = useState(null);
+    const [grupos, setGrupos] = useState([]);
+    const [estados, setEstados] = useState([]);
+    const [proximos, setProximos] = useState([]);
+    const [loadingProveedor, setLoadingProveedor] = useState(true);
+
+    // ── Identidad del usuario logueado ──────────────────────────────────────
+    const usuarioLogueado = obtenerUsuario();
+    const rolCodigo       = usuarioLogueado?.rol_codigo || '';
+    const esProveedor     = rolCodigo === 'PROVEEDOR';
+    const esConsultor     = rolCodigo === 'CONSULTOR';
+    const miProveedorId   = usuarioLogueado?.proveedor_id;
 
     useEffect(() => {
+        if (esProveedor) {
+            cargarDashboardProveedor();
+        } else {
+            // ADMIN y CONSULTOR ven el dashboard general
+            cargarDashboardAdmin();
+        }
+    }, [esProveedor, miProveedorId]);
 
-        cargarDashboard();
+    // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
+    const cargarDashboardAdmin = async () => {
+        try {
+            const resumenData  = await obtenerResumen();
+            const gruposData   = await obtenerDocumentosPorGrupo();
+            const estadosData  = await obtenerDocumentosPorEstado();
+            const proximosData = await obtenerProximosVencer();
 
-    }, []);
+            setResumen(resumenData);
+            setGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
+            setEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
+            setProximos(proximosData);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
+    // ── Dashboard PROVEEDOR (solo sus propios documentos) ────────────────────
+    const cargarDashboardProveedor = async () => {
+        if (!miProveedorId) {
+            setLoadingProveedor(false);
+            return;
+        }
+        try {
+            let acumuladoDocs   = [];
+            let estadisticaGrupos = [];
 
-	const [
-    grupos,
-    setGrupos
-] = useState([]);
+            // Consultamos secuencialmente los 4 grupos documentales del proveedor logueado
+            for (const grupoCode of CODIGOS_GRUPOS) {
+                const dataDocs = await listarPorGrupo(miProveedorId, grupoCode);
+                if (dataDocs && dataDocs.length > 0) {
+                    acumuladoDocs = [...acumuladoDocs, ...dataDocs];
+                    estadisticaGrupos.push({ descripcion: NOMBRES_GRUPOS[grupoCode], cantidad: dataDocs.length });
+                } else {
+                    estadisticaGrupos.push({ descripcion: NOMBRES_GRUPOS[grupoCode], cantidad: 0 });
+                }
+            }
 
-const [
-    estados,
-    setEstados
-] = useState([]);
+            // Separación de documentos por estatus
+            const vigentesCount = acumuladoDocs.filter(d => d.estado_documento === 'V').length;
+            const vencidosCount = acumuladoDocs.filter(d => d.estado_documento === 'C').length;
 
-const [
-    proximos,
-    setProximos
-] = useState([]);
+            setResumen({
+                total_proveedores: 'N/A',
+                documentos_vigentes: vigentesCount,
+                documentos_vencidos: vencidosCount,
+                total_documentos: acumuladoDocs.length
+            });
 
+            setGrupos(estadisticaGrupos);
 
+            setEstados([
+                { descripcion: 'VIGENTE', cantidad: vigentesCount },
+                { descripcion: 'VENCIDO', cantidad: vencidosCount }
+            ]);
 
+            // Filtrado de alertas: documentos vigentes próximos a vencer en los siguientes 90 días
+            const alertasVencimiento = acumuladoDocs.filter(d => {
+                if (d.estado_documento !== 'V') return false;
+                const diasRestantes = Math.ceil((new Date(d.fecha_vigencia) - new Date()) / 86400000);
+                return diasRestantes > 0 && diasRestantes <= 90;
+            }).map(d => ({
+                proveedor: d.descripcion_tipo_documento || d.tipo_documento || 'Documento',
+                fecha_vigencia: d.fecha_vigencia
+            }));
 
-    const cargarDashboard =
-async () => {
-
-    try {
-
-        const resumenData =
-            await obtenerResumen();
-
-        const gruposData =
-            await obtenerDocumentosPorGrupo();
-
-        const estadosData =
-            await obtenerDocumentosPorEstado();
-
-        const proximosData =
-            await obtenerProximosVencer();
-
-        setResumen(resumenData);
-
-        setGrupos(
-    gruposData.map(
-        item => ({
-            ...item,
-            cantidad: Number(item.cantidad)
-        })
-    )
-);
-
-setEstados(
-    estadosData.map(
-        item => ({
-            ...item,
-            cantidad: Number(item.cantidad)
-        })
-    )
-);
-
-        setProximos(proximosData);
-
-    }
-    catch(error){
-
-        console.error(error);
-
-    }
-
-};
+            setProximos(alertasVencimiento);
+        } catch (error) {
+            console.error("Error consolidando indicadores de proveedor:", error);
+        } finally {
+            setLoadingProveedor(false);
+        }
+    };
 
     // Próximos a vencer, ordenados por fecha más cercana primero
     const proximosOrdenados = [...proximos].sort(
@@ -251,223 +287,169 @@ setEstados(
     );
 
     return (
-
         <MainLayout>
-
             <style>{responsiveCSS}</style>
 
+            {/* ── Encabezado dinámico por rol ─────────────────────────────── */}
             <h1 style={styles.heading}>
-                Dashboard SISGESTION
+                {esProveedor
+                    ? `Panel de Control - ${usuarioLogueado?.username}`
+                    : 'Dashboard SISGESTION'}
             </h1>
+            <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
+                {esProveedor
+                    ? 'Resumen analítico y alertas del estado de vigencia de sus expedientes cargados.'
+                    : esConsultor
+                        ? 'Vista general del sistema. Acceso de solo lectura para auditorías corporativas.'
+                        : 'Vista general del sistema para gestión de auditorías corporativas.'}
+            </p>
 
-            {
-                resumen && (
-
-                    <div className="stats-grid">
-
-                        <div style={styles.statCard(colors.primary)}>
-                            <p style={styles.statLabel}>Proveedores</p>
-                            <p style={styles.statValue(colors.text)}>
-                                {resumen.total_proveedores}
-                            </p>
-                        </div>
-
-                        <div style={styles.statCard(colors.success)}>
-                            <p style={styles.statLabel}>Documentos Vigentes</p>
-                            <p style={styles.statValue(colors.success)}>
-                                {resumen.documentos_vigentes}
-                            </p>
-                        </div>
-
-                        <div style={styles.statCard(colors.danger)}>
-                            <p style={styles.statLabel}>Documentos Vencidos</p>
-                            <p style={styles.statValue(colors.danger)}>
-                                {resumen.documentos_vencidos}
-                            </p>
-                        </div>
-
+            {/* ── PROVEEDOR sin ficha → aviso ──────────────────────────────── */}
+            {esProveedor && !miProveedorId && !loadingProveedor ? (
+                <div style={{ ...styles.card, marginTop: '30px' }}>
+                    <div style={styles.emptyState}>
+                        Por favor, complete su registro de Ficha Informativa en la sección de Proveedores para activar sus indicadores.
                     </div>
-
-                )
-            }
-
-			{
-    grupos.length > 0 && (
-
-        <div style={{...styles.card, marginTop:'30px'}}>
-
-            <h2 style={styles.sectionTitle}>
-                Documentos por Grupo
-            </h2>
-
-            <ResponsiveContainer
-                width="100%"
-                height={300}
-            >
-
-                <BarChart
-                    data={grupos}
-                >
-
-                    <XAxis
-                        dataKey="descripcion"
-                        tick={{ fill: colors.textMuted, fontSize: 12 }}
-                    />
-
-                    <YAxis
-                        tick={{ fill: colors.textMuted, fontSize: 12 }}
-                        allowDecimals={false}
-                    />
-
-                    <Tooltip />
-
-                    <Bar
-                        dataKey="cantidad"
-                        fill={colors.primary}
-                        radius={[6, 6, 0, 0]}
-                    />
-
-                </BarChart>
-
-            </ResponsiveContainer>
-
-        </div>
-
-    )
-}
-{
-    estados.length > 0 && (
-
-        <div style={{...styles.card, marginTop:'30px'}}>
-
-            <h2 style={styles.sectionTitle}>
-                Estado de Documentos
-            </h2>
-
-            <div
-                style={{
-                    display:'flex',
-                    justifyContent:'center',
-                    alignItems:'center'
-                }}
-            >
-
-                <div className="pie-chart-wrap">
-
-                <ResponsiveContainer
-                    width="100%"
-                    height={300}
-                >
-
-                    <PieChart>
-
-                        <Pie
-                            data={estados}
-                            cx="50%"
-                            cy="50%"
-                            dataKey="cantidad"
-                            nameKey="descripcion"
-                            outerRadius={120}
-                            label={({ name, percent }) =>
-                                `${name} ${(percent * 100).toFixed(0)}%`
-                            }
-                        >
-
-                            {
-                                estados.map((item, index) => (
-                                    <Cell
-                                        key={index}
-                                        fill={esVigente(item) ? colors.success : colors.danger}
-                                    />
-                                ))
-                            }
-
-                        </Pie>
-
-                        <Tooltip />
-
-                    </PieChart>
-
-                </ResponsiveContainer>
-
                 </div>
+            ) : (
+                <>
+                    {/* ── Tarjetas de estadísticas ─────────────────────────── */}
+                    {resumen && (
+                        <div className="stats-grid">
 
-            </div>
-        </div>
+                            {/* Primer stat: Proveedores (ADMIN/CONSULTOR) o Total Docs (PROVEEDOR) */}
+                            {!esProveedor ? (
+                                <div style={styles.statCard(colors.primary)}>
+                                    <p style={styles.statLabel}>Proveedores</p>
+                                    <p style={styles.statValue(colors.text)}>{resumen.total_proveedores}</p>
+                                </div>
+                            ) : (
+                                <div style={styles.statCard(colors.primary)}>
+                                    <p style={styles.statLabel}>Total Documentos Cargados</p>
+                                    <p style={styles.statValue(colors.text)}>{resumen.total_documentos}</p>
+                                </div>
+                            )}
 
-    )
-}
+                            <div style={styles.statCard(colors.success)}>
+                                <p style={styles.statLabel}>Documentos Vigentes</p>
+                                <p style={styles.statValue(colors.success)}>{resumen.documentos_vigentes}</p>
+                            </div>
 
-<div style={{...styles.card, marginTop:'30px'}}>
+                            <div style={styles.statCard(colors.danger)}>
+                                <p style={styles.statLabel}>Documentos Vencidos</p>
+                                <p style={styles.statValue(colors.danger)}>{resumen.documentos_vencidos}</p>
+                            </div>
 
-    <h2 style={styles.sectionTitle}>
-        Proveedores con documentos próximos a vencer
-    </h2>
+                        </div>
+                    )}
 
-    {
-        proximosOrdenados.length === 0
-        ?
-        (
-            <div style={styles.emptyState}>
-                No existen documentos próximos a vencer.
-            </div>
-        )
-        :
-        (
-            <div className="table-scroll">
-            <table style={styles.table}>
-                <thead>
-                    <tr>
-                        <th style={styles.th}>Proveedor</th>
-                        <th style={styles.th}>Fecha Vencimiento</th>
-                        <th style={styles.th}>Días Restantes</th>
-                    </tr>
-                </thead>
+                    {/* ── Gráfico de barras: documentos por grupo ──────────── */}
+                    {grupos.length > 0 && (
+                        <div style={{ ...styles.card, marginTop: '30px' }}>
+                            <h2 style={styles.sectionTitle}>
+                                {esProveedor ? 'Mis Documentos por Grupo' : 'Documentos por Grupo'}
+                            </h2>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={grupos}>
+                                    <XAxis
+                                        dataKey="descripcion"
+                                        tick={{ fill: colors.textMuted, fontSize: 12 }}
+                                    />
+                                    <YAxis
+                                        tick={{ fill: colors.textMuted, fontSize: 12 }}
+                                        allowDecimals={false}
+                                    />
+                                    <Tooltip />
+                                    <Bar dataKey="cantidad" fill={colors.primary} radius={[6, 6, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    )}
 
-                <tbody>
+                    {/* ── Gráfico de torta: estado de documentos ───────────── */}
+                    {estados.length > 0 && (
+                        <div style={{ ...styles.card, marginTop: '30px' }}>
+                            <h2 style={styles.sectionTitle}>Estado de Documentos</h2>
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <div className="pie-chart-wrap">
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <PieChart>
+                                            <Pie
+                                                data={estados}
+                                                cx="50%"
+                                                cy="50%"
+                                                dataKey="cantidad"
+                                                nameKey="descripcion"
+                                                outerRadius={120}
+                                                label={({ name, percent }) =>
+                                                    `${name} ${(percent * 100).toFixed(0)}%`
+                                                }
+                                            >
+                                                {estados.map((item, index) => (
+                                                    <Cell
+                                                        key={index}
+                                                        fill={esVigente(item) ? colors.success : colors.danger}
+                                                    />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                {
-                    proximosOrdenados.map(
-                        (item,index) => {
+                    {/* ── Tabla de próximos a vencer ───────────────────────── */}
+                    <div style={{ ...styles.card, marginTop: '30px' }}>
+                        <h2 style={styles.sectionTitle}>
+                            {esProveedor
+                                ? 'Mis Documentos próximos a vencer'
+                                : 'Proveedores con documentos próximos a vencer'}
+                        </h2>
 
-                            const dias = Math.ceil(
-                                (new Date(item.fecha_vigencia) - new Date()) / 86400000
-                            );
+                        {proximosOrdenados.length === 0 ? (
+                            <div style={styles.emptyState}>
+                                No existen documentos próximos a vencer.
+                            </div>
+                        ) : (
+                            <div className="table-scroll">
+                                <table style={styles.table}>
+                                    <thead>
+                                        <tr>
+                                            <th style={styles.th}>{esProveedor ? 'Tipo Documento' : 'Proveedor'}</th>
+                                            <th style={styles.th}>Fecha Vencimiento</th>
+                                            <th style={styles.th}>Días Restantes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {proximosOrdenados.map((item, index) => {
+                                            const dias = Math.ceil(
+                                                (new Date(item.fecha_vigencia) - new Date()) / 86400000
+                                            );
+                                            const u = urgencia(dias);
 
-                            const u = urgencia(dias);
-
-                            return (
-                                <tr key={index}>
-                                    <td style={styles.td}>
-                                        {item.proveedor}
-                                    </td>
-
-
-                                    <td style={styles.td}>
-                                        {new Date(item.fecha_vigencia).toLocaleDateString('es-PE')}
-                                    </td>
-
-                                    <td style={styles.td}>
-                                        <span style={styles.badge(u.bg, u.fg)}>
-                                            {u.label}
-                                        </span>
-                                    </td>
-                                </tr>
-                            );
-                        }
-                    )
-                }
-
-                </tbody>
-
-            </table>
-            </div>
-        )
-    }
-
-</div>
+                                            return (
+                                                <tr key={index}>
+                                                    <td style={styles.td}>{item.proveedor}</td>
+                                                    <td style={styles.td}>
+                                                        {new Date(item.fecha_vigencia).toLocaleDateString('es-PE')}
+                                                    </td>
+                                                    <td style={styles.td}>
+                                                        <span style={styles.badge(u.bg, u.fg)}>
+                                                            {u.label}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </>
+            )}
         </MainLayout>
-
     );
-
 }
