@@ -68,7 +68,7 @@ if (!validPassword) {
         generateToken({
             usuario_id: user.usuario_id,
             username: user.username,
-            rol: user.rol,
+            rol_codigo: user.rol,
             proveedor_id:
                 user.proveedor_id
         });
@@ -80,7 +80,7 @@ if (!validPassword) {
                 user.usuario_id,
             username:
                 user.username,
-            rol:
+            rol_codigo:
                 user.rol,
             proveedor_id:
                 user.proveedor_id,
