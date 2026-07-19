@@ -51,15 +51,9 @@ const obtenerPorId = async (documentoId) => {
     return result.rows[0];
 };
 
-const crear = async (documento) => {
-	
-	if(documento.grupo_documentos !== 'DOC_NOR'){
-    documento.tipo_documento_id = null;
-}
-
-if(documento.grupo_documentos === 'DOC_NOR'){
-    documento.tipo_documento = null;
-}
+const crear = async (documento) => 
+	{	
+		documento.tipo_documento = null;
 
     const sql = `
         INSERT INTO "SISGES"."MOV_DOCUMENTOS"
@@ -116,13 +110,9 @@ const actualizar = async (
     documento
 ) => {
 
-    if (documento.grupo_documentos !== 'DOC_NOR') {
-        documento.tipo_documento_id = null;
-    }
-
-    if (documento.grupo_documentos === 'DOC_NOR') {
+    
         documento.tipo_documento = null;
-    }
+    
 
     const sql = `
         UPDATE "SISGES"."MOV_DOCUMENTOS"

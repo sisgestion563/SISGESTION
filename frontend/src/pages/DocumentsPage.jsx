@@ -256,6 +256,7 @@ export default function DocumentsPage()
 				try
 					{
 						const data =await listarPorGrupo(proveedorId,grupo);
+						console.log("istarPorGrupo",data);
 						setDocumentos(data);
 					}
 				catch(error)
@@ -288,12 +289,8 @@ export default function DocumentsPage()
 			
 
 		const [modalDocumentoVisible,setModalDocumentoVisible] = useState(false);
-
 		const [modoDocumento, setModoDocumento] = useState('NUEVO');
-
 		const [documentoSeleccionado, setDocumentoSeleccionado] = useState(null);
-
-
 		useEffect(() => {cargarGrupos();},[]);
 
 		return (

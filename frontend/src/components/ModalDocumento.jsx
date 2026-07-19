@@ -180,10 +180,28 @@ export default function ModalDocumento({visible,
 								const tipos = await obtenerCatalogo('0001','TIPO_DOC_NORMATIVO');
 								setTiposDocumento(tipos);
 							}
-						else 
+						//else 
+						//	{
+						if (grupoDocumento === 'DOC_EXT_NOR')
 							{
-								setTiposDocumento([]);
+								const tipos = await obtenerCatalogo('0001','TIPO_DOC_EXT_NOR');
+								setTiposDocumento(tipos);
 							}
+						if (grupoDocumento === 'DOC_REQ_ESTATAL')
+							{
+								const tipos = await obtenerCatalogo('0001','TIPO_DOC_REQ_EST');
+								setTiposDocumento(tipos);
+							}
+						//else 
+						//	{
+						if (grupoDocumento === 'DOC_OTROS')
+							{
+								const tipos = await obtenerCatalogo('0001','TIPO_DOC_OTROS');
+								setTiposDocumento(tipos);
+							}	
+							
+						//				setTiposDocumento([]);
+						//}
 
 						const alc = await obtenerCatalogo('0099','TIPO_GESTION');
 						setAlcances(alc);
@@ -260,14 +278,10 @@ export default function ModalDocumento({visible,
 												update_by: usuario.usuario_id
 												};
 
-						if (grupoDocumento === 'DOC_NOR') 
-							{
-								datosDocumento.tipo_documento = '';
-							} 
-						else
-							{
-								datosDocumento.tipo_documento_id = '';
-							}
+						
+								datosDocumento.tipo_documento = '';						
+								//datosDocumento.tipo_documento_id = '';
+						
 						if (modo === 'NUEVO') 
 							{
 								await crearDocumento(datosDocumento);
@@ -289,10 +303,10 @@ export default function ModalDocumento({visible,
 
 			const GRUPOS_DOCUMENTOS = 
 				{    
-					DOC_NOR:'DOCUMENTOS NORMATIVOS',
-					DOC_EXT_NOR:'DOCUMENTOS EXTRA NORMATIVOS',
-					DOC_REQ_ESTATAL:'DOCUMENTOS REQUERIMIENTO ESTATAL',
-					DOC_OTROS:'DOCUMENTOS OTROS'
+					DOC_NOR:'GESTION SST - MTA',
+					DOC_EXT_NOR:'GESTION DE CALIDAD',
+					DOC_REQ_ESTATAL:'GESTION SEG. PATRIMONIAL',
+					DOC_OTROS:'GESTION TRANSPORTE'
 				};
 
 			const cerrarModal = () => 
@@ -431,42 +445,19 @@ export default function ModalDocumento({visible,
                         <label style={styles.label}>Tipo Documento</label>
 
                         {
-                            grupoDocumento === 'DOC_NOR'
-                            ?
+                            
                             <select
                                 disabled={soloLectura}
                                 value={form.tipo_documento_id}
                                 style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-                                onChange={(e)=>
-                                    setForm({
-                                        ...form,
-                                        tipo_documento_id: e.target.value
-                                    })
-                                }
-                            >
+                                onChange={(e)=>setForm({...form,tipo_documento_id: e.target.value})}>
                                 <option value="">Seleccione</option>
-
                                 {
-                                    tiposDocumento.map(item => (
-                                        <option key={item.codigo_valor} value={item.codigo_valor}>
-                                            {item.codigo_valor} - {item.descripcion}
-                                        </option>
-                                    ))
+									tiposDocumento.map(item => (<option key={item.codigo_valor} value={item.codigo_valor}>
+																	{item.codigo_valor} - {item.descripcion}
+																</option>))
                                 }
-                            </select>
-                            :
-                            <input
-                                value={form.tipo_documento}
-                                disabled={soloLectura}
-                                style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-                                onChange={(e)=>
-                                    setForm({
-                                        ...form,
-                                        tipo_documento: e.target.value
-                                    })
-                                }
-                                placeholder="Tipo Documento"
-                            />
+                            </select>                            
                         }
                     </div>
 

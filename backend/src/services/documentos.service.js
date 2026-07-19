@@ -32,19 +32,19 @@ const crear = async (documento) =>
 						}
 				
 				
-					if(!documento.tipo_documento_id)
+					if(documento.tipo_documento_id === null )
 						{
-							throw new Error('Tipo Documento es obligatorio para Documentos Normativos');
+							throw new Error('Tipo Documento es obligatorio');
 						}
 					break;
 					
 				case 'DOC_EXT_NOR':
-					if (documento.alcance === 'GSG' || documento.alcance === 'GMA' || documento.alcance === 'GLG' || documento.alcance === 'GIN')
+					if (documento.alcance === 'GSG' || documento.alcance === 'GMA' || documento.alcance === 'GPA' || documento.alcance === 'GTR')
 						{
 							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestion de Calidad" para el campo ALCANCE');
 						}
 						
-					if(!documento.tipo_documento)
+					if(documento.tipo_documento_id === null )
 						{
 							throw new Error('Tipo Documento es obligatorio');
 						}						
@@ -52,15 +52,29 @@ const crear = async (documento) =>
 				
 				
 				case 'DOC_REQ_ESTATAL':
-				case 'DOC_OTROS':
-				
-					if (documento.alcance === 'GSG' || documento.alcance === 'GMA' || documento.alcance === 'GCA')
+					if (documento.alcance === 'GSG' || documento.alcance === 'GMA' || documento.alcance === 'GCA' || documento.alcance === 'GTR')
 						{
-							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión Industrial y/o Gestión Legal" para el campo ALCANCE');
+							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión Patrimonial" para el campo ALCANCE');
 						}
 						
 					
-					if(!documento.tipo_documento)
+					if(documento.tipo_documento_id === null )
+						{
+							throw new Error('Tipo Documento es obligatorio');
+						}
+					break;
+				
+				
+				
+				case 'DOC_OTROS':
+				
+					if (documento.alcance === 'GSG' || documento.alcance === 'GMA' || documento.alcance === 'GCA' || documento.alcance === 'GPA')
+						{
+							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión de Transporte " para el campo ALCANCE');
+						}
+						
+					
+					if(documento.tipo_documento_id === null )
 						{
 							throw new Error('Tipo Documento es obligatorio');
 						}
