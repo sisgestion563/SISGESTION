@@ -159,7 +159,32 @@ const listarPorGrupo = async (
         d.proveedor_id,
         d.tipo_documento_id,
         d.tipo_documento,
-        lv.descripcion AS descripcion_tipo_documento,
+        CASE d.grupo_documentos
+			WHEN 'DOC_NOR' THEN
+				(	select 	lv.descripcion
+			  		from	"SISGES"."MAE_LISTA_VALORES" lv
+			  		where	lv.cod_grupo = '0001'
+			  		and		lv.tipo_grupo = 'TIPO_DOC_NORMATIVO'
+			  		and		lv.codigo_valor = d.tipo_documento_id ) 
+			WHEN 'DOC_EXT_NOR' THEN
+				(	select 	lv.descripcion
+			  		from	"SISGES"."MAE_LISTA_VALORES" lv
+			  		where	lv.cod_grupo = '0001'
+			  		and		lv.tipo_grupo = 'TIPO_DOC_EXT_NOR'
+			  		and		lv.codigo_valor = d.tipo_documento_id ) 
+			WHEN 'DOC_REQ_ESTATAL' THEN
+				(	select 	lv.descripcion
+			  		from	"SISGES"."MAE_LISTA_VALORES" lv
+			  		where	lv.cod_grupo = '0001'
+			  		and		lv.tipo_grupo = 'TIPO_DOC_REQ_EST'
+			  		and		lv.codigo_valor = d.tipo_documento_id ) 
+			WHEN 'DOC_OTROS' THEN
+				(	select 	lv.descripcion
+			  		from	"SISGES"."MAE_LISTA_VALORES" lv
+			  		where	lv.cod_grupo = '0001'
+			  		and		lv.tipo_grupo = 'TIPO_DOC_OTROS'
+			  		and		lv.codigo_valor = d.tipo_documento_id ) 		
+		END as descripcion_tipo_documento,
 		lv_alcance.descripcion AS descripcion_alcance,
 		lv_estado_doc.descripcion as desc_estado_documento,
         d.fecha_inicio,
@@ -171,7 +196,6 @@ const listarPorGrupo = async (
         d.alcance,
         d.observaciones
 FROM	"SISGES"."MOV_DOCUMENTOS" d
-LEFT JOIN "SISGES"."MAE_LISTA_VALORES" lv ON lv.cod_grupo = '0001' AND lv.tipo_grupo = 'TIPO_DOC_NORMATIVO' AND lv.codigo_valor = d.tipo_documento_id		   
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" lv_alcance ON lv_alcance.codigo_valor = D.alcance AND lv_alcance.cod_grupo='0099' AND lv_alcance.tipo_grupo='TIPO_GESTION'
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" lv_estado_doc ON lv_estado_doc.codigo_valor = D.estado_documento AND lv_estado_doc.cod_grupo='0000' AND lv_estado_doc.tipo_grupo='STATUS_DOCUMENTO'
 WHERE 	d.proveedor_id = $1
