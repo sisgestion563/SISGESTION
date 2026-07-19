@@ -7,7 +7,7 @@ const findByUsername = async (username) => {
             u.usuario_id,
             u.username,
             u.password_hash,
-            u.proveedor_id,
+            u.proveedor_id::varchar AS proveedor_id,
             u.primer_ingreso,
             r.codigo AS rol
         FROM "SISGES"."SEG_USUARIO" u
