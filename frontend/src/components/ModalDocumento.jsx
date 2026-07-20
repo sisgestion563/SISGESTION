@@ -169,22 +169,22 @@ export default function ModalDocumento({visible,
 
 		const MAPA_ALCANCES = {
 			'DOC_NOR': [
-				{ codigo_valor: 'GESTIÓN SST', descripcion: 'GESTIÓN SST' },
-				{ codigo_valor: 'GESTIÓN MA', descripcion: 'GESTIÓN MA' }
+				{ codigo_valor: 'GSG', descripcion: 'GESTIÓN SST' },
+				{ codigo_valor: 'GMA', descripcion: 'GESTIÓN MA' }
 			],
 			'DOC_EXT_NOR': [
-				{ codigo_valor: 'GESTIÓN DE CALIDAD', descripcion: 'GESTIÓN DE CALIDAD' }
+				{ codigo_valor: 'GCA', descripcion: 'GESTIÓN DE CALIDAD' }
 			],
 			'DOC_REQ_ESTATAL': [
-				{ codigo_valor: 'GESTIÓN PATRIMONIAL', descripcion: 'GESTIÓN PATRIMONIAL' }
+				{ codigo_valor: 'GPA', descripcion: 'GESTIÓN PATRIMONIAL' }
 			],
 			'DOC_OTROS': [
-				{ codigo_valor: 'GESTIÓN TRANSPORTE', descripcion: 'GESTIÓN TRANSPORTE' }
+				{ codigo_valor: 'GTR', descripcion: 'GESTIÓN TRANSPORTE' }
 			]
 		};
 
 		const MAPA_TIPOS_DOCUMENTO = {
-			'GESTIÓN SST': [
+			'GSG': [
 				{ codigo_valor: '01', descripcion: 'Accidentes de Trabajo, Enfermedades Ocupacionales e Incidentes' },
 				{ codigo_valor: '02', descripcion: 'Exámenes Médicos Ocupacionales' },
 				{ codigo_valor: '03', descripcion: 'Monitoreo de Agentes' },
@@ -200,19 +200,19 @@ export default function ModalDocumento({visible,
 				{ codigo_valor: '13', descripcion: 'Planificación de la Actividad Preventiva' },
 				{ codigo_valor: '14', descripcion: 'Programa Anual de Seguridad y Salud en el Trabajo' }
 			],
-			'GESTIÓN MA': [
+			'GMA': [
 				{ codigo_valor: '01', descripcion: 'Matriz PAMA' },
 				{ codigo_valor: '02', descripcion: 'Otros (Certificaciones, declaraciones, manifiestos, informes)' }
 			],
-			'GESTIÓN DE CALIDAD': [
+			'GCA': [
 				{ codigo_valor: '01', descripcion: 'Certificaciones ISO 9001' },
 				{ codigo_valor: '02', descripcion: 'Certificaciones Diversas (Homologaciones)' }
 			],
-			'GESTIÓN PATRIMONIAL': [
+			'GPA': [
 				{ codigo_valor: '01', descripcion: 'Plan de Contingencias' },
 				{ codigo_valor: '02', descripcion: 'Otros' }
 			],
-			'GESTIÓN TRANSPORTE': [
+			'GTR': [
 				{ codigo_valor: '01', descripcion: 'Carta de Presentación' },
 				{ codigo_valor: '02', descripcion: 'Otros' }
 			]
@@ -293,13 +293,14 @@ export default function ModalDocumento({visible,
 												grupo_documentos: grupoDocumento,
 												fecha_inicio: form.fecha_inicio || null,
 												fecha_fin: form.fecha_fin || null,
+												create_by: usuario.usuario_id,
 												update_by: usuario.usuario_id
 												};
 
-						// Recuperar la descripción del tipo de documento para guardarla si es necesario
+						// Guardar descripción del tipo de documento seleccionado
 						const tipoSeleccionado = tiposDocumento.find(t => t.codigo_valor === form.tipo_documento_id);
 						if (tipoSeleccionado) {
-							datosDocumento.tipo_documento = tipoSeleccionado.descripcion;
+							datosDocumento.descripcion_tipo_documento = tipoSeleccionado.descripcion;
 						}
 
 						if (modo === 'NUEVO') 
