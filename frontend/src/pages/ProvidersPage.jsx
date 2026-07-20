@@ -415,9 +415,7 @@ export default function ProvidersPage() {
     const guardarAutoregistro = async (e) => {
         e.preventDefault();
         try {
-            const razonSocialFinal = esEmpresa
-                ? form.razon_social
-                : `${form.nombre} ${form.apellido_paterno} ${form.apellido_materno}`.trim();
+            const razonSocialFinal = esEmpresa ? form.razon_social : '';
 
             const res = await crearProveedor({
                 ...form,
@@ -773,7 +771,7 @@ export default function ProvidersPage() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px', borderTop: `1px solid ${colors.border}`, paddingTop: '20px', marginTop: '15px' }}>
-                            <div>
+                            <div style={{ gridColumn: '1 / -1' }}>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>ACTIVIDAD ECONÓMICA (CIIU)</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
                                     {proveedores[0]?.ciiu ? `${proveedores[0].ciiu} - ${proveedores[0]?.descripcion_ciiu || ''}` : 'No especificada'}
@@ -790,6 +788,10 @@ export default function ProvidersPage() {
                             <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>DISTRITO / CIUDAD</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.ciudad || 'No registrado'}</div>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>UBIGEO</label>
+                                <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.ubigeo || 'No registrado'}</div>
                             </div>
                         </div>
 
