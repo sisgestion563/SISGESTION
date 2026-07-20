@@ -4,6 +4,7 @@ import {buscarProveedor, obtenerProveedorPorId} from '../services/providers.serv
 import {listarPorGrupo} from '../services/documentos.service';
 import ModalDocumento from '../components/ModalDocumento';
 import {obtenerCatalogo} from '../services/catalogos.service';
+import * as XLSX from 'xlsx';
 
 
 // Paleta tomada del layout general del sistema (sidebar navy + acentos azul/ámbar)
@@ -87,6 +88,16 @@ const styles = {
 	},
 	btnAmber: {
 		background: colors.amber,
+		color: '#fff',
+		border: 'none',
+		borderRadius: '8px',
+		padding: '9px 18px',
+		fontSize: '14px',
+		fontWeight: 600,
+		cursor: 'pointer',
+	},
+	btnSuccess: {
+		background: colors.success,
 		color: '#fff',
 		border: 'none',
 		borderRadius: '8px',
@@ -316,6 +327,26 @@ export default function DocumentsPage() {
 					}
 			};
 
+		const exportarExcel = () => {
+			if (documentos.length === 0) {
+				alert("No hay documentos para exportar");
+				return;
+			}
+
+			const data = documentos.map(item => ({
+				"Alcance": item.descripcion_alcance || '',
+				"Tipo Documento": item.descripcion_tipo_documento || item.tipo_documento || item.tipo_documento_id || '',
+				"Fecha Vigencia": new Date(item.fecha_vigencia).toLocaleDateString('es-PE'),
+				"Estado": item.estado_documento === 'V' ? 'VIGENTE' : 'VENCIDO'
+			}));
+
+			const ws = XLSX.utils.json_to_sheet(data);
+			const wb = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(wb, ws, "Documentos");
+			
+			XLSX.writeFile(wb, `Documentos_${proveedorSeleccionado?.nro_documento || 'Export'}.xlsx`);
+		};
+
 		// ── Búsqueda (solo ADMIN / CONSULTOR) ───────────────────────────────────
 		const buscar = async () => {
 				try {
@@ -543,18 +574,27 @@ export default function DocumentsPage() {
 							</div>
 
 							{/* Botón Agregar: solo para ADMIN y PROVEEDOR */}
-							{puedeEscribir && (
+							<div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+								{puedeEscribir && (
+									<button
+										style={styles.btnPrimary}
+										onClick={() => {
+											setDocumentoSeleccionado(null);
+											setModoDocumento('NUEVO');
+											setModalDocumentoVisible(true);
+										}}
+									>
+										Agregar Documento
+									</button>
+								)}
+
 								<button
-									style={styles.btnPrimary}
-									onClick={() => {
-										setDocumentoSeleccionado(null);
-										setModoDocumento('NUEVO');
-										setModalDocumentoVisible(true);
-									}}
+									style={styles.btnSuccess}
+									onClick={exportarExcel}
 								>
-									Agregar Documento
+									Exportar Documentos
 								</button>
-							)}
+							</div>
 
 							<div className="table-scroll">
 							<table style={styles.table}>
