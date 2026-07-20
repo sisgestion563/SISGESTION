@@ -264,6 +264,7 @@ export default function ProvidersPage() {
         apellido_paterno: '',
         apellido_materno: '',
         razon_social: '',
+        pagina_web: '',
         representante_legal: '',
         correo: '',
         telefono: '',
@@ -601,7 +602,7 @@ export default function ProvidersPage() {
                             </div>
                         )}
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                             <div>
                                 <label style={styles.labelForm}>Correo Contacto *</label>
                                 <input required type="email" style={styles.inputForm} value={form.correo} onChange={e => setForm({...form, correo: e.target.value})} />
@@ -610,6 +611,11 @@ export default function ProvidersPage() {
                                 <label style={styles.labelForm}>Teléfono *</label>
                                 <input required type="text" style={styles.inputForm} value={form.telefono} onChange={e => setForm({...form, telefono: e.target.value})} />
                             </div>
+                        </div>
+
+                        <div style={{ marginBottom: '15px' }}>
+                            <label style={styles.labelForm}>Página Web</label>
+                            <input type="text" style={styles.inputForm} value={form.pagina_web} onChange={e => setForm({...form, pagina_web: e.target.value})} />
                         </div>
 
                         {esEmpresa && (
@@ -729,15 +735,25 @@ export default function ProvidersPage() {
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>CORREO ELECTRÓNICO</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text, wordBreak: 'break-all' }}>{proveedores[0]?.correo || 'No registrado'}</div>
                             </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>PÁGINA WEB</label>
+                                <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.pagina_web || 'No registrada'}</div>
+                            </div>
                         </div>
 
-                        {/* Identidad: RUC → Razón Social | DNI/CE → Nombres */}
+                        {/* Identidad: RUC → Razón Social y Rep Legal | DNI/CE → Nombres */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px', borderTop: `1px solid ${colors.border}`, paddingTop: '20px', marginBottom: '5px' }}>
                             {proveedores[0]?.tipo_documento === '06' ? (
-                                <div style={{ gridColumn: '1 / -1' }}>
-                                    <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>RAZÓN SOCIAL</label>
-                                    <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.razon_social || 'No registrada'}</div>
-                                </div>
+                                <>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>RAZÓN SOCIAL</label>
+                                        <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.razon_social || 'No registrada'}</div>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>REPRESENTANTE LEGAL</label>
+                                        <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.representante_legal || 'No registrado'}</div>
+                                    </div>
+                                </>
                             ) : (
                                 <>
                                     <div>

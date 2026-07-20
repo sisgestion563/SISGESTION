@@ -225,11 +225,14 @@ console.log(
 
 };
 
-const esEmpresa =
-    form.tipo_documento === '06';
-    if(!visible){
-        return null;
-    }
+const esEmpresa = form.tipo_documento === '06';
+
+const usuarioLogueado = JSON.parse(localStorage.getItem('usuario') || '{}');
+const esProveedorLogueado = usuarioLogueado?.rol_codigo === 'PROVEEDOR';
+
+if(!visible){
+    return null;
+}
 
     const guardar =
 async () => {
@@ -438,6 +441,34 @@ else{
         })
     }
 />
+
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Pagina Web
+</label>		
+
+<input
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom:'15px'
+    }}
+    value={form.pagina_web}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            pagina_web:e.target.value
+        })
+    }
+/>
+
 				{
     esEmpresa
     ?
@@ -469,34 +500,7 @@ else{
     }
 />
         <br/><br/>
-		
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Pagina Web
-</label>		
 
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.pagina_web}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            pagina_web:e.target.value
-        })
-    }
-/>
-        <br/><br/>
 <label
     style={{
         display:'block',
@@ -918,19 +922,20 @@ Seleccione CIIU
     }
 />
 
-<label
-	style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-	Estado Proveedor
-</label>
-
-
-<select
-	style={{width:'100%',padding:'10px',border:'1px solid #D1D5DB',borderRadius:'6px',marginBottom:'15px'}}
-	value={form.status}
-	onChange={(e)=>setForm({...form,status:e.target.value})}>
-	<option value="A">Activo</option>
-	<option value="I">Inactivo</option>	
-</select>
+{!esProveedorLogueado && (
+    <>
+        <label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
+            Estado Proveedor
+        </label>
+        <select
+            style={{width:'100%',padding:'10px',border:'1px solid #D1D5DB',borderRadius:'6px',marginBottom:'15px'}}
+            value={form.status}
+            onChange={(e)=>setForm({...form,status:e.target.value})}>
+            <option value="A">Activo</option>
+            <option value="I">Inactivo</option>	
+        </select>
+    </>
+)}
 
 
 <label
