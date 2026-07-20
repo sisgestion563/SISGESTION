@@ -292,11 +292,20 @@ const crear = async (proveedor) => {
         proveedor.create_by
     ];
 
-    const result =
-        await pool.query(
-            sql,
-            values
-        );
+    // 1. Insertamos el proveedor y recuperamos el ID numérico generado por la secuencia
+    const result = await pool.query(sql, values);
+    const nuevoIdGenerado = result.rows[0].proveedor_id;
+
+    // 2. Vinculación automática en la tabla de seguridad usando el ID entero obtenido
+    if (proveedor.usuario_id) {
+        const sqlSeguridad = `
+            UPDATE "SISGES"."SEG_USUARIO"
+            SET proveedor_id = $1,
+                primer_ingreso = 'N'
+            WHERE usuario_id = $2
+        `;
+        await pool.query(sqlSeguridad, [nuevoIdGenerado, proveedor.usuario_id]);
+    }
 
     return result.rows[0];
 };
