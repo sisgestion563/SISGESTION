@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import { usersService } from '../services/users.service'; 
-import { Lock, Unlock } from 'lucide-react';
+import { Lock, Unlock, Eye, EyeOff, Copy, CheckCheck } from 'lucide-react';
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -9,10 +9,19 @@ export default function UsersPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate(); 
 
-  // ESTADOS PARA EL MODAL Y EL FORMULARIO
+  // ESTADOS PARA EL MODAL CREAR/EDITAR
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modoModal, setModoModal] = useState('CREAR'); // 'CREAR' o 'EDITAR'
   const [usuarioIdEditar, setUsuarioIdEditar] = useState(null);
+
+  // ESTADO PARA EL MODAL VER
+  const [isVerModalOpen, setIsVerModalOpen] = useState(false);
+  const [userVer, setUserVer] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // Mapa temporal de contraseñas en texto plano (solo se mantiene en la sesión actual)
+  const [passwordMap, setPasswordMap] = useState({});
   
   const [formData, setFormData] = useState({ 
     username: '', 
@@ -91,7 +100,7 @@ export default function UsersPage() {
     const rolActual = catalogoRolesFijos.find(r => r.id.toString() === formData.rol_id.toString());
     const esAdminOConsultor = rolActual?.codigo === 'ADMIN' || rolActual?.codigo === 'CONSULTOR';
 
-    // Si es Admin o Consultor, se guarda forzosamente bloqueado en 'L' para no alterar permisos de fichas corporativas
+    // Si es Admin o Consultor, se guarda forzosamente bloqueado en 'L'
     const datosEnviar = {
       ...formData,
       primer_ingreso: esAdminOConsultor ? 'L' : formData.primer_ingreso
@@ -99,9 +108,18 @@ export default function UsersPage() {
 
     try {
       if (modoModal === 'CREAR') {
-        await usersService.create(datosEnviar);
+        const result = await usersService.create(datosEnviar);
+        // Guardamos la contraseña temporal para mostrarla en Ver
+        const nuevoId = result?.user?.usuario_id;
+        if (nuevoId && formData.password) {
+          setPasswordMap(prev => ({ ...prev, [nuevoId]: formData.password }));
+        }
       } else {
         await usersService.update(usuarioIdEditar, datosEnviar);
+        // Si se cambió la contraseña al editar, actualizamos el mapa
+        if (formData.password && usuarioIdEditar) {
+          setPasswordMap(prev => ({ ...prev, [usuarioIdEditar]: formData.password }));
+        }
       }
       setIsModalOpen(false); 
       loadUsers(); 
@@ -203,7 +221,12 @@ export default function UsersPage() {
                       Editar
                     </button>
                     <button 
-                      onClick={() => navigate(`/usuarios/${user.usuario_id}`)} 
+                      onClick={() => {
+                        setUserVer(user);
+                        setShowPassword(false);
+                        setCopied(false);
+                        setIsVerModalOpen(true);
+                      }}
                       style={{ backgroundColor: '#2563EB', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', color: 'white' }}
                     >
                       Ver
@@ -278,6 +301,130 @@ export default function UsersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* ── MODAL VER USUARIO ── */}
+      {isVerModalOpen && userVer && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          backgroundColor: 'rgba(15, 23, 42, 0.65)', display: 'flex',
+          justifyContent: 'center', alignItems: 'center', zIndex: 9999
+        }}>
+          <div style={{
+            background: 'white', borderRadius: '14px', width: '420px', maxWidth: '95vw',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.2)', overflow: 'hidden'
+          }}>
+            {/* Header del modal */}
+            <div style={{
+              background: 'linear-gradient(135deg, #0F172A 0%, #1e3a5f 100%)',
+              padding: '22px 24px',
+              display: 'flex', alignItems: 'center', gap: '14px'
+            }}>
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #2563EB, #7c3aed)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '20px', fontWeight: '800', color: 'white', flexShrink: 0
+              }}>
+                {userVer.username?.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h3 style={{ margin: 0, color: 'white', fontSize: '17px', fontWeight: '800' }}>
+                  {userVer.username}
+                </h3>
+                <p style={{ margin: '2px 0 0', color: '#94a3b8', fontSize: '13px' }}>
+                  {userVer.correo || 'Sin correo registrado'}
+                </p>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '22px 24px' }}>
+
+              {/* Fila: Rol */}
+              <div style={{ marginBottom: '14px' }}>
+                <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Rol</p>
+                <p style={{ margin: '4px 0 0', fontSize: '15px', fontWeight: '700', color: '#1e293b' }}>
+                  {userVer.rol_nombre || userVer.rol_codigo}
+                </p>
+              </div>
+
+              {/* Fila: Usuario */}
+              <div style={{ marginBottom: '14px' }}>
+                <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Nombre de usuario</p>
+                <p style={{ margin: '4px 0 0', fontSize: '15px', fontWeight: '700', color: '#1e293b' }}>
+                  {userVer.username}
+                </p>
+              </div>
+
+              {/* Fila: Contraseña */}
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Contraseña</p>
+                {passwordMap[userVer.usuario_id] ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                    <div style={{
+                      flex: 1, padding: '9px 13px', background: '#f8fafc',
+                      border: '1px solid #e2e8f0', borderRadius: '8px',
+                      fontFamily: 'monospace', fontSize: '15px', letterSpacing: '0.1em',
+                      color: '#1e293b', fontWeight: '700'
+                    }}>
+                      {showPassword ? passwordMap[userVer.usuario_id] : '••••••••'}
+                    </div>
+                    <button
+                      onClick={() => setShowPassword(v => !v)}
+                      title={showPassword ? 'Ocultar' : 'Mostrar'}
+                      style={{
+                        background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px',
+                        padding: '9px 11px', cursor: 'pointer', display: 'flex', alignItems: 'center'
+                      }}
+                    >
+                      {showPassword ? <EyeOff size={16} color="#2563EB" /> : <Eye size={16} color="#2563EB" />}
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(passwordMap[userVer.usuario_id]);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      title="Copiar contraseña"
+                      style={{
+                        background: copied ? '#f0fdf4' : '#eff6ff',
+                        border: `1px solid ${copied ? '#bbf7d0' : '#bfdbfe'}`,
+                        borderRadius: '8px', padding: '9px 11px', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center'
+                      }}
+                    >
+                      {copied
+                        ? <CheckCheck size={16} color="#16a34a" />
+                        : <Copy size={16} color="#2563EB" />}
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{
+                    marginTop: '6px', padding: '10px 13px', background: '#fffbeb',
+                    border: '1px solid #fde68a', borderRadius: '8px',
+                    fontSize: '13px', color: '#92400e'
+                  }}>
+                    ⚠️ La contraseña no está disponible. Solo se muestra durante la sesión en que fue creada o modificada.
+                  </div>
+                )}
+              </div>
+
+              {/* Botón cerrar */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setIsVerModalOpen(false)}
+                  style={{
+                    background: '#0F172A', color: 'white', border: 'none',
+                    padding: '10px 22px', borderRadius: '8px', cursor: 'pointer',
+                    fontWeight: '700', fontSize: '14px'
+                  }}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
