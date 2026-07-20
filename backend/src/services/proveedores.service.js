@@ -1,4 +1,5 @@
 const repository = require('../repositories/proveedores.repository');
+const pool       = require('../config/db');
 
 const listar = async (
     campo = 'ALL',
@@ -40,9 +41,22 @@ const crear = async (
 
     }
 
-    return await repository.crear(
-        proveedor
-    );
+    // 1. Crear la ficha en MAE_PROVEEDOR y obtener el nuevo proveedor_id
+    const nuevaFicha = await repository.crear(proveedor);
+    const nuevoProveedorId = nuevaFicha?.proveedor_id;
+
+    // 2. Si el request trae usuario_id, asociar el proveedor recién creado
+    //    en SEG_USUARIO para que el JWT futuro lo lleve correctamente
+    if (nuevoProveedorId && proveedor.usuario_id) {
+        await pool.query(
+            `UPDATE "SISGES"."SEG_USUARIO"
+             SET proveedor_id = $1
+             WHERE usuario_id = $2`,
+            [nuevoProveedorId, proveedor.usuario_id]
+        );
+    }
+
+    return nuevaFicha;
 
 };
 
