@@ -235,16 +235,16 @@ const obtenerUsuario = () => {
 
 export default function ProvidersPage() {
     // ── Identidad ──────────────────────────────────────────────────────────────
-    const usuarioLogueado  = obtenerUsuario();
-    const rolCodigo        = usuarioLogueado?.rol_codigo || '';
-    const esAdmin          = rolCodigo === 'ADMIN';
-    const esProveedor      = rolCodigo === 'PROVEEDOR';
-    const esConsultor      = rolCodigo === 'CONSULTOR';
-    const miProveedorId    = usuarioLogueado?.proveedor_id;
+    const usuarioLogueado = obtenerUsuario();
+    const rolCodigo = usuarioLogueado?.rol_codigo || '';
+    const esAdmin = rolCodigo === 'ADMIN';
+    const esProveedor = rolCodigo === 'PROVEEDOR';
+    const esConsultor = rolCodigo === 'CONSULTOR';
+    const miProveedorId = usuarioLogueado?.proveedor_id;
 
     // El proveedor puede editar su ficha solo si primer_ingreso === 'H' (habilitado por admin)
     // El consultor nunca puede editar
-    const usuarioFresco         = obtenerUsuario(); // re-leemos para tener el valor más fresco
+    const usuarioFresco = obtenerUsuario(); // re-leemos para tener el valor más fresco
     const puedeEditarFichaCompleta = !esConsultor && (!esProveedor || usuarioFresco?.primer_ingreso === 'H');
 
     // ── Estado general ─────────────────────────────────────────────────────────
@@ -568,7 +568,7 @@ export default function ProvidersPage() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                             <div>
                                 <label style={styles.labelForm}>Tipo Documento *</label>
-                                <select style={styles.inputForm} value={form.tipo_documento} onChange={e => setForm({...form, tipo_documento: e.target.value})}>
+                                <select style={styles.inputForm} value={form.tipo_documento} onChange={e => setForm({ ...form, tipo_documento: e.target.value })}>
                                     <option value="06">RUC</option>
                                     <option value="01">DNI</option>
                                     <option value="04">Carnet de Extranjería</option>
@@ -576,28 +576,28 @@ export default function ProvidersPage() {
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Nro Documento *</label>
-                                <input required type="text" style={styles.inputForm} value={form.nro_documento} onChange={e => setForm({...form, nro_documento: e.target.value})} />
+                                <input required type="text" style={styles.inputForm} value={form.nro_documento} onChange={e => setForm({ ...form, nro_documento: e.target.value })} />
                             </div>
                         </div>
 
                         {esEmpresa ? (
                             <div style={{ marginBottom: '15px' }}>
                                 <label style={styles.labelForm}>Razón Social *</label>
-                                <input required type="text" style={styles.inputForm} value={form.razon_social} onChange={e => setForm({...form, razon_social: e.target.value})} />
+                                <input required type="text" style={styles.inputForm} value={form.razon_social} onChange={e => setForm({ ...form, razon_social: e.target.value })} />
                             </div>
                         ) : (
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                                 <div>
                                     <label style={styles.labelForm}>Nombre *</label>
-                                    <input required type="text" style={styles.inputForm} value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} />
+                                    <input required type="text" style={styles.inputForm} value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
                                 </div>
                                 <div>
                                     <label style={styles.labelForm}>Apellido Paterno *</label>
-                                    <input required type="text" style={styles.inputForm} value={form.apellido_paterno} onChange={e => setForm({...form, apellido_paterno: e.target.value})} />
+                                    <input required type="text" style={styles.inputForm} value={form.apellido_paterno} onChange={e => setForm({ ...form, apellido_paterno: e.target.value })} />
                                 </div>
                                 <div>
                                     <label style={styles.labelForm}>Apellido Materno *</label>
-                                    <input required type="text" style={styles.inputForm} value={form.apellido_materno} onChange={e => setForm({...form, apellido_materno: e.target.value})} />
+                                    <input required type="text" style={styles.inputForm} value={form.apellido_materno} onChange={e => setForm({ ...form, apellido_materno: e.target.value })} />
                                 </div>
                             </div>
                         )}
@@ -605,23 +605,23 @@ export default function ProvidersPage() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                             <div>
                                 <label style={styles.labelForm}>Correo Contacto *</label>
-                                <input required type="email" style={styles.inputForm} value={form.correo} onChange={e => setForm({...form, correo: e.target.value})} />
+                                <input required type="email" style={styles.inputForm} value={form.correo} onChange={e => setForm({ ...form, correo: e.target.value })} />
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Teléfono *</label>
-                                <input required type="text" style={styles.inputForm} value={form.telefono} onChange={e => setForm({...form, telefono: e.target.value})} />
+                                <input required type="text" style={styles.inputForm} value={form.telefono} onChange={e => setForm({ ...form, telefono: e.target.value })} />
                             </div>
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
                             <label style={styles.labelForm}>Página Web</label>
-                            <input type="text" style={styles.inputForm} value={form.pagina_web} onChange={e => setForm({...form, pagina_web: e.target.value})} />
+                            <input type="text" style={styles.inputForm} value={form.pagina_web} onChange={e => setForm({ ...form, pagina_web: e.target.value })} />
                         </div>
 
                         {esEmpresa && (
                             <div style={{ marginBottom: '15px' }}>
                                 <label style={styles.labelForm}>Representante Legal *</label>
-                                <input required type="text" style={styles.inputForm} value={form.representante_legal} onChange={e => setForm({...form, representante_legal: e.target.value})} />
+                                <input required type="text" style={styles.inputForm} value={form.representante_legal} onChange={e => setForm({ ...form, representante_legal: e.target.value })} />
                             </div>
                         )}
 
@@ -661,12 +661,12 @@ export default function ProvidersPage() {
 
                         <div style={{ marginBottom: '15px' }}>
                             <label style={styles.labelForm}>Dirección *</label>
-                            <input required type="text" style={styles.inputForm} value={form.direccion} onChange={e => setForm({...form, direccion: e.target.value})} />
+                            <input required type="text" style={styles.inputForm} value={form.direccion} onChange={e => setForm({ ...form, direccion: e.target.value })} />
                         </div>
 
                         <div style={{ marginBottom: '20px' }}>
                             <label style={styles.labelForm}>Actividad Económica (CIIU) *</label>
-                            <select required style={styles.inputForm} value={form.ciiu} onChange={e => setForm({...form, ciiu: e.target.value})}>
+                            <select required style={styles.inputForm} value={form.ciiu} onChange={e => setForm({ ...form, ciiu: e.target.value })}>
                                 <option value="">Seleccione Actividad</option>
                                 {ciius.map((c, index) => {
                                     const obj = Object.keys(c).reduce((acc, key) => {
