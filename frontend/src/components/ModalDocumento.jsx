@@ -167,49 +167,67 @@ export default function ModalDocumento({visible,
 							ruta_documento: '',
 							observaciones: ''};
 
+		const MAPA_ALCANCES = {
+			'DOC_NOR': [
+				{ codigo_valor: 'GESTIÓN SST', descripcion: 'GESTIÓN SST' },
+				{ codigo_valor: 'GESTIÓN MA', descripcion: 'GESTIÓN MA' }
+			],
+			'DOC_EXT_NOR': [
+				{ codigo_valor: 'GESTIÓN DE CALIDAD', descripcion: 'GESTIÓN DE CALIDAD' }
+			],
+			'DOC_REQ_ESTATAL': [
+				{ codigo_valor: 'GESTIÓN PATRIMONIAL', descripcion: 'GESTIÓN PATRIMONIAL' }
+			],
+			'DOC_OTROS': [
+				{ codigo_valor: 'GESTIÓN TRANSPORTE', descripcion: 'GESTIÓN TRANSPORTE' }
+			]
+		};
+
+		const MAPA_TIPOS_DOCUMENTO = {
+			'GESTIÓN SST': [
+				{ codigo_valor: '01', descripcion: 'Accidentes de Trabajo, Enfermedades Ocupacionales e Incidentes' },
+				{ codigo_valor: '02', descripcion: 'Exámenes Médicos Ocupacionales' },
+				{ codigo_valor: '03', descripcion: 'Monitoreo de Agentes' },
+				{ codigo_valor: '04', descripcion: 'Inspecciones Internas' },
+				{ codigo_valor: '05', descripcion: 'Estadísticas' },
+				{ codigo_valor: '06', descripcion: 'Equipos de Seguridad o Emergencia' },
+				{ codigo_valor: '07', descripcion: 'Capacitación y Simulacros' },
+				{ codigo_valor: '08', descripcion: 'Auditorías' },
+				{ codigo_valor: '09', descripcion: 'Política y objetivos en materia de SST' },
+				{ codigo_valor: '10', descripcion: 'Reglamento Interno de Seguridad y Salud en el Trabajo' },
+				{ codigo_valor: '11', descripcion: 'Identificación de peligros, evaluación de riesgos y medidas de control (IPERC)' },
+				{ codigo_valor: '12', descripcion: 'Mapa de Riesgos' },
+				{ codigo_valor: '13', descripcion: 'Planificación de la Actividad Preventiva' },
+				{ codigo_valor: '14', descripcion: 'Programa Anual de Seguridad y Salud en el Trabajo' }
+			],
+			'GESTIÓN MA': [
+				{ codigo_valor: '01', descripcion: 'Matriz PAMA' },
+				{ codigo_valor: '02', descripcion: 'Otros (Certificaciones, declaraciones, manifiestos, informes)' }
+			],
+			'GESTIÓN DE CALIDAD': [
+				{ codigo_valor: '01', descripcion: 'Certificaciones ISO 9001' },
+				{ codigo_valor: '02', descripcion: 'Certificaciones Diversas (Homologaciones)' }
+			],
+			'GESTIÓN PATRIMONIAL': [
+				{ codigo_valor: '01', descripcion: 'Plan de Contingencias' },
+				{ codigo_valor: '02', descripcion: 'Otros' }
+			],
+			'GESTIÓN TRANSPORTE': [
+				{ codigo_valor: '01', descripcion: 'Carta de Presentación' },
+				{ codigo_valor: '02', descripcion: 'Otros' }
+			]
+		};
+
 		const [form, setForm] = useState(formInicial);
-		const [tiposDocumento,setTiposDocumento] = useState([]);
-		const [alcances, setAlcances] = useState([]);
+
+		// Obtenemos las listas a partir de los mapas
+		const alcances = MAPA_ALCANCES[grupoDocumento] || [];
+		const tiposDocumento = MAPA_TIPOS_DOCUMENTO[form.alcance] || [];
+
 
 		const cargarCatalogos = async () => 
 			{
-				try 
-					{
-						if (grupoDocumento === 'DOC_NOR')
-							{
-								const tipos = await obtenerCatalogo('0001','TIPO_DOC_NORMATIVO');
-								setTiposDocumento(tipos);
-							}
-						//else 
-						//	{
-						if (grupoDocumento === 'DOC_EXT_NOR')
-							{
-								const tipos = await obtenerCatalogo('0001','TIPO_DOC_EXT_NOR');
-								setTiposDocumento(tipos);
-							}
-						if (grupoDocumento === 'DOC_REQ_ESTATAL')
-							{
-								const tipos = await obtenerCatalogo('0001','TIPO_DOC_REQ_EST');
-								setTiposDocumento(tipos);
-							}
-						//else 
-						//	{
-						if (grupoDocumento === 'DOC_OTROS')
-							{
-								const tipos = await obtenerCatalogo('0001','TIPO_DOC_OTROS');
-								setTiposDocumento(tipos);
-							}	
-							
-						//				setTiposDocumento([]);
-						//}
-
-						const alc = await obtenerCatalogo('0099','TIPO_GESTION');
-						setAlcances(alc);
-					}
-				catch (error) 
-					{
-						console.error(error);
-					}
+				// Ya no se requiere cargar de BD porque se usan las listas hardcodeadas
 			};
 
 		const cargarFormulario = () => 
@@ -278,10 +296,12 @@ export default function ModalDocumento({visible,
 												update_by: usuario.usuario_id
 												};
 
-						
-								datosDocumento.tipo_documento = '';						
-								//datosDocumento.tipo_documento_id = '';
-						
+						// Recuperar la descripción del tipo de documento para guardarla si es necesario
+						const tipoSeleccionado = tiposDocumento.find(t => t.codigo_valor === form.tipo_documento_id);
+						if (tipoSeleccionado) {
+							datosDocumento.tipo_documento = tipoSeleccionado.descripcion;
+						}
+
 						if (modo === 'NUEVO') 
 							{
 								await crearDocumento(datosDocumento);
@@ -349,7 +369,7 @@ export default function ModalDocumento({visible,
 											<div style={styles.field}>
 													<label style={styles.label}>Alcance</label>
 													<div style={styles.readOnlyValue}>
-														{documento.descripcion_alcance}
+														{documento.descripcion_alcance || documento.alcance}
 													</div>
 											</div>
 
@@ -430,7 +450,7 @@ export default function ModalDocumento({visible,
 							value={form.alcance}
 							disabled={soloLectura}
 							style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
-							onChange={(e)=>setForm({...form,alcance: e.target.value})}>
+							onChange={(e)=>setForm({...form, alcance: e.target.value, tipo_documento_id: '', tipo_documento: ''})}>
 							<option value="">Seleccione...</option>
 							{
 								alcances.map(item => (	<option key={item.codigo_valor} value={item.codigo_valor}>
@@ -445,11 +465,10 @@ export default function ModalDocumento({visible,
                         <label style={styles.label}>Tipo Documento</label>
 
                         {
-                            
                             <select
-                                disabled={soloLectura}
+                                disabled={soloLectura || !form.alcance}
                                 value={form.tipo_documento_id}
-                                style={{...styles.input, ...(soloLectura ? styles.inputDisabled : {})}}
+                                style={{...styles.input, ...(soloLectura || !form.alcance ? styles.inputDisabled : {})}}
                                 onChange={(e)=>setForm({...form,tipo_documento_id: e.target.value})}>
                                 <option value="">Seleccione</option>
                                 {
