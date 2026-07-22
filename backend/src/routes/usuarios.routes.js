@@ -109,11 +109,13 @@ router.post('/usuarios/registro', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
+    // rol_id = 2 (PROVEEDOR) por defecto para cumplir el NOT NULL de la BD.
+    // El administrador reasignará el rol real al momento de aprobar.
     const query = `
       INSERT INTO "SISGES"."SEG_USUARIO"
-        (username, password_hash, estado_usuario, primer_ingreso, estado)
+        (username, password_hash, rol_id, estado_usuario, primer_ingreso, estado)
       VALUES
-        ($1, $2, 'P', 'N', 'I')
+        ($1, $2, 2, 'P', 'N', 'I')
       RETURNING usuario_id, username;
     `;
 
