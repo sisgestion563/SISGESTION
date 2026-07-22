@@ -321,35 +321,16 @@ export default function ProvidersPage() {
     // ── Carga ficha del PROVEEDOR logueado ────────────────────────────────────
     const verificarYCargarProveedor = async () => {
         try {
-            const paramsCache = `?_cb=${new Date().getTime()}`;
-
             if (miProveedorId) {
+                // Tiene proveedor_id en el JWT → carga su ficha directamente
                 const miFichaUnica = await obtenerProveedorPorId(miProveedorId);
                 if (miFichaUnica) {
                     setProveedores([miFichaUnica]);
-                    return;
                 }
+                return;
             }
-
-            // Fallback: buscar entre todos e identificar por username/correo
-            const data = await obtenerProveedores(paramsCache);
-            if (data && data.length > 0) {
-                const miFichaReal = data.find(p =>
-                    (p.correo && p.correo.toLowerCase() === usuarioLogueado?.username?.toLowerCase() + '@gmail.com') ||
-                    (p.proveedor && p.proveedor.toLowerCase().includes(usuarioLogueado?.username?.toLowerCase()))
-                );
-
-                if (miFichaReal) {
-                    setProveedores([miFichaReal]);
-                    const usuarioCorregido = {
-                        ...usuarioLogueado,
-                        proveedor_id: miFichaReal.proveedor_id || miFichaReal.PROVEEDOR_ID,
-                        primer_ingreso: usuarioLogueado?.primer_ingreso === 'L' ? 'L' : 'N'
-                    };
-                    localStorage.setItem('usuario', JSON.stringify(usuarioCorregido));
-                    window.location.reload();
-                }
-            }
+            // Sin proveedor_id → el usuario aún no tiene ficha.
+            // Se mostrará el formulario de autoregistro (sin hacer nada aquí).
         } catch (error) {
             console.error("Error al cargar ficha del proveedor:", error);
         }
