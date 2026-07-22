@@ -251,7 +251,6 @@ export default function LoginPage() {
             padding: '16px',
             backdropFilter: 'blur(3px)'
           }}
-          onClick={(e) => { if (e.target === e.currentTarget) cerrarRegistro(); }}
         >
           <div style={{
             background: 'white',
