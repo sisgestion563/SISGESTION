@@ -219,11 +219,11 @@ router.put('/usuarios/:id/aprobar', async (req, res) => {
          rol_id         = $1,
          estado_usuario = 'A',
          estado         = 'A',
-         primer_ingreso = $2,
+         primer_ingreso = 'L',
          update_date    = NOW()
-       WHERE usuario_id = $3
+       WHERE usuario_id = $2
        RETURNING usuario_id, username, estado_usuario, rol_id;`,
-      [intRolId, estadoEdicion, intUsuarioId]
+      [intRolId, intUsuarioId]
     );
 
     if (result.rows.length === 0) {
