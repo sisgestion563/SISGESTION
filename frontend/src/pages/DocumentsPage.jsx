@@ -631,7 +631,7 @@ export default function DocumentsPage() {
 											gap: '8px'
 										}}
 									>
-										📥 Descargar Todo (Excel Completo)
+										 Descargar Todo (Excel Completo)
 									</button>
 								</div>
 							</div>
