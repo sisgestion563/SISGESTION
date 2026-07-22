@@ -9,12 +9,13 @@ const findByUsername = async (username) => {
             u.password_hash,
             u.proveedor_id::varchar AS proveedor_id,
             u.primer_ingreso,
+            u.estado_usuario,
             r.codigo AS rol
         FROM "SISGES"."SEG_USUARIO" u
         JOIN "SISGES"."SEG_ROL" r
              ON r.rol_id = u.rol_id
         WHERE u.username = $1
-          AND u.estado = 'A'
+          AND u.estado_usuario = 'A'
     `;
 
     const result = await pool.query(
