@@ -333,6 +333,7 @@ export default function UsersPage() {
           <thead>
             <tr style={{ backgroundColor: '#0F172A', color: 'white', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               <th style={{ padding: '14px 16px' }}>Usuario</th>
+              <th style={{ padding: '14px 16px' }}>Correo</th>
               <th style={{ padding: '14px 16px' }}>Rol Asignado</th>
               <th style={{ padding: '14px 16px' }}>Estado</th>
               <th style={{ padding: '14px 16px', textAlign: 'center' }}>Permiso Ficha</th>
@@ -342,7 +343,7 @@ export default function UsersPage() {
           <tbody style={{ color: '#334155', fontSize: '14px' }}>
             {users.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+                <td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
                   No hay usuarios en este estado
                 </td>
               </tr>
@@ -372,13 +373,16 @@ export default function UsersPage() {
                       }}>
                         {user.username?.charAt(0).toUpperCase()}
                       </div>
-                      <div>
-                        <div style={{ fontWeight: '600', color: '#1e293b' }}>{user.username}</div>
-                        {user.correo && (
-                          <div style={{ fontSize: '12px', color: '#94a3b8' }}>{user.correo}</div>
-                        )}
-                      </div>
+                      <div style={{ fontWeight: '600', color: '#1e293b' }}>{user.username}</div>
                     </div>
+                  </td>
+
+                  {/* Correo */}
+                  <td style={{ padding: '12px 16px' }}>
+                    {user.correo
+                      ? <span style={{ fontSize: '13px', color: '#475569' }}>{user.correo}</span>
+                      : <span style={{ fontSize: '12px', color: '#cbd5e1' }}>—</span>
+                    }
                   </td>
 
                   {/* Rol */}

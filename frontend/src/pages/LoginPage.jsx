@@ -56,6 +56,7 @@ export default function LoginPage() {
   // ── Estado Modal Registro ─────────────────────────────────────────────────
   const [showRegistro, setShowRegistro] = useState(false);
   const [regUsername, setRegUsername]   = useState('');
+  const [regCorreo,   setRegCorreo]     = useState('');
   const [regPassword, setRegPassword]   = useState('');
   const [regLoading,  setRegLoading]    = useState(false);
   const [regError,    setRegError]      = useState('');
@@ -79,6 +80,7 @@ export default function LoginPage() {
 
   const abrirRegistro = () => {
     setRegUsername('');
+    setRegCorreo('');
     setRegPassword('');
     setRegError('');
     setRegSuccess(false);
@@ -88,6 +90,7 @@ export default function LoginPage() {
   const cerrarRegistro = () => {
     setShowRegistro(false);
     setRegSuccess(false);
+    setRegCorreo('');
     setRegError('');
   };
 
@@ -97,7 +100,7 @@ export default function LoginPage() {
     setRegLoading(true);
 
     try {
-      await usersService.registrar({ username: regUsername, password: regPassword });
+      await usersService.registrar({ username: regUsername, password: regPassword, correo: regCorreo || undefined });
       setRegSuccess(true);
     } catch (err) {
       const msg = err.response?.data?.error || 'Error al enviar la solicitud. Intenta nuevamente.';
@@ -304,8 +307,10 @@ export default function LoginPage() {
                   <h4 style={{ margin: '0 0 8px', color: '#0f172a', fontSize: '17px', fontWeight: '800' }}>
                     ¡Solicitud enviada!
                   </h4>
-                  <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>
-                    Tu solicitud fue recibida. Un administrador revisará tu cuenta y te habilitará el acceso.
+                  <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px', lineHeight: '1.6' }}>
+                    Tu solicitud fue recibida correctamente.
+                    Un <strong>administrador</strong> revisará tu cuenta y te 
+                    <strong> remitirá un mensaje</strong> cuando ya te encuentres habilitado para ingresar al sistema.
                   </p>
                   <button
                     onClick={cerrarRegistro}
@@ -317,7 +322,7 @@ export default function LoginPage() {
               ) : (
                 /* Formulario de registro */
                 <form onSubmit={registroSubmit}>
-                  <div style={{ marginBottom: '16px' }}>
+                  <div style={{ marginBottom: '14px' }}>
                     <label style={labelStyle}>Usuario *</label>
                     <input
                       required
@@ -327,6 +332,18 @@ export default function LoginPage() {
                       placeholder="Elige un nombre de usuario"
                       style={inputStyle}
                       autoComplete="username"
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '14px' }}>
+                    <label style={labelStyle}>Correo Electrónico</label>
+                    <input
+                      type="email"
+                      value={regCorreo}
+                      onChange={e => setRegCorreo(e.target.value)}
+                      placeholder="tucorreo@ejemplo.com"
+                      style={inputStyle}
+                      autoComplete="email"
                     />
                   </div>
 

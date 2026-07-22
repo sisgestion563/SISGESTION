@@ -99,7 +99,7 @@ router.get('/usuarios/:id', async (req, res) => {
 //    Crea usuario en estado PENDIENTE, sin rol ni proveedor
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/usuarios/registro', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, correo } = req.body;
 
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuario y contraseña son obligatorios' });
@@ -113,13 +113,13 @@ router.post('/usuarios/registro', async (req, res) => {
     // El administrador reasignará el rol real al momento de aprobar.
     const query = `
       INSERT INTO "SISGES"."SEG_USUARIO"
-        (username, password_hash, rol_id, estado_usuario, primer_ingreso, estado)
+        (username, correo, password_hash, rol_id, estado_usuario, primer_ingreso, estado)
       VALUES
-        ($1, $2, 2, 'P', 'N', 'I')
-      RETURNING usuario_id, username;
+        ($1, $2, $3, 2, 'P', 'N', 'I')
+      RETURNING usuario_id, username, correo;
     `;
 
-    const result = await pool.query(query, [username, passwordHash]);
+    const result = await pool.query(query, [username, correo || null, passwordHash]);
 
     res.status(201).json({
       message: 'Solicitud enviada. Un administrador revisará tu cuenta.',
