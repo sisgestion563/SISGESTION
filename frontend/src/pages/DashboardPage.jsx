@@ -27,6 +27,15 @@ import {
 // Reutilizamos el servicio para listar los expedientes por grupo corporativo
 import { listarPorGrupo } from '../services/documentos.service';
 
+const formatearFechaLocal = (fechaString) => {
+    if (!fechaString) return '';
+    const datePart = typeof fechaString === 'string' ? fechaString.split('T')[0] : new Date(fechaString).toISOString().split('T')[0];
+    const parts = datePart.split('-');
+    if (parts.length !== 3) return fechaString;
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+};
+
 // Misma paleta usada en DocumentsPage (navy sidebar + acentos azul/ámbar)
 const colors = {
     bg: '#f3f4f6',
@@ -433,7 +442,7 @@ export default function DashboardPage() {
                                                 <tr key={index}>
                                                     <td style={styles.td}>{item.proveedor}</td>
                                                     <td style={styles.td}>
-                                                        {new Date(item.fecha_vigencia).toLocaleDateString('es-PE')}
+                                                        {formatearFechaLocal(item.fecha_vigencia)}
                                                     </td>
                                                     <td style={styles.td}>
                                                         <span style={styles.badge(u.bg, u.fg)}>

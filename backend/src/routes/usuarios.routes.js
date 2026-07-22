@@ -322,25 +322,29 @@ router.put('/usuarios/:id', async (req, res) => {
       queryUsuario = `
         UPDATE "SISGES"."SEG_USUARIO"
         SET
-          username      = $1,
-          correo        = $2,
-          password_hash = $3,
-          rol_id        = $4,
-          primer_ingreso = $5
+          username       = $1,
+          correo         = $2,
+          password_hash  = $3,
+          rol_id         = $4,
+          primer_ingreso = $5,
+          estado_usuario = CASE WHEN estado_usuario = 'R' THEN 'A' ELSE estado_usuario END,
+          estado         = CASE WHEN estado = 'I' OR estado_usuario = 'R' THEN 'A' ELSE estado END
         WHERE usuario_id = $6
-        RETURNING usuario_id, username, correo, rol_id, primer_ingreso;
+        RETURNING usuario_id, username, correo, rol_id, primer_ingreso, estado_usuario;
       `;
       valuesUsuario = [username, correo, newPasswordHash, intRolId, primer_ingreso || 'L', intUsuarioId];
     } else {
       queryUsuario = `
         UPDATE "SISGES"."SEG_USUARIO"
         SET
-          username      = $1,
-          correo        = $2,
-          rol_id        = $3,
-          primer_ingreso = $4
+          username       = $1,
+          correo         = $2,
+          rol_id         = $3,
+          primer_ingreso = $4,
+          estado_usuario = CASE WHEN estado_usuario = 'R' THEN 'A' ELSE estado_usuario END,
+          estado         = CASE WHEN estado = 'I' OR estado_usuario = 'R' THEN 'A' ELSE estado END
         WHERE usuario_id = $5
-        RETURNING usuario_id, username, correo, rol_id, primer_ingreso;
+        RETURNING usuario_id, username, correo, rol_id, primer_ingreso, estado_usuario;
       `;
       valuesUsuario = [username, correo, intRolId, primer_ingreso || 'L', intUsuarioId];
     }

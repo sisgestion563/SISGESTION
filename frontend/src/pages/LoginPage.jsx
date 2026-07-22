@@ -309,7 +309,7 @@ export default function LoginPage() {
                   <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px', lineHeight: '1.6' }}>
                     Tu solicitud fue recibida correctamente.
                     Un <strong>administrador</strong> revisará tu cuenta y te 
-                    <strong> remitirá un mensaje</strong> cuando ya te encuentres habilitado para ingresar al sistema.
+                    <strong> remitirá un correo a <span style={{ color: '#2563eb' }}>{regCorreo || 'su correo ingresado'}</span></strong> cuando ya te encuentres habilitado para ingresar al sistema.
                   </p>
                   <button
                     onClick={cerrarRegistro}
@@ -322,7 +322,7 @@ export default function LoginPage() {
                 /* Formulario de registro */
                 <form onSubmit={registroSubmit}>
                   <div style={{ marginBottom: '14px' }}>
-                    <label style={labelStyle}>Usuario *</label>
+                    <label style={labelStyle}>Usuario (RUC/DNI) *</label>
                     <input
                       required
                       type="text"

@@ -252,6 +252,9 @@ export default function ModalDocumento({visible,
 		const formatearFecha = (fecha) => 
 			{
 				if (!fecha) return '';
+				if (typeof fecha === 'string') {
+					return fecha.split('T')[0];
+				}
 				return new Date(fecha).toISOString().split('T')[0];
 			};
 
@@ -284,6 +287,11 @@ export default function ModalDocumento({visible,
 
 		const guardar = async () => 
 			{
+				if (!form.alcance || !form.tipo_documento_id || !form.fecha_vigencia || !form.ruta_documento) {
+					alert('Los primeros 4 campos (Alcance, Tipo Documento, Fecha Vigencia y Ruta Documento) son obligatorios.');
+					return;
+				}
+
 				try 
 					{
 						const usuario =JSON.parse(localStorage.getItem('usuario'));
@@ -446,7 +454,7 @@ export default function ModalDocumento({visible,
                 <div className="modal-doc-grid" style={styles.grid}>
 				
 					<div style={styles.field}>
-						<label style={styles.label}>Alcance</label>
+						<label style={styles.label}>Alcance *</label>
 						<select
 							value={form.alcance}
 							disabled={soloLectura}
@@ -463,7 +471,7 @@ export default function ModalDocumento({visible,
 					</div>
 
                     <div style={styles.field}>
-                        <label style={styles.label}>Tipo Documento</label>
+                        <label style={styles.label}>Tipo Documento *</label>
 
                         {
                             <select
@@ -482,7 +490,7 @@ export default function ModalDocumento({visible,
                     </div>
 
                     <div style={styles.field}>
-                        <label style={styles.label}>Fecha Vigencia</label>
+                        <label style={styles.label}>Fecha Vigencia *</label>
                         <input
                             type="date"
                             disabled={soloLectura}
@@ -498,7 +506,7 @@ export default function ModalDocumento({visible,
                     </div>
 
                     <div style={styles.field}>
-                        <label style={styles.label}>Ruta Documento</label>
+                        <label style={styles.label}>Ruta Documento *</label>
                         <input
                             placeholder="Ruta Documento"
                             disabled={soloLectura}

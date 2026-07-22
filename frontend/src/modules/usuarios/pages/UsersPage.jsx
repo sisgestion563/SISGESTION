@@ -443,8 +443,8 @@ export default function UsersPage() {
                         <Eye size={13} /> Ver
                       </button>
 
-                      {/* Aprobar (solo pendientes) */}
-                      {isPendiente && (
+                      {/* Aprobar (solo pendientes o rechazados) */}
+                      {(isPendiente || estado === 'R') && (
                         <button
                           onClick={() => abrirModalAprobar(user)}
                           title="Aprobar usuario"
@@ -475,8 +475,8 @@ export default function UsersPage() {
                         </button>
                       )}
 
-                      {/* Editar (solo activos) */}
-                      {isActivo && (
+                      {/* Editar (solo activos o rechazados) */}
+                      {(isActivo || estado === 'R') && (
                         <button
                           onClick={() => abrirModalEditar(user)}
                           style={{

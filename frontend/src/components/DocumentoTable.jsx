@@ -7,6 +7,15 @@ export default function DocumentoTable({
 
 }){
 
+    const formatearFechaLocal = (fechaString) => {
+        if (!fechaString) return '';
+        const datePart = typeof fechaString === 'string' ? fechaString.split('T')[0] : new Date(fechaString).toISOString().split('T')[0];
+        const parts = datePart.split('-');
+        if (parts.length !== 3) return fechaString;
+        const [year, month, day] = parts;
+        return `${day}/${month}/${year}`;
+    };
+
     return (
 
         <>
@@ -102,10 +111,8 @@ export default function DocumentoTable({
                                     <td>
 
                                         {
-                                            new Date(
+                                            formatearFechaLocal(
                                                 documento.fecha_vigencia
-                                            ).toLocaleDateString(
-                                                'es-PE'
                                             )
                                         }
 

@@ -6,6 +6,15 @@ import ModalDocumento from '../components/ModalDocumento';
 import {obtenerCatalogo} from '../services/catalogos.service';
 import * as XLSX from 'xlsx';
 
+const formatearFechaLocal = (fechaString) => {
+    if (!fechaString) return '';
+    const datePart = typeof fechaString === 'string' ? fechaString.split('T')[0] : new Date(fechaString).toISOString().split('T')[0];
+    const parts = datePart.split('-');
+    if (parts.length !== 3) return fechaString;
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+};
+
 
 // Paleta tomada del layout general del sistema (sidebar navy + acentos azul/ámbar)
 const colors = {
@@ -336,7 +345,7 @@ export default function DocumentsPage() {
 			const data = documentos.map(item => ({
 				"Alcance": item.descripcion_alcance || '',
 				"Tipo Documento": item.descripcion_tipo_documento || item.tipo_documento || item.tipo_documento_id || '',
-				"Fecha Vigencia": new Date(item.fecha_vigencia).toLocaleDateString('es-PE'),
+				"Fecha Vigencia": formatearFechaLocal(item.fecha_vigencia),
 				"Estado": item.estado_documento === 'V' ? 'VIGENTE' : 'VENCIDO'
 			}));
 
@@ -345,6 +354,63 @@ export default function DocumentsPage() {
 			XLSX.utils.book_append_sheet(wb, ws, "Documentos");
 			
 			XLSX.writeFile(wb, `Documentos_${proveedorSeleccionado?.nro_documento || 'Export'}.xlsx`);
+		};
+
+		const descargarTodo = async () => {
+			if (!proveedorSeleccionado) return;
+			try {
+				const promesas = grupos.map(async (g) => {
+					const docs = await listarPorGrupo(proveedorSeleccionado.proveedor_id, g.codigo_valor);
+					return {
+						grupoNombre: g.descripcion,
+						documentos: docs || []
+					};
+				});
+				const resultados = await Promise.all(promesas);
+
+				const excelRows = [];
+				const razonSocialStr = proveedorSeleccionado.razon_social || 
+					`${proveedorSeleccionado.nombre || ''} ${proveedorSeleccionado.apellido_paterno || ''} ${proveedorSeleccionado.apellido_materno || ''}`.trim();
+					
+				excelRows.push({ "Columna": `RAZÓN SOCIAL: ${razonSocialStr}` });
+				excelRows.push({ "Columna": `DOCUMENTO: ${proveedorSeleccionado.nro_documento || ''}` });
+				excelRows.push({ "Columna": "" });
+
+				resultados.forEach(res => {
+					if (res.documentos.length > 0) {
+						excelRows.push({ "Columna": `=== GRUPO: ${res.grupoNombre.toUpperCase()} ===` });
+						excelRows.push({
+							"Columna": "Alcance",
+							"Tipo": "Tipo Documento",
+							"Vigencia": "Fecha Vigencia",
+							"Estado": "Estado",
+							"Ruta": "Ruta Documento",
+							"Observaciones": "Observaciones"
+						});
+
+						res.documentos.forEach(doc => {
+							excelRows.push({
+								"Columna": doc.descripcion_alcance || doc.alcance || '',
+								"Tipo": doc.descripcion_tipo_documento || doc.tipo_documento || doc.tipo_documento_id || '',
+								"Vigencia": formatearFechaLocal(doc.fecha_vigencia),
+								"Estado": doc.estado_documento === 'V' ? 'VIGENTE' : 'VENCIDO',
+								"Ruta": doc.ruta_documento || '',
+								"Observaciones": doc.observaciones || ''
+							});
+						});
+						excelRows.push({ "Columna": "" });
+					}
+				});
+
+				const ws = XLSX.utils.json_to_sheet(excelRows, { skipHeader: true });
+				const wb = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(wb, ws, "Todos los Documentos");
+				
+				XLSX.writeFile(wb, `Todos_Documentos_${proveedorSeleccionado.nro_documento || 'Proveedor'}.xlsx`);
+			} catch (error) {
+				console.error("Error al descargar todos los documentos:", error);
+				alert("Ocurrió un error al intentar descargar todos los documentos.");
+			}
 		};
 
 		// ── Búsqueda (solo ADMIN / CONSULTOR) ───────────────────────────────────
@@ -518,34 +584,56 @@ export default function DocumentsPage() {
 
 						<>
 
-							<div style={styles.infoBlock}>
+							<div style={{ ...styles.infoBlock, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+								<div>
+									<p style={styles.infoLine}>
+										<b>Razón Social:</b>{' '}
+										{
+											proveedorSeleccionado.razon_social ||
+											`${proveedorSeleccionado.nombre || ''} ${proveedorSeleccionado.apellido_paterno || ''} ${proveedorSeleccionado.apellido_materno || ''}`
+										}
+									</p>
 
-								<p style={styles.infoLine}>
-									<b>Razón Social:</b>{' '}
-									{
-										proveedorSeleccionado.razon_social ||
-										`${proveedorSeleccionado.nombre || ''} ${proveedorSeleccionado.apellido_paterno || ''} ${proveedorSeleccionado.apellido_materno || ''}`
-									}
-								</p>
+									<p style={styles.infoLine}>
+										<b>CIIU:</b>{' '}
+										{proveedorSeleccionado.ciiu}
+										{' - '}
+										{proveedorSeleccionado.descripcion_ciiu}
+									</p>
 
-								<p style={styles.infoLine}>
-									<b>CIIU:</b>{' '}
-									{proveedorSeleccionado.ciiu}
-									{' - '}
-									{proveedorSeleccionado.descripcion_ciiu}
-								</p>
-
-								<p style={styles.infoLine}>
-									<b>UBIGEO:</b>{' '}
-									{proveedorSeleccionado.ubigeo}
-									{' - '}
-									{proveedorSeleccionado.departamento}
-									{' / '}
-									{proveedorSeleccionado.provincia}
-									{' / '}
-									{proveedorSeleccionado.ciudad}
-								</p>
-
+									<p style={styles.infoLine}>
+										<b>UBIGEO:</b>{' '}
+										{proveedorSeleccionado.ubigeo}
+										{' - '}
+										{proveedorSeleccionado.departamento}
+										{' / '}
+										{proveedorSeleccionado.provincia}
+										{' / '}
+										{proveedorSeleccionado.ciudad}
+									</p>
+								</div>
+								<div style={{ alignSelf: 'center' }}>
+									<button
+										onClick={descargarTodo}
+										style={{
+											background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+											color: 'white',
+											border: 'none',
+											padding: '12px 24px',
+											borderRadius: '8px',
+											cursor: 'pointer',
+											fontWeight: 'bold',
+											fontSize: '14px',
+											boxShadow: '0 4px 6px -1px rgba(0,0,0,0.15), 0 2px 4px -1px rgba(0,0,0,0.1)',
+											transition: 'all 0.2s',
+											display: 'flex',
+											alignItems: 'center',
+											gap: '8px'
+										}}
+									>
+										📥 Descargar Todo (Excel Completo)
+									</button>
+								</div>
 							</div>
 
 							<hr style={styles.divider}/>
@@ -634,7 +722,7 @@ export default function DocumentsPage() {
 											</td>
 
 											<td style={styles.td}>
-												{new Date(item.fecha_vigencia).toLocaleDateString('es-PE')}
+												{formatearFechaLocal(item.fecha_vigencia)}
 											</td>
 
 											<td style={styles.td}>
