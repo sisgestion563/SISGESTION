@@ -178,106 +178,68 @@ router.post('/usuarios', async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 5. PUT /api/usuarios/:id/aprobar — Aprobar usuario pendiente
-//    Requiere: rol_id, proveedor_id (obligatorio para PROVEEDOR y CONSULTOR)
+//    Solo requiere rol_id. El proveedor_id se asocia después cuando el
+//    usuario rellena su propia ficha (MAE_PROVEEDOR).
 // ─────────────────────────────────────────────────────────────────────────────
 router.put('/usuarios/:id/aprobar', async (req, res) => {
   const { id } = req.params;
-  const { rol_id, proveedor_id, primer_ingreso } = req.body;
+  const { rol_id } = req.body;
 
   if (!rol_id) {
     return res.status(400).json({ error: 'El rol es obligatorio para aprobar un usuario' });
   }
 
-  const client = await pool.connect();
-
   try {
-    await client.query('BEGIN');
-
-    const intRolId = parseInt(rol_id, 10);
+    const intRolId     = parseInt(rol_id, 10);
     const intUsuarioId = parseInt(id, 10);
 
     if (isNaN(intRolId) || isNaN(intUsuarioId)) {
-      await client.query('ROLLBACK');
       return res.status(400).json({ error: 'IDs con formato inválido' });
     }
 
-    // Obtener código del rol para saber si requiere proveedor_id
-    const rolResult = await client.query(
+    // Obtener código del rol para ajustar primer_ingreso
+    const rolResult = await pool.query(
       `SELECT codigo FROM "SISGES"."SEG_ROL" WHERE rol_id = $1`,
       [intRolId]
     );
 
     if (rolResult.rows.length === 0) {
-      await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Rol no encontrado' });
     }
 
     const rolCodigo = rolResult.rows[0].codigo;
-    const requiereProveedor = rolCodigo === 'PROVEEDOR' || rolCodigo === 'CONSULTOR';
 
-    if (requiereProveedor && !proveedor_id) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({
-        error: `El campo proveedor es obligatorio para el rol ${rolCodigo}`
-      });
-    }
+    // PROVEEDOR y CONSULTOR → 'H' para que puedan editar su ficha al ingresar
+    // ADMIN / otros         → 'L'
+    const estadoEdicion = (rolCodigo === 'PROVEEDOR' || rolCodigo === 'CONSULTOR') ? 'H' : 'L';
 
-    // Determinar primer_ingreso según rol
-    // PROVEEDOR → 'H' (habilitado para editar ficha), resto → 'L'
-    const estadoEdicion = rolCodigo === 'PROVEEDOR'
-      ? (primer_ingreso || 'H')
-      : 'L';
-
-    const intProveedorId = proveedor_id ? parseInt(proveedor_id, 10) : null;
-
-    // Si es proveedor, sincronizar cod_estado_edicion en MAE_PROVEEDOR
-    if (rolCodigo === 'PROVEEDOR' && intProveedorId) {
-      await client.query(
-        `UPDATE "SISGES"."MAE_PROVEEDOR" SET cod_estado_edicion = $1 WHERE proveedor_id = $2`,
-        [estadoEdicion, intProveedorId]
-      );
-    }
-
-    // Actualizar usuario: aprobar
-    const updateQuery = `
-      UPDATE "SISGES"."SEG_USUARIO"
-      SET
-        rol_id        = $1,
-        proveedor_id  = $2,
-        estado_usuario = 'A',
-        estado        = 'A',
-        primer_ingreso = $3,
-        update_date   = NOW()
-      WHERE usuario_id = $4
-      RETURNING usuario_id, username, estado_usuario, rol_id;
-    `;
-
-    const result = await client.query(updateQuery, [
-      intRolId,
-      intProveedorId,
-      estadoEdicion,
-      intUsuarioId
-    ]);
+    const result = await pool.query(
+      `UPDATE "SISGES"."SEG_USUARIO"
+       SET
+         rol_id         = $1,
+         estado_usuario = 'A',
+         estado         = 'A',
+         primer_ingreso = $2,
+         update_date    = NOW()
+       WHERE usuario_id = $3
+       RETURNING usuario_id, username, estado_usuario, rol_id;`,
+      [intRolId, estadoEdicion, intUsuarioId]
+    );
 
     if (result.rows.length === 0) {
-      await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
-
-    await client.query('COMMIT');
 
     res.json({
       message: '✅ Usuario aprobado correctamente',
       user: result.rows[0]
     });
   } catch (error) {
-    await client.query('ROLLBACK');
     console.error(`❌ Error en PUT /api/usuarios/${id}/aprobar:`, error.message);
     res.status(500).json({ error: error.message });
-  } finally {
-    client.release();
   }
 });
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 6. PUT /api/usuarios/:id/rechazar — Rechazar usuario pendiente

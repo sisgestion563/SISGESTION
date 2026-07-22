@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { usersService } from '../services/users.service';
-import { obtenerProveedores } from '../../../services/providers.service';
-import { Lock, Unlock, Eye, EyeOff, Copy, CheckCheck, UserCheck, UserX, Search } from 'lucide-react';
+import { Lock, Unlock, Eye, EyeOff, Copy, CheckCheck, UserCheck, UserX } from 'lucide-react';
 
 // ── Helpers de estilo ─────────────────────────────────────────────────────────
 const ESTADO_CONFIG = {
@@ -95,12 +94,9 @@ export default function UsersPage() {
   // ── Modal Aprobar ─────────────────────────────────────────────────────────
   const [isAprobarOpen, setIsAprobarOpen]         = useState(false);
   const [usuarioAprobar, setUsuarioAprobar]        = useState(null);
-  const [aprobarRolId, setAprobarRolId]            = useState('2');
-  const [aprobarProveedorId, setAprobarProveedorId]= useState('');
-  const [aprobarLoading, setAprobarLoading]        = useState(false);
-  const [aprobarError, setAprobarError]            = useState('');
-  const [proveedoresLista, setProveedoresLista]    = useState([]);
-  const [proveedoresLoading, setProveedoresLoading]= useState(false);
+  const [aprobarRolId, setAprobarRolId]  = useState('2');
+  const [aprobarLoading, setAprobarLoading] = useState(false);
+  const [aprobarError, setAprobarError]  = useState('');
 
   // ── Modal Rechazar ────────────────────────────────────────────────────────
   const [isRechazarOpen, setIsRechazarOpen] = useState(false);
@@ -209,41 +205,19 @@ export default function UsersPage() {
   };
 
   // ── Flujo Aprobar ─────────────────────────────────────────────────────────
-  const abrirModalAprobar = async (user) => {
+  const abrirModalAprobar = (user) => {
     setUsuarioAprobar(user);
     setAprobarRolId('2');
-    setAprobarProveedorId('');
     setAprobarError('');
     setIsAprobarOpen(true);
-
-    // Cargar proveedores para el select
-    setProveedoresLoading(true);
-    try {
-      const data = await obtenerProveedores();
-      setProveedoresLista(data || []);
-    } catch {
-      setProveedoresLista([]);
-    } finally {
-      setProveedoresLoading(false);
-    }
   };
 
   const confirmarAprobar = async () => {
     setAprobarError('');
     setAprobarLoading(true);
-    const rolActual = catalogoRolesFijos.find(r => r.id.toString() === aprobarRolId.toString());
-    const requiereProveedor = rolActual?.codigo === 'PROVEEDOR' || rolActual?.codigo === 'CONSULTOR';
-
-    if (requiereProveedor && !aprobarProveedorId) {
-      setAprobarError(`Debes seleccionar un proveedor para el rol ${rolActual?.nombre}.`);
-      setAprobarLoading(false);
-      return;
-    }
-
     try {
       await usersService.aprobar(usuarioAprobar.usuario_id, {
-        rol_id:       parseInt(aprobarRolId, 10),
-        proveedor_id: aprobarProveedorId || null
+        rol_id: parseInt(aprobarRolId, 10)
       });
       setIsAprobarOpen(false);
       loadUsers(filtroActivo);
@@ -716,7 +690,7 @@ export default function UsersPage() {
             {/* Body */}
             <div style={{ padding: '24px' }}>
               <p style={{ margin: '0 0 20px', color: '#475569', fontSize: '14px', lineHeight: '1.5' }}>
-                Asigna el rol y proveedor correspondiente para activar la cuenta.
+                Asigna el rol correspondiente para activar la cuenta. El usuario podrá rellenar su ficha al ingresar.
               </p>
 
               {/* Rol */}
@@ -724,7 +698,7 @@ export default function UsersPage() {
                 <label style={labelStyle}>Rol *</label>
                 <select
                   value={aprobarRolId}
-                  onChange={e => { setAprobarRolId(e.target.value); setAprobarProveedorId(''); }}
+                  onChange={e => setAprobarRolId(e.target.value)}
                   style={{ ...inputStyle, background: 'white' }}
                 >
                   {catalogoRolesFijos.map(rol => (
@@ -733,30 +707,6 @@ export default function UsersPage() {
                 </select>
               </div>
 
-              {/* Proveedor (si es PROVEEDOR o CONSULTOR) */}
-              {requiereProveedorModal && (
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={labelStyle}>
-                    Proveedor {requiereProveedorModal ? '*' : '(opcional)'}
-                  </label>
-                  {proveedoresLoading ? (
-                    <div style={{ padding: '10px', color: '#64748b', fontSize: '13px' }}>Cargando proveedores...</div>
-                  ) : (
-                    <select
-                      value={aprobarProveedorId}
-                      onChange={e => setAprobarProveedorId(e.target.value)}
-                      style={{ ...inputStyle, background: 'white' }}
-                    >
-                      <option value="">— Selecciona un proveedor —</option>
-                      {proveedoresLista.map(p => (
-                        <option key={p.proveedor_id} value={p.proveedor_id}>
-                          {p.razon_social || `${p.nombre || ''} ${p.apellido_paterno || ''}`.trim()}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-              )}
 
               {aprobarError && (
                 <div style={{ marginBottom: '14px', padding: '10px 13px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', color: '#dc2626', fontSize: '13px', fontWeight: '500' }}>
