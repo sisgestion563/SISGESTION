@@ -344,7 +344,8 @@ export default function DocumentsPage() {
 
 			const data = documentos.map(item => ({
 				"Alcance": item.descripcion_alcance || '',
-				"Tipo Documento": item.descripcion_tipo_documento || item.tipo_documento || item.tipo_documento_id || '',
+				"Tipo Documento": item.descripcion_tipo_documento || item.tipo_documento || 
+					(item.tipo_documento_id === '01' ? 'Carta de Presentación' : item.tipo_documento_id === '02' ? 'Otros' : item.tipo_documento_id || ''),
 				"Fecha Vigencia": formatearFechaLocal(item.fecha_vigencia),
 				"Estado": item.estado_documento === 'V' ? 'VIGENTE' : 'VENCIDO'
 			}));
@@ -391,7 +392,8 @@ export default function DocumentsPage() {
 						res.documentos.forEach(doc => {
 							excelRows.push({
 								"Columna": doc.descripcion_alcance || doc.alcance || '',
-								"Tipo": doc.descripcion_tipo_documento || doc.tipo_documento || doc.tipo_documento_id || '',
+								"Tipo": doc.descripcion_tipo_documento || doc.tipo_documento || 
+									(doc.tipo_documento_id === '01' ? 'Carta de Presentación' : doc.tipo_documento_id === '02' ? 'Otros' : doc.tipo_documento_id || ''),
 								"Vigencia": formatearFechaLocal(doc.fecha_vigencia),
 								"Estado": doc.estado_documento === 'V' ? 'VIGENTE' : 'VENCIDO',
 								"Ruta": doc.ruta_documento || '',
@@ -631,7 +633,7 @@ export default function DocumentsPage() {
 											gap: '8px'
 										}}
 									>
-										 Descargar Todo (Excel Completo)
+										 Exportar Documentos
 									</button>
 								</div>
 							</div>
@@ -675,13 +677,6 @@ export default function DocumentsPage() {
 										Agregar Documento
 									</button>
 								)}
-
-								<button
-									style={styles.btnSuccess}
-									onClick={exportarExcel}
-								>
-									Exportar Documentos
-								</button>
 							</div>
 
 							<div className="table-scroll">
@@ -717,7 +712,7 @@ export default function DocumentsPage() {
 												{
 													item.descripcion_tipo_documento ||
 													item.tipo_documento ||
-													item.tipo_documento_id
+													(item.tipo_documento_id === '01' ? 'Carta de Presentación' : item.tipo_documento_id === '02' ? 'Otros' : item.tipo_documento_id)
 												}
 											</td>
 

@@ -387,7 +387,8 @@ export default function ModalDocumento({visible,
 												<div style={styles.readOnlyValue}>
 													{
 														documento.tipo_documento ||
-														documento.descripcion_tipo_documento
+														documento.descripcion_tipo_documento ||
+														(documento.tipo_documento_id === '01' ? 'Carta de Presentación' : documento.tipo_documento_id === '02' ? 'Otros' : documento.tipo_documento_id)
 													}
 												</div>
 											</div>

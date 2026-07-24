@@ -8,6 +8,8 @@ export default function ModalVerProveedor({
         return null;
     }
 
+    const esEmpresa = proveedor.tipo_documento === '06' || proveedor.tipo_documento === 'RUC';
+
     return (
 
         <div
@@ -50,52 +52,47 @@ export default function ModalVerProveedor({
                             <td>{proveedor.proveedor_id}</td>
                         </tr>
 
-<td><b>Tipo Documento</b></td>                        
-						<td>
-        {
-            proveedor.tipo_documento
-            ?
-            `${proveedor.tipo_documento} - ${proveedor.descripcion_tipo_documento || ''}`
-            :
-            ''
-        }
-    </td>
-						
+                        <tr>
+                            <td><b>Tipo Documento</b></td>                        
+                            <td>
+                                {
+                                    proveedor.tipo_documento
+                                    ?
+                                    `${proveedor.tipo_documento} - ${proveedor.descripcion_tipo_documento || ''}`
+                                    :
+                                    ''
+                                }
+                            </td>
+                        </tr>
 
                         <tr>
                             <td><b>Nro Documento</b></td>
                             <td>{proveedor.nro_documento}</td>
                         </tr>
 
-                        <tr>
-                            <td><b>Razón Social</b></td>
-                            <td>{proveedor.razon_social}</td>
-                        </tr>
-						
-						<tr>
-                            <td><b>Página Web</b></td>
-                            <td>{proveedor.pagina_web}</td>
-                        </tr>
-						
-						<tr>
-                            <td><b>Representante Legal</b></td>
-                            <td>{proveedor.representante_legal}</td>
-                        </tr>
+                        {esEmpresa ? (
+                            <tr>
+                                <td><b>Razón Social</b></td>
+                                <td>{proveedor.razon_social}</td>
+                            </tr>
+                        ) : (
+                            <>
+                                <tr>
+                                    <td><b>Nombres</b></td>
+                                    <td>{proveedor.nombre}</td>
+                                </tr>
 
-                        <tr>
-                            <td><b>Nombres</b></td>
-                            <td>{proveedor.nombre}</td>
-                        </tr>
+                                <tr>
+                                    <td><b>Apellido Paterno</b></td>
+                                    <td>{proveedor.apellido_paterno}</td>
+                                </tr>
 
-                        <tr>
-                            <td><b>Apellido Paterno</b></td>
-                            <td>{proveedor.apellido_paterno}</td>
-                        </tr>
-
-                        <tr>
-                            <td><b>Apellido Materno</b></td>
-                            <td>{proveedor.apellido_materno}</td>
-                        </tr>
+                                <tr>
+                                    <td><b>Apellido Materno</b></td>
+                                    <td>{proveedor.apellido_materno}</td>
+                                </tr>
+                            </>
+                        )}
 
                         <tr>
                             <td><b>Correo</b></td>
@@ -106,7 +103,19 @@ export default function ModalVerProveedor({
                             <td><b>Teléfono</b></td>
                             <td>{proveedor.telefono}</td>
                         </tr>
-						
+
+                        <tr>
+                            <td><b>Página Web</b></td>
+                            <td>{proveedor.pagina_web}</td>
+                        </tr>
+
+                        {esEmpresa && (
+                            <tr>
+                                <td><b>Representante Legal</b></td>
+                                <td>{proveedor.representante_legal}</td>
+                            </tr>
+                        )}
+
                         <tr>
                             <td><b>Departamento</b></td>
                             <td>{proveedor.departamento}</td>
@@ -118,11 +127,11 @@ export default function ModalVerProveedor({
                         </tr>
 
                         <tr>
-                            <td><b>Ciudad</b></td>
+                            <td><b>Distrito / Ciudad</b></td>
                             <td>{proveedor.ciudad}</td>
                         </tr>
 
-						<tr>
+                        <tr>
                             <td><b>Ubigeo</b></td>
                             <td>{proveedor.ubigeo}</td>
                         </tr>
@@ -131,35 +140,21 @@ export default function ModalVerProveedor({
                             <td><b>Dirección</b></td>
                             <td>{proveedor.direccion}</td>
                         </tr>
-												
 
                         <tr>
-    <td>
-        <b>CIIU</b>
-    </td>
+                            <td><b>CIIU</b></td>
+                            <td>
+                                {proveedor.ciiu} - {proveedor.descripcion_ciiu}
+                            </td>
+                        </tr>
 
-    <td>
-        {
-            proveedor.ciiu
-        } - {
-            proveedor.descripcion_ciiu
-        }
-    </td>
-</tr>
+                        <tr>
+                            <td><b>Estado Proveedor</b></td>
+                            <td>
+                                {proveedor.status} - {proveedor.descripcion_status_prov}
+                            </td>
+                        </tr>
 
-<tr>
-    <td>
-        <b>Estado Proveedor</b>
-    </td>
-
-    <td>
-        {
-            proveedor.status
-        } - {
-            proveedor.descripcion_status_prov
-        }
-    </td>
-</tr>
                     </tbody>
 
                 </table>

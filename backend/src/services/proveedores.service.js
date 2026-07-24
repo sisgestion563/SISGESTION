@@ -23,9 +23,59 @@ const obtenerPorId = async (
 
 };
 
+const validarProveedor = (proveedor) => {
+  if (!proveedor.tipo_documento) {
+    throw new Error('El tipo de documento es obligatorio.');
+  }
+  if (!proveedor.nro_documento || !String(proveedor.nro_documento).trim()) {
+    throw new Error('El número de documento es obligatorio.');
+  }
+  if (proveedor.tipo_documento === '06') {
+    if (!proveedor.razon_social || !String(proveedor.razon_social).trim()) {
+      throw new Error('La razón social es obligatoria.');
+    }
+    if (!proveedor.representante_legal || !String(proveedor.representante_legal).trim()) {
+      throw new Error('El representante legal es obligatorio.');
+    }
+  } else {
+    if (!proveedor.nombre || !String(proveedor.nombre).trim()) {
+      throw new Error('El nombre es obligatorio.');
+    }
+    if (!proveedor.apellido_paterno || !String(proveedor.apellido_paterno).trim()) {
+      throw new Error('El apellido paterno es obligatorio.');
+    }
+    if (!proveedor.apellido_materno || !String(proveedor.apellido_materno).trim()) {
+      throw new Error('El apellido materno es obligatorio.');
+    }
+  }
+  if (!proveedor.correo || !String(proveedor.correo).trim()) {
+    throw new Error('El correo es obligatorio.');
+  }
+  if (!proveedor.telefono || !String(proveedor.telefono).trim()) {
+    throw new Error('El teléfono es obligatorio.');
+  }
+  if (!proveedor.ciiu) {
+    throw new Error('La actividad económica (CIIU) es obligatoria.');
+  }
+  if (!proveedor.departamento) {
+    throw new Error('El departamento es obligatorio.');
+  }
+  if (!proveedor.provincia) {
+    throw new Error('La provincia es obligatoria.');
+  }
+  if (!proveedor.ubigeo) {
+    throw new Error('El distrito es obligatorio.');
+  }
+  if (!proveedor.direccion || !String(proveedor.direccion).trim()) {
+    throw new Error('La dirección es obligatoria.');
+  }
+};
+
 const crear = async (
     proveedor
 ) => {
+
+    validarProveedor(proveedor);
 
     const existe =
         await repository.existeProveedor(
@@ -51,6 +101,8 @@ const actualizar = async (
     proveedorId,
     proveedor
 ) => {
+
+    validarProveedor(proveedor);
 
     return await repository.actualizar(
         proveedorId,

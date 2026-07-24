@@ -45,7 +45,7 @@ const btnPrimaryStyle = {
 export default function LoginPage() {
 
   const { doLogin } = useAuth();
-  const navigate    = useNavigate();
+  const navigate = useNavigate();
 
   // ── Estado Login ─────────────────────────────────────────────────────────
   const [username, setUsername] = useState('');
@@ -55,12 +55,12 @@ export default function LoginPage() {
 
   // ── Estado Modal Registro ─────────────────────────────────────────────────
   const [showRegistro, setShowRegistro] = useState(false);
-  const [regUsername, setRegUsername]   = useState('');
-  const [regCorreo,   setRegCorreo]     = useState('');
-  const [regPassword, setRegPassword]   = useState('');
-  const [regLoading,  setRegLoading]    = useState(false);
-  const [regError,    setRegError]      = useState('');
-  const [regSuccess,  setRegSuccess]    = useState(false);
+  const [regUsername, setRegUsername] = useState('');
+  const [regCorreo, setRegCorreo] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regLoading, setRegLoading] = useState(false);
+  const [regError, setRegError] = useState('');
+  const [regSuccess, setRegSuccess] = useState(false);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const loginSubmit = async (e) => {
@@ -148,7 +148,7 @@ export default function LoginPage() {
             boxShadow: '0 8px 20px rgba(25,118,210,0.4)'
           }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           </div>
           <h1 style={{ margin: 0, color: '#0f172a', fontSize: '22px', fontWeight: '800', letterSpacing: '-0.3px' }}>
@@ -162,7 +162,7 @@ export default function LoginPage() {
         {/* Formulario */}
         <form onSubmit={loginSubmit}>
           <div style={{ marginBottom: '18px' }}>
-            <label style={labelStyle}>Usuario</label>
+            <label style={labelStyle}>Usuario (RUC/DNI)</label>
             <input
               type="text"
               value={username}
@@ -308,7 +308,7 @@ export default function LoginPage() {
                   </h4>
                   <p style={{ margin: '0 0 20px', color: '#64748b', fontSize: '14px', lineHeight: '1.6' }}>
                     Tu solicitud fue recibida correctamente.
-                    Un <strong>administrador</strong> revisará tu cuenta y te 
+                    Un <strong>administrador</strong> revisará tu cuenta y te
                     <strong> remitirá un correo a <span style={{ color: '#2563eb' }}>{regCorreo || 'su correo ingresado'}</span></strong> cuando ya te encuentres habilitado para ingresar al sistema.
                   </p>
                   <button
@@ -322,7 +322,7 @@ export default function LoginPage() {
                 /* Formulario de registro */
                 <form onSubmit={registroSubmit}>
                   <div style={{ marginBottom: '14px' }}>
-                    <label style={labelStyle}>Usuario (RUC/DNI) *</label>
+                    <label style={labelStyle}>Usuario (RUC/DNI)*</label>
                     <input
                       required
                       type="text"
@@ -335,8 +335,9 @@ export default function LoginPage() {
                   </div>
 
                   <div style={{ marginBottom: '14px' }}>
-                    <label style={labelStyle}>Correo Electrónico</label>
+                    <label style={labelStyle}>Correo Electrónico *</label>
                     <input
+                      required
                       type="email"
                       value={regCorreo}
                       onChange={e => setRegCorreo(e.target.value)}

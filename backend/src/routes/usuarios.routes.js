@@ -101,8 +101,8 @@ router.get('/usuarios/:id', async (req, res) => {
 router.post('/usuarios/registro', async (req, res) => {
   const { username, password, correo } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Usuario y contraseña son obligatorios' });
+  if (!username || !password || !correo) {
+    return res.status(400).json({ error: 'El usuario, la contraseña y el correo electrónico son obligatorios.' });
   }
 
   try {
@@ -129,7 +129,7 @@ router.post('/usuarios/registro', async (req, res) => {
     console.error('❌ Error en POST /api/usuarios/registro:', error.message);
 
     if (error.code === '23505') {
-      return res.status(400).json({ error: 'El nombre de usuario ya está registrado' });
+      return res.status(400).json({ error: 'El usuario ya está registrado' });
     }
 
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -169,7 +169,7 @@ router.post('/usuarios', async (req, res) => {
     console.error('❌ Error en POST /api/usuarios:', error.message);
 
     if (error.code === '23505') {
-      return res.status(400).json({ error: 'El nombre de usuario ya se encuentra registrado' });
+      return res.status(400).json({ error: 'El usuario ya se encuentra registrado' });
     }
 
     res.status(500).json({ error: 'Error interno del servidor al guardar' });
@@ -367,7 +367,7 @@ router.put('/usuarios/:id', async (req, res) => {
     console.error(`❌ Error en PUT /api/usuarios/${id}:`, error.message);
 
     if (error.code === '23505') {
-      return res.status(400).json({ error: 'El nombre de usuario ingresado ya está en uso por otra cuenta.' });
+      return res.status(400).json({ error: 'El usuario ingresado ya está en uso por otra cuenta.' });
     }
     res.status(500).json({ error: error.message });
   } finally {

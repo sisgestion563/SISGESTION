@@ -346,15 +346,19 @@ else{
             }}
         >
 
-            <div
-    className="card"
-    style={{
-        width:'800px',
-        maxHeight:'90vh',
-        overflowY:'auto',
-        padding:'30px'
-    }}
->
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    guardar();
+                }}
+                className="card"
+                style={{
+                    width:'800px',
+                    maxHeight:'90vh',
+                    overflowY:'auto',
+                    padding:'30px'
+                }}
+            >
 
 <h2>
 {
@@ -373,10 +377,11 @@ else{
         fontWeight:'600'
     }}
 >
-    Tipo Documento
+    Tipo Documento *
 </label>
 
 <select
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -422,10 +427,11 @@ else{
         fontWeight:'600'
     }}
 >
-    Nro. Documento
+    Nro. Documento *
 </label>
 
 <input
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -480,10 +486,11 @@ else{
         fontWeight:'600'
     }}
 >
-    Razón Social
+    Razón Social *
 </label>
 
 <input
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -508,10 +515,11 @@ else{
         fontWeight:'600'
     }}
 >
-    Representante Legal
+    Representante Legal *
 </label>
 
 <input
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -533,10 +541,11 @@ else{
     :
     <>
 <label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-    Nombres
+    Nombres *
 </label>
 
 <input
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -556,10 +565,11 @@ else{
         <br/><br/>
 
 <label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-    Apellido Paterno
+    Apellido Paterno *
 </label>
 
 <input
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -579,10 +589,11 @@ else{
         <br/><br/>
 
 <label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-    Apellido Materno
+    Apellido Materno *
 </label>
 
 <input
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -610,10 +621,12 @@ else{
         fontWeight:'600'
     }}
 >
-    Correo
+    Correo *
 </label>
 
 <input
+    required
+    type="email"
     style={{
         width:'100%',
         padding:'10px',
@@ -639,10 +652,11 @@ else{
         fontWeight:'600'
     }}
 >
-    Teléfono
+    Teléfono *
 </label>
 
 <input
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -668,10 +682,11 @@ else{
         fontWeight:'600'
     }}
 >
-    CIIU
+    CIIU *
 </label>
 	
 <select
+    required
     value={form.ciiu || ''}
     onChange={(e)=>
         setForm({
@@ -723,10 +738,11 @@ Seleccione CIIU
         fontWeight:'600'
     }}
 >
-    Departamento
+    Departamento *
 </label>
 
 <select
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -784,10 +800,11 @@ Seleccione CIIU
         fontWeight:'600'
     }}
 >
-    Provincia
+    Provincia *
 </label>
 
 <select
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -844,10 +861,11 @@ Seleccione CIIU
         fontWeight:'600'
     }}
 >
-    Distrito
+    Distrito *
 </label>
 
 <select
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -902,10 +920,11 @@ Seleccione CIIU
         fontWeight:'600'
     }}
 >
-    Ubigeo
+    Ubigeo *
 </label>
 
 <input
+    required
     style={{
         width:'100%',
         padding:'10px',
@@ -945,10 +964,11 @@ Seleccione CIIU
         fontWeight:'600'
     }}
 >
-    Dirección
+    Dirección *
 </label>
 
 <textarea
+    required
     value={form.direccion}
     onChange={(e)=>
         setForm({
@@ -978,8 +998,8 @@ Seleccione CIIU
 
 
     <button
+        type="submit"
         className="btn-primary"
-        onClick={guardar}
     >
         {
     proveedorEditar
@@ -991,6 +1011,7 @@ Seleccione CIIU
     </button>
 
     <button
+        type="button"
         onClick={onClose}
     >
         Cancelar
@@ -998,7 +1019,7 @@ Seleccione CIIU
 
 </div>
 
-            </div>
+            </form>
 
         </div>
 
