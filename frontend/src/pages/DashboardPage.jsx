@@ -187,10 +187,10 @@ const obtenerUsuario = () => {
 // ── Grupos documentales fijos para el dashboard del PROVEEDOR ─────────────────
 const CODIGOS_GRUPOS = ['DOC_NOR', 'DOC_EXT_NOR', 'DOC_REQ_ESTATAL', 'DOC_OTROS'];
 const NOMBRES_GRUPOS = {
-    'DOC_NOR':        'Gestion SST-MA',
-    'DOC_EXT_NOR':    'Gestion de Calidad',
-    'DOC_REQ_ESTATAL':'Gestion Seg. Patrimonial',
-    'DOC_OTROS':      'Gestion Transporte'
+    'DOC_NOR':        'Gestión SST-MA',
+    'DOC_EXT_NOR':    'Gestión de Calidad',
+    'DOC_REQ_ESTATAL':'Gestión Seg. Patrimonial',
+    'DOC_OTROS':      'Gestión Transporte'
 };
 
 export default function DashboardPage() {

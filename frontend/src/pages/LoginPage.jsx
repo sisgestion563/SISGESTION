@@ -97,6 +97,20 @@ export default function LoginPage() {
   const registroSubmit = async (e) => {
     e.preventDefault();
     setRegError('');
+
+    // Validar que el usuario sea solo números
+    const soloNumeros = /^\d+$/;
+    if (!soloNumeros.test(regUsername)) {
+      setRegError('El usuario debe contener únicamente números.');
+      return;
+    }
+
+    // Validar que tenga 8 (DNI) o 11 (RUC) caracteres
+    if (regUsername.length !== 8 && regUsername.length !== 11) {
+      setRegError('El usuario debe tener la cantidad de caracteres de un DNI (8 dígitos) o un RUC (11 dígitos) de Perú.');
+      return;
+    }
+
     setRegLoading(true);
 
     try {
@@ -328,7 +342,7 @@ export default function LoginPage() {
                       type="text"
                       value={regUsername}
                       onChange={e => setRegUsername(e.target.value)}
-                      placeholder="Elige un nombre de usuario"
+                      placeholder="ingrese un usuario(ruc/dni)"
                       style={inputStyle}
                       autoComplete="username"
                     />
