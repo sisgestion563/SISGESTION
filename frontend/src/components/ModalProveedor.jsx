@@ -91,6 +91,17 @@ const [
     setCiius
 ] = useState([]);
 
+const [
+    errors,
+    setErrors
+] = useState({});
+
+useEffect(() => {
+    if (visible) {
+        setErrors({});
+    }
+}, [visible]);
+
 useEffect(() => {
 
     cargarInicial();
@@ -230,12 +241,98 @@ const esEmpresa = form.tipo_documento === '06';
 const usuarioLogueado = JSON.parse(localStorage.getItem('usuario') || '{}');
 const esProveedorLogueado = usuarioLogueado?.rol_codigo === 'PROVEEDOR';
 
+// ── Validar formulario en español ──────────────────────────────────────────
+const validarForm = () => {
+    const newErrors = {};
+    const soloNumeros = /^\d+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!form.tipo_documento) {
+        newErrors.tipo_documento = 'El tipo de documento es obligatorio.';
+    }
+
+    if (!form.nro_documento || !form.nro_documento.trim()) {
+        newErrors.nro_documento = 'El número de documento es obligatorio.';
+    } else {
+        if (form.tipo_documento === '06') {
+            if (form.nro_documento.length !== 11 || !soloNumeros.test(form.nro_documento)) {
+                newErrors.nro_documento = 'El RUC debe tener exactamente 11 dígitos numéricos.';
+            }
+        } else if (form.tipo_documento === '01') {
+            if (form.nro_documento.length !== 8 || !soloNumeros.test(form.nro_documento)) {
+                newErrors.nro_documento = 'El DNI debe tener exactamente 8 dígitos numéricos.';
+            }
+        } else {
+            if (!soloNumeros.test(form.nro_documento)) {
+                newErrors.nro_documento = 'El número de documento debe contener solo números.';
+            }
+        }
+    }
+
+    if (form.tipo_documento === '06') {
+        if (!form.razon_social || !form.razon_social.trim()) {
+            newErrors.razon_social = 'La razón social es obligatoria.';
+        }
+        if (!form.representante_legal || !form.representante_legal.trim()) {
+            newErrors.representante_legal = 'El representante legal es obligatorio.';
+        }
+    } else {
+        if (!form.nombre || !form.nombre.trim()) {
+            newErrors.nombre = 'El nombre es obligatorio.';
+        }
+        if (!form.apellido_paterno || !form.apellido_paterno.trim()) {
+            newErrors.apellido_paterno = 'El apellido paterno es obligatorio.';
+        }
+        if (!form.apellido_materno || !form.apellido_materno.trim()) {
+            newErrors.apellido_materno = 'El apellido materno es obligatorio.';
+        }
+    }
+
+    if (!form.correo || !form.correo.trim()) {
+        newErrors.correo = 'El correo electrónico es obligatorio.';
+    } else if (!emailRegex.test(form.correo)) {
+        newErrors.correo = 'Ingrese un correo electrónico válido.';
+    }
+
+    if (!form.telefono || !form.telefono.trim()) {
+        newErrors.telefono = 'El teléfono es obligatorio.';
+    } else if (!soloNumeros.test(form.telefono)) {
+        newErrors.telefono = 'El teléfono debe contener solo números.';
+    } else if (form.telefono.length < 7 || form.telefono.length > 9) {
+        newErrors.telefono = 'El teléfono debe tener entre 7 y 9 dígitos.';
+    }
+
+    if (!form.departamento) {
+        newErrors.departamento = 'El departamento es obligatorio.';
+    }
+    if (!form.provincia) {
+        newErrors.provincia = 'La provincia es obligatoria.';
+    }
+    if (!form.ubigeo) {
+        newErrors.ubigeo = 'El distrito es obligatorio.';
+    }
+    if (!form.direccion || !form.direccion.trim()) {
+        newErrors.direccion = 'La dirección es obligatoria.';
+    }
+    if (!form.ciiu) {
+        newErrors.ciiu = 'La actividad económica (CIIU) es obligatoria.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+};
+
 if(!visible){
     return null;
 }
 
     const guardar =
 async () => {
+
+    setErrors({});
+    if (!validarForm()) {
+        return;
+    }
 
     try {
 
@@ -347,6 +444,7 @@ else{
         >
 
             <form
+                noValidate
                 onSubmit={(e) => {
                     e.preventDefault();
                     guardar();
@@ -387,15 +485,16 @@ else{
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.tipo_documento ? '5px' : '15px'
     }}
     value={form.tipo_documento}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             tipo_documento:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, tipo_documento: null, nro_documento: null }));
+    }}
 >
 
     <option value="06">
@@ -419,6 +518,7 @@ else{
     </option>
 
 </select>
+{errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.tipo_documento}</span>}
 
 <label
     style={{
@@ -437,16 +537,18 @@ else{
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.nro_documento ? '5px' : '15px'
     }}
     value={form.nro_documento}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             nro_documento:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, nro_documento: null }));
+    }}
 />
+{errors.nro_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.nro_documento}</span>}
 
 <label
     style={{
@@ -496,17 +598,18 @@ else{
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.razon_social ? '5px' : '15px'
     }}
     value={form.razon_social}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             razon_social:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, razon_social: null }));
+    }}
 />
-        <br/><br/>
+{errors.razon_social && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.razon_social}</span>}
 
 <label
     style={{
@@ -525,18 +628,18 @@ else{
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.representante_legal ? '5px' : '15px'
     }}
     value={form.representante_legal}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             representante_legal:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, representante_legal: null }));
+    }}
 />
-
-        <br/><br/>
+{errors.representante_legal && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.representante_legal}</span>}
     </>
     :
     <>
@@ -551,18 +654,18 @@ else{
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.nombre ? '5px' : '15px'
     }}
     value={form.nombre}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             nombre:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, nombre: null }));
+    }}
 />
-
-        <br/><br/>
+{errors.nombre && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.nombre}</span>}
 
 <label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
     Apellido Paterno *
@@ -575,18 +678,18 @@ else{
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.apellido_paterno ? '5px' : '15px'
     }}
     value={form.apellido_paterno}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             apellido_paterno:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, apellido_paterno: null }));
+    }}
 />
-
-        <br/><br/>
+{errors.apellido_paterno && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.apellido_paterno}</span>}
 
 <label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
     Apellido Materno *
@@ -599,18 +702,18 @@ else{
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.apellido_materno ? '5px' : '15px'
     }}
     value={form.apellido_materno}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             apellido_materno:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, apellido_materno: null }));
+    }}
 />
-
-        <br/><br/>
+{errors.apellido_materno && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.apellido_materno}</span>}
     </>
 }
 
@@ -632,18 +735,18 @@ else{
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.correo ? '5px' : '15px'
     }}
     value={form.correo}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             correo:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, correo: null }));
+    }}
 />
-
-                <br/><br/>
+{errors.correo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.correo}</span>}
 
 <label
     style={{
@@ -662,18 +765,18 @@ else{
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.telefono ? '5px' : '15px'
     }}
     value={form.telefono}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             telefono:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, telefono: null }));
+    }}
 />
-
-                <br/><br/>
+{errors.telefono && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.telefono}</span>}
 	
 <label
     style={{
@@ -688,19 +791,20 @@ else{
 <select
     required
     value={form.ciiu || ''}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             ciiu:e.target.value
-        })
-    }
-style={{
-    width:'100%',
-    padding:'10px',
-    border:'1px solid #D1D5DB',
-    borderRadius:'6px',
-    marginBottom:'15px'
-}}
+        });
+        setErrors(prev => ({ ...prev, ciiu: null }));
+    }}
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom: errors.ciiu ? '5px' : '15px'
+    }}
 >
 
 <option value="">
@@ -731,6 +835,8 @@ Seleccione CIIU
 }
 
 </select>	
+{errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ciiu}</span>}
+
 <label
     style={{
         display:'block',
@@ -748,7 +854,7 @@ Seleccione CIIU
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.departamento ? '5px' : '15px'
     }}
     value={form.departamento}
     onChange={async (e)=>{
@@ -762,6 +868,7 @@ Seleccione CIIU
             ciudad:'',
             ubigeo:''
         });
+        setErrors(prev => ({ ...prev, departamento: null, provincia: null, ubigeo: null }));
 
         const data =
             await obtenerProvincias(
@@ -792,6 +899,7 @@ Seleccione CIIU
     }
 
 </select>
+{errors.departamento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.departamento}</span>}
 
 <label
     style={{
@@ -810,7 +918,7 @@ Seleccione CIIU
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.provincia ? '5px' : '15px'
     }}
     value={form.provincia}
     onChange={async (e)=>{
@@ -823,6 +931,7 @@ Seleccione CIIU
             ciudad:'',
             ubigeo:''
         });
+        setErrors(prev => ({ ...prev, provincia: null, ubigeo: null }));
 
         const data =
             await obtenerDistritos(
@@ -853,6 +962,7 @@ Seleccione CIIU
     }
 
 </select>
+{errors.provincia && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.provincia}</span>}
 
 <label
     style={{
@@ -871,7 +981,7 @@ Seleccione CIIU
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.ubigeo ? '5px' : '15px'
     }}
     value={form.ubigeo || ''}
     onChange={(e)=>{
@@ -890,6 +1000,7 @@ Seleccione CIIU
                 ciudadSeleccionada?.distrito || '',
             ubigeo
         });
+        setErrors(prev => ({ ...prev, ubigeo: null }));
 
     }}
 >
@@ -912,6 +1023,7 @@ Seleccione CIIU
     }
 
 </select>
+{errors.ubigeo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ubigeo}</span>}
 
 <label
     style={{
@@ -930,16 +1042,18 @@ Seleccione CIIU
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom:'15px'
+        marginBottom: errors.ubigeo ? '5px' : '15px'
     }}
     value={form.ubigeo || ''}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             ubigeo:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, ubigeo: null }));
+    }}
 />
+{errors.ubigeo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ubigeo}</span>}
 
 {!esProveedorLogueado && (
     <>
@@ -970,12 +1084,13 @@ Seleccione CIIU
 <textarea
     required
     value={form.direccion}
-    onChange={(e)=>
+    onChange={(e)=>{
         setForm({
             ...form,
             direccion:e.target.value
-        })
-    }
+        });
+        setErrors(prev => ({ ...prev, direccion: null }));
+    }}
     rows={3}
     style={{
         width:'100%',
@@ -983,9 +1098,10 @@ Seleccione CIIU
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
         resize:'none',
-        marginBottom:'15px'
+        marginBottom: errors.direccion ? '5px' : '15px'
     }}
 />
+{errors.direccion && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.direccion}</span>}
 
 
                <div

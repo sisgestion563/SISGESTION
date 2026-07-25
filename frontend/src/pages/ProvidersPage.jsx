@@ -281,6 +281,7 @@ export default function ProvidersPage() {
     const [provincias, setProvincias] = useState([]);
     const [ciudades, setCiudades] = useState([]);
     const [ciius, setCiius] = useState([]);
+    const [errors, setErrors] = useState({});
 
     const esEmpresa = form.tipo_documento === '06';
 
@@ -392,9 +393,94 @@ export default function ProvidersPage() {
         setForm(prev => ({ ...prev, ciudad: nombreDistrito, ubigeo: selectedValue }));
     };
 
+    // ── Validar formulario en español ──────────────────────────────────────────
+    const validarForm = () => {
+        const newErrors = {};
+        const soloNumeros = /^\d+$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!form.tipo_documento) {
+            newErrors.tipo_documento = 'El tipo de documento es obligatorio.';
+        }
+
+        if (!form.nro_documento || !form.nro_documento.trim()) {
+            newErrors.nro_documento = 'El número de documento es obligatorio.';
+        } else {
+            if (form.tipo_documento === '06') {
+                if (form.nro_documento.length !== 11 || !soloNumeros.test(form.nro_documento)) {
+                    newErrors.nro_documento = 'El RUC debe tener exactamente 11 dígitos numéricos.';
+                }
+            } else if (form.tipo_documento === '01') {
+                if (form.nro_documento.length !== 8 || !soloNumeros.test(form.nro_documento)) {
+                    newErrors.nro_documento = 'El DNI debe tener exactamente 8 dígitos numéricos.';
+                }
+            } else {
+                if (!soloNumeros.test(form.nro_documento)) {
+                    newErrors.nro_documento = 'El número de documento debe contener solo números.';
+                }
+            }
+        }
+
+        if (form.tipo_documento === '06') {
+            if (!form.razon_social || !form.razon_social.trim()) {
+                newErrors.razon_social = 'La razón social es obligatoria.';
+            }
+            if (!form.representante_legal || !form.representante_legal.trim()) {
+                newErrors.representante_legal = 'El representante legal es obligatorio.';
+            }
+        } else {
+            if (!form.nombre || !form.nombre.trim()) {
+                newErrors.nombre = 'El nombre es obligatorio.';
+            }
+            if (!form.apellido_paterno || !form.apellido_paterno.trim()) {
+                newErrors.apellido_paterno = 'El apellido paterno es obligatorio.';
+            }
+            if (!form.apellido_materno || !form.apellido_materno.trim()) {
+                newErrors.apellido_materno = 'El apellido materno es obligatorio.';
+            }
+        }
+
+        if (!form.correo || !form.correo.trim()) {
+            newErrors.correo = 'El correo electrónico es obligatorio.';
+        } else if (!emailRegex.test(form.correo)) {
+            newErrors.correo = 'Ingrese un correo electrónico válido.';
+        }
+
+        if (!form.telefono || !form.telefono.trim()) {
+            newErrors.telefono = 'El teléfono es obligatorio.';
+        } else if (!soloNumeros.test(form.telefono)) {
+            newErrors.telefono = 'El teléfono debe contener solo números.';
+        } else if (form.telefono.length < 7 || form.telefono.length > 9) {
+            newErrors.telefono = 'El teléfono debe tener entre 7 y 9 dígitos.';
+        }
+
+        if (!form.departamento) {
+            newErrors.departamento = 'El departamento es obligatorio.';
+        }
+        if (!form.provincia) {
+            newErrors.provincia = 'La provincia es obligatoria.';
+        }
+        if (!form.ubigeo) {
+            newErrors.ubigeo = 'El distrito es obligatorio.';
+        }
+        if (!form.direccion || !form.direccion.trim()) {
+            newErrors.direccion = 'La dirección es obligatoria.';
+        }
+        if (!form.ciiu) {
+            newErrors.ciiu = 'La actividad económica (CIIU) es obligatoria.';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     // ── Guardar autoregistro ───────────────────────────────────────────────────
     const guardarAutoregistro = async (e) => {
         e.preventDefault();
+        setErrors({});
+        if (!validarForm()) {
+            return;
+        }
         try {
             const razonSocialFinal = esEmpresa ? form.razon_social : '';
 
@@ -543,40 +629,98 @@ export default function ProvidersPage() {
                         </p>
                     </div>
 
-                    <form onSubmit={guardarAutoregistro} style={styles.card}>
+                    <form noValidate onSubmit={guardarAutoregistro} style={styles.card}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                             <div>
                                 <label style={styles.labelForm}>Tipo Documento *</label>
-                                <select style={styles.inputForm} value={form.tipo_documento} onChange={e => setForm({ ...form, tipo_documento: e.target.value })}>
+                                <select 
+                                    style={{ ...styles.inputForm, marginBottom: errors.tipo_documento ? '5px' : '15px' }} 
+                                    value={form.tipo_documento} 
+                                    onChange={e => {
+                                        setForm({ ...form, tipo_documento: e.target.value });
+                                        setErrors(prev => ({ ...prev, tipo_documento: null, nro_documento: null }));
+                                    }}
+                                >
                                     <option value="06">RUC</option>
                                     <option value="01">DNI</option>
                                     <option value="04">Carnet de Extranjería</option>
                                 </select>
+                                {errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.tipo_documento}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Nro Documento *</label>
-                                <input required type="text" style={styles.inputForm} value={form.nro_documento} onChange={e => setForm({ ...form, nro_documento: e.target.value })} />
+                                <input 
+                                    required 
+                                    type="text" 
+                                    style={{ ...styles.inputForm, marginBottom: errors.nro_documento ? '5px' : '15px' }} 
+                                    value={form.nro_documento} 
+                                    onChange={e => {
+                                        setForm({ ...form, nro_documento: e.target.value });
+                                        setErrors(prev => ({ ...prev, nro_documento: null }));
+                                    }} 
+                                />
+                                {errors.nro_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.nro_documento}</span>}
                             </div>
                         </div>
 
                         {esEmpresa ? (
                             <div style={{ marginBottom: '15px' }}>
                                 <label style={styles.labelForm}>Razón Social *</label>
-                                <input required type="text" style={styles.inputForm} value={form.razon_social} onChange={e => setForm({ ...form, razon_social: e.target.value })} />
+                                <input 
+                                    required 
+                                    type="text" 
+                                    style={{ ...styles.inputForm, marginBottom: errors.razon_social ? '5px' : '15px' }} 
+                                    value={form.razon_social} 
+                                    onChange={e => {
+                                        setForm({ ...form, razon_social: e.target.value });
+                                        setErrors(prev => ({ ...prev, razon_social: null }));
+                                    }} 
+                                />
+                                {errors.razon_social && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.razon_social}</span>}
                             </div>
                         ) : (
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                                 <div>
                                     <label style={styles.labelForm}>Nombre *</label>
-                                    <input required type="text" style={styles.inputForm} value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+                                    <input 
+                                        required 
+                                        type="text" 
+                                        style={{ ...styles.inputForm, marginBottom: errors.nombre ? '5px' : '15px' }} 
+                                        value={form.nombre} 
+                                        onChange={e => {
+                                            setForm({ ...form, nombre: e.target.value });
+                                            setErrors(prev => ({ ...prev, nombre: null }));
+                                        }} 
+                                    />
+                                    {errors.nombre && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.nombre}</span>}
                                 </div>
                                 <div>
                                     <label style={styles.labelForm}>Apellido Paterno *</label>
-                                    <input required type="text" style={styles.inputForm} value={form.apellido_paterno} onChange={e => setForm({ ...form, apellido_paterno: e.target.value })} />
+                                    <input 
+                                        required 
+                                        type="text" 
+                                        style={{ ...styles.inputForm, marginBottom: errors.apellido_paterno ? '5px' : '15px' }} 
+                                        value={form.apellido_paterno} 
+                                        onChange={e => {
+                                            setForm({ ...form, apellido_paterno: e.target.value });
+                                            setErrors(prev => ({ ...prev, apellido_paterno: null }));
+                                        }} 
+                                    />
+                                    {errors.apellido_paterno && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.apellido_paterno}</span>}
                                 </div>
                                 <div>
                                     <label style={styles.labelForm}>Apellido Materno *</label>
-                                    <input required type="text" style={styles.inputForm} value={form.apellido_materno} onChange={e => setForm({ ...form, apellido_materno: e.target.value })} />
+                                    <input 
+                                        required 
+                                        type="text" 
+                                        style={{ ...styles.inputForm, marginBottom: errors.apellido_materno ? '5px' : '15px' }} 
+                                        value={form.apellido_materno} 
+                                        onChange={e => {
+                                            setForm({ ...form, apellido_materno: e.target.value });
+                                            setErrors(prev => ({ ...prev, apellido_materno: null }));
+                                        }} 
+                                    />
+                                    {errors.apellido_materno && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.apellido_materno}</span>}
                                 </div>
                             </div>
                         )}
@@ -584,50 +728,111 @@ export default function ProvidersPage() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                             <div>
                                 <label style={styles.labelForm}>Correo Contacto *</label>
-                                <input required type="email" style={styles.inputForm} value={form.correo} onChange={e => setForm({ ...form, correo: e.target.value })} />
+                                <input 
+                                    required 
+                                    type="email" 
+                                    style={{ ...styles.inputForm, marginBottom: errors.correo ? '5px' : '15px' }} 
+                                    value={form.correo} 
+                                    onChange={e => {
+                                        setForm({ ...form, correo: e.target.value });
+                                        setErrors(prev => ({ ...prev, correo: null }));
+                                    }} 
+                                />
+                                {errors.correo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.correo}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Teléfono *</label>
-                                <input required type="text" style={styles.inputForm} value={form.telefono} onChange={e => setForm({ ...form, telefono: e.target.value })} />
+                                <input 
+                                    required 
+                                    type="text" 
+                                    style={{ ...styles.inputForm, marginBottom: errors.telefono ? '5px' : '15px' }} 
+                                    value={form.telefono} 
+                                    onChange={e => {
+                                        setForm({ ...form, telefono: e.target.value });
+                                        setErrors(prev => ({ ...prev, telefono: null }));
+                                    }} 
+                                />
+                                {errors.telefono && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.telefono}</span>}
                             </div>
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
                             <label style={styles.labelForm}>Página Web</label>
-                            <input type="text" style={styles.inputForm} value={form.pagina_web} onChange={e => setForm({ ...form, pagina_web: e.target.value })} />
+                            <input 
+                                type="text" 
+                                style={styles.inputForm} 
+                                value={form.pagina_web} 
+                                onChange={e => setForm({ ...form, pagina_web: e.target.value })} 
+                            />
                         </div>
 
                         {esEmpresa && (
                             <div style={{ marginBottom: '15px' }}>
                                 <label style={styles.labelForm}>Representante Legal *</label>
-                                <input required type="text" style={styles.inputForm} value={form.representante_legal} onChange={e => setForm({ ...form, representante_legal: e.target.value })} />
+                                <input 
+                                    required 
+                                    type="text" 
+                                    style={{ ...styles.inputForm, marginBottom: errors.representante_legal ? '5px' : '15px' }} 
+                                    value={form.representante_legal} 
+                                    onChange={e => {
+                                        setForm({ ...form, representante_legal: e.target.value });
+                                        setErrors(prev => ({ ...prev, representante_legal: null }));
+                                    }} 
+                                />
+                                {errors.representante_legal && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.representante_legal}</span>}
                             </div>
                         )}
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
                             <div>
                                 <label style={styles.labelForm}>Departamento *</label>
-                                <select required style={styles.inputForm} value={form.departamento} onChange={handleDepartamentoChange}>
+                                <select 
+                                    required 
+                                    style={{ ...styles.inputForm, marginBottom: errors.departamento ? '5px' : '15px' }} 
+                                    value={form.departamento} 
+                                    onChange={e => {
+                                        handleDepartamentoChange(e);
+                                        setErrors(prev => ({ ...prev, departamento: null, provincia: null, ubigeo: null }));
+                                    }}
+                                >
                                     <option value="">Seleccione</option>
                                     {departamentos.map((d, index) => {
                                         const name = d?.departamento || d?.DEPARTAMENTO || d?.name || d?.nombre;
                                         return <option key={index} value={name}>{name}</option>;
                                     })}
                                 </select>
+                                {errors.departamento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.departamento}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Provincia *</label>
-                                <select required style={styles.inputForm} value={form.provincia} onChange={handleProvinciaChange}>
+                                <select 
+                                    required 
+                                    style={{ ...styles.inputForm, marginBottom: errors.provincia ? '5px' : '15px' }} 
+                                    value={form.provincia} 
+                                    onChange={e => {
+                                        handleProvinciaChange(e);
+                                        setErrors(prev => ({ ...prev, provincia: null, ubigeo: null }));
+                                    }}
+                                >
                                     <option value="">Seleccione</option>
                                     {provincias.map((p, index) => {
                                         const name = p?.provincia || p?.PROVINCIA || p?.name || p?.nombre;
                                         return <option key={index} value={name}>{name}</option>;
                                     })}
                                 </select>
+                                {errors.provincia && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.provincia}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Distrito / Ciudad *</label>
-                                <select required style={styles.inputForm} value={form.ubigeo} onChange={handleDistritoChange}>
+                                <select 
+                                    required 
+                                    style={{ ...styles.inputForm, marginBottom: errors.ubigeo ? '5px' : '15px' }} 
+                                    value={form.ubigeo} 
+                                    onChange={e => {
+                                        handleDistritoChange(e);
+                                        setErrors(prev => ({ ...prev, ubigeo: null }));
+                                    }}
+                                >
                                     <option value="">Seleccione</option>
                                     {ciudades.map((c, index) => {
                                         const id = c?.ubigeo_inei || c?.UBIGEO_INEI || c?.ubigeo_reniec || c?.codigo || c?.id;
@@ -635,17 +840,36 @@ export default function ProvidersPage() {
                                         return <option key={index} value={id}>{name}</option>;
                                     })}
                                 </select>
+                                {errors.ubigeo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ubigeo}</span>}
                             </div>
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
                             <label style={styles.labelForm}>Dirección *</label>
-                            <input required type="text" style={styles.inputForm} value={form.direccion} onChange={e => setForm({ ...form, direccion: e.target.value })} />
+                            <input 
+                                required 
+                                type="text" 
+                                style={{ ...styles.inputForm, marginBottom: errors.direccion ? '5px' : '15px' }} 
+                                value={form.direccion} 
+                                onChange={e => {
+                                    setForm({ ...form, direccion: e.target.value });
+                                    setErrors(prev => ({ ...prev, direccion: null }));
+                                }} 
+                            />
+                            {errors.direccion && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.direccion}</span>}
                         </div>
 
                         <div style={{ marginBottom: '20px' }}>
                             <label style={styles.labelForm}>Actividad Económica (CIIU) *</label>
-                            <select required style={styles.inputForm} value={form.ciiu} onChange={e => setForm({ ...form, ciiu: e.target.value })}>
+                            <select 
+                                required 
+                                style={{ ...styles.inputForm, marginBottom: errors.ciiu ? '5px' : '20px' }} 
+                                value={form.ciiu} 
+                                onChange={e => {
+                                    setForm({ ...form, ciiu: e.target.value });
+                                    setErrors(prev => ({ ...prev, ciiu: null }));
+                                }}
+                            >
                                 <option value="">Seleccione Actividad</option>
                                 {ciius.map((c, index) => {
                                     const obj = Object.keys(c).reduce((acc, key) => {
@@ -657,6 +881,7 @@ export default function ProvidersPage() {
                                     return <option key={index} value={code}>{code} - {label}</option>;
                                 })}
                             </select>
+                            {errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '20px', display: 'block', fontWeight: '500' }}>{errors.ciiu}</span>}
                         </div>
 
                         <button type="submit" style={{ ...styles.btnPrimary, width: '100%', padding: '12px' }}>
