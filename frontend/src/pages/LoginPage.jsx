@@ -342,7 +342,7 @@ export default function LoginPage() {
                       type="text"
                       value={regUsername}
                       onChange={e => setRegUsername(e.target.value)}
-                      placeholder="ingrese un usuario(ruc/dni)"
+                      placeholder="Ingrese un usuario(RUC/DNI)"
                       style={inputStyle}
                       autoComplete="username"
                     />
