@@ -630,11 +630,12 @@ export default function ProvidersPage() {
                     </div>
 
                     <form noValidate onSubmit={guardarAutoregistro} style={styles.card}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        {/* --- GRUPO 1: IDENTIDAD --- */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                             <div>
                                 <label style={styles.labelForm}>Tipo Documento *</label>
                                 <select 
-                                    style={{ ...styles.inputForm, marginBottom: errors.tipo_documento ? '5px' : '15px' }} 
+                                    style={{ ...styles.inputForm, marginBottom: errors.tipo_documento ? '5px' : '0' }} 
                                     value={form.tipo_documento} 
                                     onChange={e => {
                                         setForm({ ...form, tipo_documento: e.target.value });
@@ -645,150 +646,152 @@ export default function ProvidersPage() {
                                     <option value="01">DNI</option>
                                     <option value="04">Carnet de Extranjería</option>
                                 </select>
-                                {errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.tipo_documento}</span>}
+                                {errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.tipo_documento}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Nro Documento *</label>
                                 <input 
                                     required 
                                     type="text" 
-                                    style={{ ...styles.inputForm, marginBottom: errors.nro_documento ? '5px' : '15px' }} 
+                                    style={{ ...styles.inputForm, marginBottom: errors.nro_documento ? '5px' : '0' }} 
                                     value={form.nro_documento} 
                                     onChange={e => {
                                         setForm({ ...form, nro_documento: e.target.value });
                                         setErrors(prev => ({ ...prev, nro_documento: null }));
                                     }} 
                                 />
-                                {errors.nro_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.nro_documento}</span>}
+                                {errors.nro_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.nro_documento}</span>}
                             </div>
                         </div>
 
                         {esEmpresa ? (
-                            <div style={{ marginBottom: '15px' }}>
+                            <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                                 <label style={styles.labelForm}>Razón Social *</label>
                                 <input 
                                     required 
                                     type="text" 
-                                    style={{ ...styles.inputForm, marginBottom: errors.razon_social ? '5px' : '15px' }} 
+                                    style={{ ...styles.inputForm, marginBottom: errors.razon_social ? '5px' : '0' }} 
                                     value={form.razon_social} 
                                     onChange={e => {
                                         setForm({ ...form, razon_social: e.target.value });
                                         setErrors(prev => ({ ...prev, razon_social: null }));
                                     }} 
                                 />
-                                {errors.razon_social && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.razon_social}</span>}
+                                {errors.razon_social && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.razon_social}</span>}
                             </div>
                         ) : (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                                 <div>
                                     <label style={styles.labelForm}>Nombre *</label>
                                     <input 
                                         required 
                                         type="text" 
-                                        style={{ ...styles.inputForm, marginBottom: errors.nombre ? '5px' : '15px' }} 
+                                        style={{ ...styles.inputForm, marginBottom: errors.nombre ? '5px' : '0' }} 
                                         value={form.nombre} 
                                         onChange={e => {
                                             setForm({ ...form, nombre: e.target.value });
                                             setErrors(prev => ({ ...prev, nombre: null }));
                                         }} 
                                     />
-                                    {errors.nombre && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.nombre}</span>}
+                                    {errors.nombre && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.nombre}</span>}
                                 </div>
                                 <div>
                                     <label style={styles.labelForm}>Apellido Paterno *</label>
                                     <input 
                                         required 
                                         type="text" 
-                                        style={{ ...styles.inputForm, marginBottom: errors.apellido_paterno ? '5px' : '15px' }} 
+                                        style={{ ...styles.inputForm, marginBottom: errors.apellido_paterno ? '5px' : '0' }} 
                                         value={form.apellido_paterno} 
                                         onChange={e => {
                                             setForm({ ...form, apellido_paterno: e.target.value });
                                             setErrors(prev => ({ ...prev, apellido_paterno: null }));
                                         }} 
                                     />
-                                    {errors.apellido_paterno && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.apellido_paterno}</span>}
+                                    {errors.apellido_paterno && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.apellido_paterno}</span>}
                                 </div>
                                 <div>
                                     <label style={styles.labelForm}>Apellido Materno *</label>
                                     <input 
                                         required 
                                         type="text" 
-                                        style={{ ...styles.inputForm, marginBottom: errors.apellido_materno ? '5px' : '15px' }} 
+                                        style={{ ...styles.inputForm, marginBottom: errors.apellido_materno ? '5px' : '0' }} 
                                         value={form.apellido_materno} 
                                         onChange={e => {
                                             setForm({ ...form, apellido_materno: e.target.value });
                                             setErrors(prev => ({ ...prev, apellido_materno: null }));
                                         }} 
                                     />
-                                    {errors.apellido_materno && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.apellido_materno}</span>}
+                                    {errors.apellido_materno && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.apellido_materno}</span>}
                                 </div>
                             </div>
                         )}
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                        {/* --- GRUPO 2: CONTACTO --- */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                             <div>
                                 <label style={styles.labelForm}>Correo Contacto *</label>
                                 <input 
                                     required 
                                     type="email" 
-                                    style={{ ...styles.inputForm, marginBottom: errors.correo ? '5px' : '15px' }} 
+                                    style={{ ...styles.inputForm, marginBottom: errors.correo ? '5px' : '0' }} 
                                     value={form.correo} 
                                     onChange={e => {
                                         setForm({ ...form, correo: e.target.value });
                                         setErrors(prev => ({ ...prev, correo: null }));
                                     }} 
                                 />
-                                {errors.correo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.correo}</span>}
+                                {errors.correo && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.correo}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Teléfono *</label>
                                 <input 
                                     required 
                                     type="text" 
-                                    style={{ ...styles.inputForm, marginBottom: errors.telefono ? '5px' : '15px' }} 
+                                    style={{ ...styles.inputForm, marginBottom: errors.telefono ? '5px' : '0' }} 
                                     value={form.telefono} 
                                     onChange={e => {
                                         setForm({ ...form, telefono: e.target.value });
                                         setErrors(prev => ({ ...prev, telefono: null }));
                                     }} 
                                 />
-                                {errors.telefono && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.telefono}</span>}
+                                {errors.telefono && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.telefono}</span>}
+                            </div>
+                            <div>
+                                <label style={styles.labelForm}>Página Web</label>
+                                <input 
+                                    type="text" 
+                                    style={styles.inputForm} 
+                                    value={form.pagina_web} 
+                                    onChange={e => setForm({ ...form, pagina_web: e.target.value })} 
+                                />
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: '15px' }}>
-                            <label style={styles.labelForm}>Página Web</label>
-                            <input 
-                                type="text" 
-                                style={styles.inputForm} 
-                                value={form.pagina_web} 
-                                onChange={e => setForm({ ...form, pagina_web: e.target.value })} 
-                            />
-                        </div>
-
+                        {/* --- GRUPO 3: LEGAL --- */}
                         {esEmpresa && (
-                            <div style={{ marginBottom: '15px' }}>
+                            <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                                 <label style={styles.labelForm}>Representante Legal *</label>
                                 <input 
                                     required 
                                     type="text" 
-                                    style={{ ...styles.inputForm, marginBottom: errors.representante_legal ? '5px' : '15px' }} 
+                                    style={{ ...styles.inputForm, marginBottom: errors.representante_legal ? '5px' : '0' }} 
                                     value={form.representante_legal} 
                                     onChange={e => {
                                         setForm({ ...form, representante_legal: e.target.value });
                                         setErrors(prev => ({ ...prev, representante_legal: null }));
                                     }} 
                                 />
-                                {errors.representante_legal && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.representante_legal}</span>}
+                                {errors.representante_legal && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.representante_legal}</span>}
                             </div>
                         )}
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' }}>
+                        {/* --- GRUPO 4: UBICACIÓN --- */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                             <div>
                                 <label style={styles.labelForm}>Departamento *</label>
                                 <select 
                                     required 
-                                    style={{ ...styles.inputForm, marginBottom: errors.departamento ? '5px' : '15px' }} 
+                                    style={{ ...styles.inputForm, marginBottom: errors.departamento ? '5px' : '0' }} 
                                     value={form.departamento} 
                                     onChange={e => {
                                         handleDepartamentoChange(e);
@@ -801,13 +804,13 @@ export default function ProvidersPage() {
                                         return <option key={index} value={name}>{name}</option>;
                                     })}
                                 </select>
-                                {errors.departamento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.departamento}</span>}
+                                {errors.departamento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.departamento}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Provincia *</label>
                                 <select 
                                     required 
-                                    style={{ ...styles.inputForm, marginBottom: errors.provincia ? '5px' : '15px' }} 
+                                    style={{ ...styles.inputForm, marginBottom: errors.provincia ? '5px' : '0' }} 
                                     value={form.provincia} 
                                     onChange={e => {
                                         handleProvinciaChange(e);
@@ -820,13 +823,13 @@ export default function ProvidersPage() {
                                         return <option key={index} value={name}>{name}</option>;
                                     })}
                                 </select>
-                                {errors.provincia && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.provincia}</span>}
+                                {errors.provincia && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.provincia}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Distrito / Ciudad *</label>
                                 <select 
                                     required 
-                                    style={{ ...styles.inputForm, marginBottom: errors.ubigeo ? '5px' : '15px' }} 
+                                    style={{ ...styles.inputForm, marginBottom: errors.ubigeo ? '5px' : '0' }} 
                                     value={form.ubigeo} 
                                     onChange={e => {
                                         handleDistritoChange(e);
@@ -840,30 +843,32 @@ export default function ProvidersPage() {
                                         return <option key={index} value={id}>{name}</option>;
                                     })}
                                 </select>
-                                {errors.ubigeo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ubigeo}</span>}
+                                {errors.ubigeo && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.ubigeo}</span>}
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: '15px' }}>
+                        {/* --- GRUPO 5: DIRECCIÓN --- */}
+                        <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                             <label style={styles.labelForm}>Dirección *</label>
                             <input 
                                 required 
                                 type="text" 
-                                style={{ ...styles.inputForm, marginBottom: errors.direccion ? '5px' : '15px' }} 
+                                style={{ ...styles.inputForm, marginBottom: errors.direccion ? '5px' : '0' }} 
                                 value={form.direccion} 
                                 onChange={e => {
                                     setForm({ ...form, direccion: e.target.value });
                                     setErrors(prev => ({ ...prev, direccion: null }));
                                 }} 
                             />
-                            {errors.direccion && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.direccion}</span>}
+                            {errors.direccion && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.direccion}</span>}
                         </div>
 
-                        <div style={{ marginBottom: '20px' }}>
+                        {/* --- GRUPO 6: ACTIVIDAD ECONÓMICA --- */}
+                        <div style={{ marginBottom: '25px' }}>
                             <label style={styles.labelForm}>Actividad Económica (CIIU) *</label>
                             <select 
                                 required 
-                                style={{ ...styles.inputForm, marginBottom: errors.ciiu ? '5px' : '20px' }} 
+                                style={{ ...styles.inputForm, marginBottom: errors.ciiu ? '5px' : '0' }} 
                                 value={form.ciiu} 
                                 onChange={e => {
                                     setForm({ ...form, ciiu: e.target.value });
@@ -881,7 +886,7 @@ export default function ProvidersPage() {
                                     return <option key={index} value={code}>{code} - {label}</option>;
                                 })}
                             </select>
-                            {errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '20px', display: 'block', fontWeight: '500' }}>{errors.ciiu}</span>}
+                            {errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.ciiu}</span>}
                         </div>
 
                         <button type="submit" style={{ ...styles.btnPrimary, width: '100%', padding: '12px' }}>
@@ -922,7 +927,8 @@ export default function ProvidersPage() {
                         <h3 style={{ margin: '0 0 25px 0', fontSize: '16px', fontWeight: '700', color: colors.text, borderBottom: `1px solid ${colors.border}`, paddingBottom: '10px' }}>
                             Información del Proveedor
                         </h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+                        {/* --- GRUPO 1: IDENTIDAD --- */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px', marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                             <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>TIPO DOCUMENTO</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.descripcion_tipo_documento || proveedores[0]?.tipo_documento}</div>
@@ -953,7 +959,10 @@ export default function ProvidersPage() {
                                     </div>
                                 </>
                             )}
+                        </div>
 
+                        {/* --- GRUPO 2: CONTACTO --- */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px', marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                             <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>CORREO ELECTRÓNICO</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text, wordBreak: 'break-all' }}>{proveedores[0]?.correo || 'No registrado'}</div>
@@ -966,14 +975,20 @@ export default function ProvidersPage() {
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>PÁGINA WEB</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.pagina_web || 'No registrada'}</div>
                             </div>
+                        </div>
 
-                            {proveedores[0]?.tipo_documento === '06' && (
+                        {/* --- GRUPO 3: LEGAL --- */}
+                        {proveedores[0]?.tipo_documento === '06' && (
+                            <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>REPRESENTANTE LEGAL</label>
                                     <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.representante_legal || 'No registrado'}</div>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
+                        {/* --- GRUPO 4: UBICACIÓN --- */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px', marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                             <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>DEPARTAMENTO</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.departamento || 'No registrado'}</div>
@@ -988,12 +1003,17 @@ export default function ProvidersPage() {
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px', borderTop: `1px solid ${colors.border}`, paddingTop: '20px', marginTop: '15px' }}>
-                            <div style={{ gridColumn: '1 / -1' }}>
+                        {/* --- GRUPO 5: DIRECCIÓN --- */}
+                        <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
+                            <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>DIRECCIÓN</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>{proveedores[0]?.direccion || 'Sin dirección registrada'}</div>
                             </div>
-                            <div style={{ gridColumn: '1 / -1' }}>
+                        </div>
+
+                        {/* --- GRUPO 6: ACTIVIDAD ECONÓMICA --- */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>ACTIVIDAD ECONÓMICA (CIIU)</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
                                     {proveedores[0]?.ciiu ? `${proveedores[0].ciiu} - ${proveedores[0]?.descripcion_ciiu || ''}` : 'No especificada'}
