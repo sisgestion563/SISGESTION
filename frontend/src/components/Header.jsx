@@ -31,8 +31,8 @@ export default function Header() {
             }}
         >
 
-            <h2>
-                Sistema Gestión Documentos
+            <h2 style={{ fontSize: '18px', margin: 0, fontWeight: '700', color: '#1f2937' }}>
+                Sistema de Gestión Documental y Homologación de Proveedores
             </h2>
 
             <div
