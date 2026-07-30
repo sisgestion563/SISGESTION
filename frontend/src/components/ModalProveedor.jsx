@@ -550,34 +550,7 @@ else{
 />
 {errors.nro_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.nro_documento}</span>}
 
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Pagina Web
-</label>		
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.pagina_web}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            pagina_web:e.target.value
-        })
-    }
-/>
-
-				{
+{
     esEmpresa
     ?
     <>
@@ -610,36 +583,6 @@ else{
     }}
 />
 {errors.razon_social && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.razon_social}</span>}
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Representante Legal *
-</label>
-
-<input
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.representante_legal ? '5px' : '15px'
-    }}
-    value={form.representante_legal}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            representante_legal:e.target.value
-        });
-        setErrors(prev => ({ ...prev, representante_legal: null }));
-    }}
-/>
-{errors.representante_legal && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.representante_legal}</span>}
     </>
     :
     <>
@@ -724,7 +667,7 @@ else{
         fontWeight:'600'
     }}
 >
-    Correo *
+    Correo Contacto *
 </label>
 
 <input
@@ -785,57 +728,59 @@ else{
         fontWeight:'600'
     }}
 >
-    CIIU *
-</label>
-	
-<select
-    required
-    value={form.ciiu || ''}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            ciiu:e.target.value
-        });
-        setErrors(prev => ({ ...prev, ciiu: null }));
-    }}
+    Página Web
+</label>		
+
+<input
     style={{
         width:'100%',
         padding:'10px',
         border:'1px solid #D1D5DB',
         borderRadius:'6px',
-        marginBottom: errors.ciiu ? '5px' : '15px'
+        marginBottom:'15px'
     }}
->
+    value={form.pagina_web}
+    onChange={(e)=>
+        setForm({
+            ...form,
+            pagina_web:e.target.value
+        })
+    }
+/>
 
-<option value="">
-Seleccione CIIU
-</option>
+{esEmpresa && (
+    <>
+        <label
+            style={{
+                display:'block',
+                marginBottom:'5px',
+                fontWeight:'600'
+            }}
+        >
+            Representante Legal *
+        </label>
 
-{
-    ciius.map(
-        item => (
-
-            <option
-                key={
-                    item.codigo_valor
-                }
-                value={
-                    item.codigo_valor
-                }
-            >
-                {
-                    item.codigo_valor
-                } - {
-                    item.descripcion
-                }
-            </option>
-
-        )
-    )
-}
-
-</select>	
-{errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ciiu}</span>}
+        <input
+            required
+            style={{
+                width:'100%',
+                padding:'10px',
+                border:'1px solid #D1D5DB',
+                borderRadius:'6px',
+                marginBottom: errors.representante_legal ? '5px' : '15px'
+            }}
+            value={form.representante_legal}
+            onChange={(e)=>{
+                setForm({
+                    ...form,
+                    representante_legal:e.target.value
+                });
+                setErrors(prev => ({ ...prev, representante_legal: null }));
+            }}
+        />
+        {errors.representante_legal && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.representante_legal}</span>}
+    </>
+)}
 
 <label
     style={{
@@ -971,7 +916,7 @@ Seleccione CIIU
         fontWeight:'600'
     }}
 >
-    Distrito *
+    Distrito / Ciudad *
 </label>
 
 <select
@@ -1032,52 +977,6 @@ Seleccione CIIU
         fontWeight:'600'
     }}
 >
-    Ubigeo *
-</label>
-
-<input
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.ubigeo ? '5px' : '15px'
-    }}
-    value={form.ubigeo || ''}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            ubigeo:e.target.value
-        });
-        setErrors(prev => ({ ...prev, ubigeo: null }));
-    }}
-/>
-{errors.ubigeo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ubigeo}</span>}
-
-{!esProveedorLogueado && (
-    <>
-        <label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-            Estado Proveedor
-        </label>
-        <select
-            style={{width:'100%',padding:'10px',border:'1px solid #D1D5DB',borderRadius:'6px',marginBottom:'15px'}}
-            value={form.status}
-            onChange={(e)=>setForm({...form,status:e.target.value})}>
-            <option value="A">Activo</option>
-            <option value="I">Inactivo</option>	
-        </select>
-    </>
-)}
-
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
     Dirección *
 </label>
 
@@ -1102,6 +1001,80 @@ Seleccione CIIU
     }}
 />
 {errors.direccion && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.direccion}</span>}
+
+<label
+    style={{
+        display:'block',
+        marginBottom:'5px',
+        fontWeight:'600'
+    }}
+>
+    Actividad Económica (CIIU) *
+</label>
+	
+<select
+    required
+    value={form.ciiu || ''}
+    onChange={(e)=>{
+        setForm({
+            ...form,
+            ciiu:e.target.value
+        });
+        setErrors(prev => ({ ...prev, ciiu: null }));
+    }}
+    style={{
+        width:'100%',
+        padding:'10px',
+        border:'1px solid #D1D5DB',
+        borderRadius:'6px',
+        marginBottom: errors.ciiu ? '5px' : '15px'
+    }}
+>
+
+<option value="">
+Seleccione CIIU
+</option>
+
+{
+    ciius.map(
+        item => (
+
+            <option
+                key={
+                    item.codigo_valor
+                }
+                value={
+                    item.codigo_valor
+                }
+            >
+                {
+                    item.codigo_valor
+                } - {
+                    item.descripcion
+                }
+            </option>
+
+        )
+    )
+}
+
+</select>	
+{errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ciiu}</span>}
+
+{!esProveedorLogueado && (
+    <>
+        <label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
+            Estado Proveedor
+        </label>
+        <select
+            style={{width:'100%',padding:'10px',border:'1px solid #D1D5DB',borderRadius:'6px',marginBottom:'15px'}}
+            value={form.status}
+            onChange={(e)=>setForm({...form,status:e.target.value})}>
+            <option value="A">Activo</option>
+            <option value="I">Inactivo</option>	
+        </select>
+    </>
+)}
 
 
                <div
