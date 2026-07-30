@@ -457,609 +457,278 @@ else{
                     padding:'30px'
                 }}
             >
-
-<h2>
-{
-    proveedorEditar
-    ?
-    'Editar Proveedor'
-    :
-    'Nuevo Proveedor'
-}
-</h2>
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Tipo Documento *
-</label>
-
-<select
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.tipo_documento ? '5px' : '15px'
-    }}
-    value={form.tipo_documento}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            tipo_documento:e.target.value
-        });
-        setErrors(prev => ({ ...prev, tipo_documento: null, nro_documento: null }));
-    }}
->
-
-    <option value="06">
-        RUC
-    </option>
-
-    <option value="01">
-        DNI
-    </option>
-
-    <option value="04">
-        Carnet Extranjería
-    </option>
-
-    <option value="07">
-        Pasaporte
-    </option>
-
-    <option value="A0">
-        Cédula Diplomática
-    </option>
-
-</select>
-{errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.tipo_documento}</span>}
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Nro. Documento *
-</label>
-
-<input
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.nro_documento ? '5px' : '15px'
-    }}
-    value={form.nro_documento}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            nro_documento:e.target.value
-        });
-        setErrors(prev => ({ ...prev, nro_documento: null }));
-    }}
-/>
-{errors.nro_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.nro_documento}</span>}
-
-{
-    esEmpresa
-    ?
-    <>
-        <label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Razón Social *
-</label>
-
-<input
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.razon_social ? '5px' : '15px'
-    }}
-    value={form.razon_social}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            razon_social:e.target.value
-        });
-        setErrors(prev => ({ ...prev, razon_social: null }));
-    }}
-/>
-{errors.razon_social && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.razon_social}</span>}
-    </>
-    :
-    <>
-<label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-    Nombres *
-</label>
-
-<input
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.nombre ? '5px' : '15px'
-    }}
-    value={form.nombre}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            nombre:e.target.value
-        });
-        setErrors(prev => ({ ...prev, nombre: null }));
-    }}
-/>
-{errors.nombre && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.nombre}</span>}
-
-<label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-    Apellido Paterno *
-</label>
-
-<input
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.apellido_paterno ? '5px' : '15px'
-    }}
-    value={form.apellido_paterno}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            apellido_paterno:e.target.value
-        });
-        setErrors(prev => ({ ...prev, apellido_paterno: null }));
-    }}
-/>
-{errors.apellido_paterno && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.apellido_paterno}</span>}
-
-<label style={{display:'block',marginBottom:'5px',fontWeight:'600'}}>
-    Apellido Materno *
-</label>
-
-<input
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.apellido_materno ? '5px' : '15px'
-    }}
-    value={form.apellido_materno}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            apellido_materno:e.target.value
-        });
-        setErrors(prev => ({ ...prev, apellido_materno: null }));
-    }}
-/>
-{errors.apellido_materno && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.apellido_materno}</span>}
-    </>
-}
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Correo Contacto *
-</label>
-
-<input
-    required
-    type="email"
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.correo ? '5px' : '15px'
-    }}
-    value={form.correo}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            correo:e.target.value
-        });
-        setErrors(prev => ({ ...prev, correo: null }));
-    }}
-/>
-{errors.correo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.correo}</span>}
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Teléfono *
-</label>
-
-<input
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.telefono ? '5px' : '15px'
-    }}
-    value={form.telefono}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            telefono:e.target.value
-        });
-        setErrors(prev => ({ ...prev, telefono: null }));
-    }}
-/>
-{errors.telefono && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.telefono}</span>}
-	
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Página Web
-</label>		
-
-<input
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom:'15px'
-    }}
-    value={form.pagina_web}
-    onChange={(e)=>
-        setForm({
-            ...form,
-            pagina_web:e.target.value
-        })
-    }
-/>
-
-{esEmpresa && (
-    <>
-        <label
-            style={{
-                display:'block',
-                marginBottom:'5px',
-                fontWeight:'600'
+                <h2>{proveedorEditar ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
+                
+                {/* --- GRUPO 1: IDENTIDAD --- */}
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Tipo Documento *</label>
+        <select
+            required
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.tipo_documento ? '5px' : '0' }}
+            value={form.tipo_documento}
+            onChange={(e)=>{
+                setForm({ ...form, tipo_documento: e.target.value });
+                setErrors(prev => ({ ...prev, tipo_documento: null, nro_documento: null }));
             }}
         >
-            Representante Legal *
-        </label>
+            <option value="06">RUC</option>
+            <option value="01">DNI</option>
+            <option value="04">Carnet Extranjería</option>
+            <option value="07">Pasaporte</option>
+            <option value="A0">Cédula Diplomática</option>
+        </select>
+        {errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.tipo_documento}</span>}
+    </div>
 
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Nro. Documento *</label>
         <input
             required
-            style={{
-                width:'100%',
-                padding:'10px',
-                border:'1px solid #D1D5DB',
-                borderRadius:'6px',
-                marginBottom: errors.representante_legal ? '5px' : '15px'
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.nro_documento ? '5px' : '0' }}
+            value={form.nro_documento}
+            onChange={(e)=>{
+                setForm({ ...form, nro_documento: e.target.value });
+                setErrors(prev => ({ ...prev, nro_documento: null }));
             }}
+        />
+        {errors.nro_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.nro_documento}</span>}
+    </div>
+</div>
+
+{esEmpresa ? (
+    <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: '1px solid #E5E7EB' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Razón Social *</label>
+        <input
+            required
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.razon_social ? '5px' : '0' }}
+            value={form.razon_social}
+            onChange={(e)=>{
+                setForm({ ...form, razon_social: e.target.value });
+                setErrors(prev => ({ ...prev, razon_social: null }));
+            }}
+        />
+        {errors.razon_social && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.razon_social}</span>}
+    </div>
+) : (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '25px', paddingBottom: '20px', borderBottom: '1px solid #E5E7EB' }}>
+        <div>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Nombres *</label>
+            <input
+                required
+                style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.nombre ? '5px' : '0' }}
+                value={form.nombre}
+                onChange={(e)=>{
+                    setForm({ ...form, nombre: e.target.value });
+                    setErrors(prev => ({ ...prev, nombre: null }));
+                }}
+            />
+            {errors.nombre && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.nombre}</span>}
+        </div>
+        <div>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Apellido Paterno *</label>
+            <input
+                required
+                style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.apellido_paterno ? '5px' : '0' }}
+                value={form.apellido_paterno}
+                onChange={(e)=>{
+                    setForm({ ...form, apellido_paterno: e.target.value });
+                    setErrors(prev => ({ ...prev, apellido_paterno: null }));
+                }}
+            />
+            {errors.apellido_paterno && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.apellido_paterno}</span>}
+        </div>
+        <div>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Apellido Materno *</label>
+            <input
+                required
+                style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.apellido_materno ? '5px' : '0' }}
+                value={form.apellido_materno}
+                onChange={(e)=>{
+                    setForm({ ...form, apellido_materno: e.target.value });
+                    setErrors(prev => ({ ...prev, apellido_materno: null }));
+                }}
+            />
+            {errors.apellido_materno && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.apellido_materno}</span>}
+        </div>
+    </div>
+)}
+
+{/* --- GRUPO 2: CONTACTO --- */}
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '25px', paddingBottom: '20px', borderBottom: '1px solid #E5E7EB' }}>
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Correo Contacto *</label>
+        <input
+            required
+            type="email"
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.correo ? '5px' : '0' }}
+            value={form.correo}
+            onChange={(e)=>{
+                setForm({ ...form, correo: e.target.value });
+                setErrors(prev => ({ ...prev, correo: null }));
+            }}
+        />
+        {errors.correo && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.correo}</span>}
+    </div>
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Teléfono *</label>
+        <input
+            required
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.telefono ? '5px' : '0' }}
+            value={form.telefono}
+            onChange={(e)=>{
+                setForm({ ...form, telefono: e.target.value });
+                setErrors(prev => ({ ...prev, telefono: null }));
+            }}
+        />
+        {errors.telefono && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.telefono}</span>}
+    </div>
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Página Web</label>
+        <input
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }}
+            value={form.pagina_web}
+            onChange={(e) => setForm({ ...form, pagina_web: e.target.value })}
+        />
+    </div>
+</div>
+
+{/* --- GRUPO 3: LEGAL --- */}
+{esEmpresa && (
+    <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: '1px solid #E5E7EB' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Representante Legal *</label>
+        <input
+            required
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.representante_legal ? '5px' : '0' }}
             value={form.representante_legal}
             onChange={(e)=>{
-                setForm({
-                    ...form,
-                    representante_legal:e.target.value
-                });
+                setForm({ ...form, representante_legal: e.target.value });
                 setErrors(prev => ({ ...prev, representante_legal: null }));
             }}
         />
-        {errors.representante_legal && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.representante_legal}</span>}
-    </>
+        {errors.representante_legal && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.representante_legal}</span>}
+    </div>
 )}
 
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Departamento *
-</label>
+{/* --- GRUPO 4: UBICACIÓN --- */}
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginBottom: '25px', paddingBottom: '20px', borderBottom: '1px solid #E5E7EB' }}>
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Departamento *</label>
+        <select
+            required
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.departamento ? '5px' : '0' }}
+            value={form.departamento}
+            onChange={async (e)=>{
+                const departamento = e.target.value;
+                setForm({ ...form, departamento, provincia: '', ciudad: '', ubigeo: '' });
+                setErrors(prev => ({ ...prev, departamento: null, provincia: null, ubigeo: null }));
+                const data = await obtenerProvincias(departamento);
+                setProvincias(data);
+                setCiudades([]);
+            }}
+        >
+            <option value="">Seleccione Departamento</option>
+            {departamentos.map(item => (
+                <option key={item.departamento} value={item.departamento}>{item.departamento}</option>
+            ))}
+        </select>
+        {errors.departamento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.departamento}</span>}
+    </div>
+    
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Provincia *</label>
+        <select
+            required
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.provincia ? '5px' : '0' }}
+            value={form.provincia}
+            onChange={async (e)=>{
+                const provincia = e.target.value;
+                setForm({ ...form, provincia, ciudad: '', ubigeo: '' });
+                setErrors(prev => ({ ...prev, provincia: null, ubigeo: null }));
+                const data = await obtenerDistritos(form.departamento, provincia);
+                setCiudades(data);
+            }}
+        >
+            <option value="">Seleccione Provincia</option>
+            {provincias.map(item => (
+                <option key={item.provincia} value={item.provincia}>{item.provincia}</option>
+            ))}
+        </select>
+        {errors.provincia && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.provincia}</span>}
+    </div>
+    
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Distrito / Ciudad *</label>
+        <select
+            required
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.ubigeo ? '5px' : '0' }}
+            value={form.ubigeo || ''}
+            onChange={(e)=>{
+                const ubigeo = e.target.value;
+                const ciudadSeleccionada = ciudades.find(item => item.ubigeo_inei === ubigeo);
+                setForm({ ...form, ciudad: ciudadSeleccionada?.distrito || '', ubigeo });
+                setErrors(prev => ({ ...prev, ubigeo: null }));
+            }}
+        >
+            <option value="">Seleccione Distrito</option>
+            {ciudades.map(item => (
+                <option key={item.ubigeo_inei} value={item.ubigeo_inei}>{item.distrito}</option>
+            ))}
+        </select>
+        {errors.ubigeo && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.ubigeo}</span>}
+    </div>
 
-<select
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.departamento ? '5px' : '15px'
-    }}
-    value={form.departamento}
-    onChange={async (e)=>{
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Ubigeo *</label>
+        <input
+            required
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.ubigeo ? '5px' : '0' }}
+            value={form.ubigeo || ''}
+            onChange={(e)=>{
+                setForm({ ...form, ubigeo: e.target.value });
+                setErrors(prev => ({ ...prev, ubigeo: null }));
+            }}
+        />
+    </div>
+</div>
 
-        const departamento = e.target.value;
+{/* --- GRUPO 5: DIRECCIÓN --- */}
+<div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: '1px solid #E5E7EB' }}>
+    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Dirección *</label>
+    <textarea
+        required
+        value={form.direccion}
+        onChange={(e)=>{
+            setForm({ ...form, direccion: e.target.value });
+            setErrors(prev => ({ ...prev, direccion: null }));
+        }}
+        rows={3}
+        style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', resize: 'none', marginBottom: errors.direccion ? '5px' : '0' }}
+    />
+    {errors.direccion && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.direccion}</span>}
+</div>
 
-        setForm({
-            ...form,
-            departamento,
-            provincia:'',
-            ciudad:'',
-            ubigeo:''
-        });
-        setErrors(prev => ({ ...prev, departamento: null, provincia: null, ubigeo: null }));
-
-        const data =
-            await obtenerProvincias(
-                departamento
-            );
-
-        setProvincias(data);
-        setCiudades([]);
-
-    }}
->
-
-    <option value="">
-        Seleccione Departamento
-    </option>
-
-    {
-        departamentos.map(item => (
-
-            <option
-                key={item.departamento}
-                value={item.departamento}
-            >
-                {item.departamento}
+{/* --- GRUPO 6: ACTIVIDAD ECONÓMICA --- */}
+<div style={{ marginBottom: '25px' }}>
+    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Actividad Económica (CIIU) *</label>
+    <select
+        required
+        value={form.ciiu || ''}
+        onChange={(e)=>{
+            setForm({ ...form, ciiu: e.target.value });
+            setErrors(prev => ({ ...prev, ciiu: null }));
+        }}
+        style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.ciiu ? '5px' : '0' }}
+    >
+        <option value="">Seleccione CIIU</option>
+        {ciius.map(item => (
+            <option key={item.codigo_valor} value={item.codigo_valor}>
+                {item.codigo_valor} - {item.descripcion}
             </option>
-
-        ))
-    }
-
-</select>
-{errors.departamento && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.departamento}</span>}
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Provincia *
-</label>
-
-<select
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.provincia ? '5px' : '15px'
-    }}
-    value={form.provincia}
-    onChange={async (e)=>{
-
-        const provincia = e.target.value;
-
-        setForm({
-            ...form,
-            provincia,
-            ciudad:'',
-            ubigeo:''
-        });
-        setErrors(prev => ({ ...prev, provincia: null, ubigeo: null }));
-
-        const data =
-            await obtenerDistritos(
-                form.departamento,
-                provincia
-            );
-
-        setCiudades(data);
-
-    }}
->
-
-    <option value="">
-        Seleccione Provincia
-    </option>
-
-    {
-        provincias.map(item => (
-
-            <option
-                key={item.provincia}
-                value={item.provincia}
-            >
-                {item.provincia}
-            </option>
-
-        ))
-    }
-
-</select>
-{errors.provincia && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.provincia}</span>}
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Distrito / Ciudad *
-</label>
-
-<select
-    required
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.ubigeo ? '5px' : '15px'
-    }}
-    value={form.ubigeo || ''}
-    onChange={(e)=>{
-
-        const ubigeo = e.target.value;
-
-        const ciudadSeleccionada =
-            ciudades.find(
-                item =>
-                    item.ubigeo_inei === ubigeo
-            );
-
-        setForm({
-            ...form,
-            ciudad:
-                ciudadSeleccionada?.distrito || '',
-            ubigeo
-        });
-        setErrors(prev => ({ ...prev, ubigeo: null }));
-
-    }}
->
-
-    <option value="">
-        Seleccione Distrito
-    </option>
-
-    {
-        ciudades.map(item => (
-
-            <option
-                key={item.ubigeo_inei}
-                value={item.ubigeo_inei}
-            >
-                {item.distrito}
-            </option>
-
-        ))
-    }
-
-</select>
-{errors.ubigeo && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ubigeo}</span>}
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Dirección *
-</label>
-
-<textarea
-    required
-    value={form.direccion}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            direccion:e.target.value
-        });
-        setErrors(prev => ({ ...prev, direccion: null }));
-    }}
-    rows={3}
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        resize:'none',
-        marginBottom: errors.direccion ? '5px' : '15px'
-    }}
-/>
-{errors.direccion && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.direccion}</span>}
-
-<label
-    style={{
-        display:'block',
-        marginBottom:'5px',
-        fontWeight:'600'
-    }}
->
-    Actividad Económica (CIIU) *
-</label>
-	
-<select
-    required
-    value={form.ciiu || ''}
-    onChange={(e)=>{
-        setForm({
-            ...form,
-            ciiu:e.target.value
-        });
-        setErrors(prev => ({ ...prev, ciiu: null }));
-    }}
-    style={{
-        width:'100%',
-        padding:'10px',
-        border:'1px solid #D1D5DB',
-        borderRadius:'6px',
-        marginBottom: errors.ciiu ? '5px' : '15px'
-    }}
->
-
-<option value="">
-Seleccione CIIU
-</option>
-
-{
-    ciius.map(
-        item => (
-
-            <option
-                key={
-                    item.codigo_valor
-                }
-                value={
-                    item.codigo_valor
-                }
-            >
-                {
-                    item.codigo_valor
-                } - {
-                    item.descripcion
-                }
-            </option>
-
-        )
-    )
-}
-
-</select>	
-{errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', marginBottom: '15px', display: 'block', fontWeight: '500' }}>{errors.ciiu}</span>}
+        ))}
+    </select>
+    {errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.ciiu}</span>}
+</div>
 
 {!esProveedorLogueado && (
     <>
