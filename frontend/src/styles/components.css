@@ -32,6 +32,31 @@
 
 }
 
+.btn-secondary {
+
+    background: white;
+
+    color: var(--text-primary);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 8px;
+
+    padding: 10px 20px;
+
+    cursor: pointer;
+
+}
+
+.btn-secondary:hover {
+
+    background: #F8FAFC;
+
+    border-color: #CBD5E1;
+
+}
+
+
 .input {
 
     width: 100%;

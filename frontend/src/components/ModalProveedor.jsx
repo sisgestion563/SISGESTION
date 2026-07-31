@@ -106,8 +106,33 @@ const [
 useEffect(() => {
     if (visible) {
         setErrors({});
+        if (!proveedorEditar) {
+            setForm({
+                regimen_tributario: '',
+                tipo_documento: '06',
+                nro_documento: '',
+                nombre: '',
+                apellido_paterno: '',
+                apellido_materno: '',
+                razon_social: '',
+                pagina_web: '',
+                representante_legal: '',
+                correo: '',
+                telefono: '',
+                departamento: '',
+                provincia: '',
+                ciudad: '',
+                ubigeo: '',
+                direccion: '',
+                ciiu: '',
+                calificacion: 'R',
+                status: 'A'
+            });
+            setProvincias([]);
+            setCiudades([]);
+        }
     }
-}, [visible]);
+}, [visible, proveedorEditar]);
 
 useEffect(() => {
 
@@ -121,6 +146,29 @@ useEffect(() => {
     async () => {
 
         if(!proveedorEditar){
+            setForm({
+                regimen_tributario: '',
+                tipo_documento: '06',
+                nro_documento: '',
+                nombre: '',
+                apellido_paterno: '',
+                apellido_materno: '',
+                razon_social: '',
+                pagina_web: '',
+                representante_legal: '',
+                correo: '',
+                telefono: '',
+                departamento: '',
+                provincia: '',
+                ciudad: '',
+                ubigeo: '',
+                direccion: '',
+                ciiu: '',
+                calificacion: 'R',
+                status: 'A'
+            });
+            setProvincias([]);
+            setCiudades([]);
             return;
         }
 
@@ -811,6 +859,10 @@ else{
 
     <button
         type="button"
+        className="btn-secondary"
+        style={{
+            marginLeft: '10px'
+        }}
         onClick={onClose}
     >
         Cancelar
