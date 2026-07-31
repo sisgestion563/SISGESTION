@@ -24,6 +24,9 @@ const obtenerPorId = async (
 };
 
 const validarProveedor = (proveedor) => {
+  if (!proveedor.regimen_tributario) {
+    throw new Error('El régimen tributario es obligatorio.');
+  }
   if (!proveedor.tipo_documento) {
     throw new Error('El tipo de documento es obligatorio.');
   }

@@ -53,6 +53,15 @@ const listar = async (campo = 'ALL', valor = '') => {
 
         switch (campo) {
 
+            case 'regimen_tributario':
+
+                params.push(texto);
+
+                where = `
+                    WHERE MLV_REG.descripcion ILIKE $1 OR MPRO.regimen_tributario ILIKE $1
+                `;
+                break;
+
             case 'proveedor':
 
                 params.push(texto);
@@ -114,7 +123,11 @@ const listar = async (campo = 'ALL', valor = '') => {
                 where = `
                 WHERE (
 
-                    ${SQL_PROVEEDOR} ILIKE $1
+                    MLV_REG.descripcion ILIKE $1
+
+                    OR MPRO.regimen_tributario ILIKE $1
+
+                    OR ${SQL_PROVEEDOR} ILIKE $1
 
                     OR MPRO.nro_documento::text ILIKE $1
 
@@ -139,6 +152,10 @@ const listar = async (campo = 'ALL', valor = '') => {
 
             MPRO.proveedor_id,
 
+            MPRO.regimen_tributario AS codigo_regimen_tributario,
+
+            COALESCE(MLV_REG.descripcion, MPRO.regimen_tributario) AS regimen_tributario,
+
             MLV.descripcion AS tipo_documento,
 
             MPRO.nro_documento,
@@ -162,6 +179,11 @@ const listar = async (campo = 'ALL', valor = '') => {
             ${SQL_ESTADO} AS estado
 
         FROM "SISGES"."MAE_PROVEEDOR" MPRO
+
+        LEFT JOIN "SISGES"."MAE_LISTA_VALORES" MLV_REG
+               ON MLV_REG.codigo_valor = MPRO.regimen_tributario
+              AND MLV_REG.cod_grupo='0007'
+              AND MLV_REG.tipo_grupo='TIPO_REG_TRIBUTARIO'
 
         LEFT JOIN "SISGES"."MAE_LISTA_VALORES" MLV
                ON MLV.codigo_valor = MPRO.tipo_documento
@@ -191,10 +213,12 @@ const obtenerPorId = async (proveedorId) => {
 
     const sql = `
         SELECT	p.*,
+        reg_trib.descripcion AS descripcion_regimen_tributario,
         ciiu.descripcion AS descripcion_ciiu,
 		tipo_doc.descripcion AS descripcion_tipo_documento,
 		status_prov.descripcion AS descripcion_status_prov
 FROM 	"SISGES"."MAE_PROVEEDOR" p
+LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib ON reg_trib.cod_grupo = '0007' AND reg_trib.tipo_grupo = 'TIPO_REG_TRIBUTARIO' AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" ciiu ON ciiu.cod_grupo = '0002' AND ciiu.tipo_grupo = 'CODIGO_CIIU_SUNAT' AND ciiu.codigo_valor::varchar =  p.ciiu::varchar
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" tipo_doc ON tipo_doc.cod_grupo = '0001' AND tipo_doc.tipo_grupo = 'TIPO_DOC_SUNAT' AND tipo_doc.codigo_valor::varchar =  p.tipo_documento::varchar
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" status_prov ON status_prov.cod_grupo = '0000' AND status_prov.tipo_grupo = 'STATUS_PROVEEDOR' AND status_prov.codigo_valor::varchar =  p.status::varchar
@@ -237,6 +261,7 @@ const crear = async (proveedor) => {
         INSERT INTO "SISGES"."MAE_PROVEEDOR"
         (
             proveedor_id,
+            regimen_tributario,
             tipo_documento,
             nro_documento,
             nombre,
@@ -263,14 +288,15 @@ const crear = async (proveedor) => {
             nextval('"SISGES".seq_proveedor_id'),
             $1,$2,$3,$4,$5,$6,$7,$8,$9,
             $10,$11,$12,$13,$14,$15,$16,
-            $17,$18,
+            $17,$18,$19,
             CURRENT_DATE,
-            $19
+            $20
         )
         RETURNING proveedor_id
     `;
 
     const values = [
+        proveedor.regimen_tributario,
         proveedor.tipo_documento,
         proveedor.nro_documento,
         proveedor.nombre,
@@ -318,32 +344,34 @@ const actualizar = async (
     const sql = `
         UPDATE "SISGES"."MAE_PROVEEDOR"
         SET
-            tipo_documento=$1,
-            nro_documento=$2,
-            nombre=$3,
-            apellido_paterno=$4,
-            apellido_materno=$5,
-            razon_social=$6,
-            departamento=$7,
-            provincia=$8,
-            ciudad=$9,
-            direccion=$10,
-            ubigeo=$11,
-            correo=$12,
-            telefono=$13,
-            pagina_web=$14,
-            ciiu=$15,
-            calificacion=$16,
-            representante_legal=$17,
-            status=$18,
+            regimen_tributario=$1,
+            tipo_documento=$2,
+            nro_documento=$3,
+            nombre=$4,
+            apellido_paterno=$5,
+            apellido_materno=$6,
+            razon_social=$7,
+            departamento=$8,
+            provincia=$9,
+            ciudad=$10,
+            direccion=$11,
+            ubigeo=$12,
+            correo=$13,
+            telefono=$14,
+            pagina_web=$15,
+            ciiu=$16,
+            calificacion=$17,
+            representante_legal=$18,
+            status=$19,
             last_update=CURRENT_DATE,
-            update_by=$19
-        WHERE proveedor_id=$20
+            update_by=$20
+        WHERE proveedor_id=$21
     `;
 
     await pool.query(
         sql,
         [
+            proveedor.regimen_tributario,
             proveedor.tipo_documento,
             proveedor.nro_documento,
             proveedor.nombre,

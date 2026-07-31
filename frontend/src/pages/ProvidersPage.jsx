@@ -203,6 +203,7 @@ const styles = {
 // ── Constantes de búsqueda (solo panel general) ────────────────────────────────
 const CAMPOS_BUSQUEDA = [
     { value: 'ALL', label: 'Todos los campos' },
+    { value: 'regimen_tributario', label: 'Régimen Tributario' },
     { value: 'proveedor', label: 'Razón Social' },
     { value: 'nro_documento', label: 'N° Documento' },
     { value: 'tipo_documento', label: 'Tipo Documento' },
@@ -258,6 +259,7 @@ export default function ProvidersPage() {
 
     // ── Estado formulario autoregistro (PROVEEDOR sin ficha) ──────────────────
     const [form, setForm] = useState({
+        regimen_tributario: '',
         tipo_documento: '06',
         nro_documento: '',
         nombre: '',
@@ -281,6 +283,7 @@ export default function ProvidersPage() {
     const [provincias, setProvincias] = useState([]);
     const [ciudades, setCiudades] = useState([]);
     const [ciius, setCiius] = useState([]);
+    const [regimenesTributarios, setRegimenesTributarios] = useState([]);
     const [errors, setErrors] = useState({});
 
     const esEmpresa = form.tipo_documento === '06';
@@ -340,9 +343,10 @@ export default function ProvidersPage() {
     // ── Catálogos para autoregistro ────────────────────────────────────────────
     const cargarInicialForm = async () => {
         try {
-            const [resDeps, resCiiu] = await Promise.allSettled([
+            const [resDeps, resCiiu, resRegTrib] = await Promise.allSettled([
                 obtenerDepartamentos(),
-                obtenerCatalogo('0002', 'CODIGO_CIIU_SUNAT')
+                obtenerCatalogo('0002', 'CODIGO_CIIU_SUNAT'),
+                obtenerCatalogo('0007', 'TIPO_REG_TRIBUTARIO')
             ]);
             if (resDeps.status === 'fulfilled') {
                 const rawDeps = resDeps.value?.data || resDeps.value || [];
@@ -351,6 +355,10 @@ export default function ProvidersPage() {
             if (resCiiu.status === 'fulfilled') {
                 const rawCiiu = resCiiu.value?.data || resCiiu.value || [];
                 setCiius(Array.isArray(rawCiiu) ? rawCiiu : []);
+            }
+            if (resRegTrib.status === 'fulfilled') {
+                const rawReg = resRegTrib.value?.data || resRegTrib.value || [];
+                setRegimenesTributarios(Array.isArray(rawReg) ? rawReg : []);
             }
         } catch (error) {
             console.error("Error al inicializar catálogos:", error);
@@ -398,6 +406,10 @@ export default function ProvidersPage() {
         const newErrors = {};
         const soloNumeros = /^\d+$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!form.regimen_tributario) {
+            newErrors.regimen_tributario = 'El régimen tributario es obligatorio.';
+        }
 
         if (!form.tipo_documento) {
             newErrors.tipo_documento = 'El tipo de documento es obligatorio.';
@@ -546,6 +558,7 @@ export default function ProvidersPage() {
             titulo: 'SISGESTION',
             subtitulo: 'Listado de Proveedores',
             columnas: [
+                { titulo: 'Régimen Tributario', campo: 'regimen_tributario', ancho: 30 },
                 { titulo: 'Tipo Documento', campo: 'tipo_documento', ancho: 35 },
                 { titulo: 'N° Documento', campo: 'nro_documento', ancho: 20 },
                 { titulo: 'Razón Social', campo: 'proveedor', ancho: 45 },
@@ -631,7 +644,26 @@ export default function ProvidersPage() {
 
                     <form noValidate onSubmit={guardarAutoregistro} style={styles.card}>
                         {/* --- GRUPO 1: IDENTIDAD --- */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                            <div>
+                                <label style={styles.labelForm}>Régimen Tributario *</label>
+                                <select 
+                                    style={{ ...styles.inputForm, marginBottom: errors.regimen_tributario ? '5px' : '0' }} 
+                                    value={form.regimen_tributario} 
+                                    onChange={e => {
+                                        setForm({ ...form, regimen_tributario: e.target.value });
+                                        setErrors(prev => ({ ...prev, regimen_tributario: null }));
+                                    }}
+                                >
+                                    <option value="">Seleccione Régimen</option>
+                                    {regimenesTributarios.map((r, index) => {
+                                        const code = r.codigo_valor || r.codigo;
+                                        const desc = r.descripcion || r.label;
+                                        return <option key={index} value={code}>{code} - {desc}</option>;
+                                    })}
+                                </select>
+                                {errors.regimen_tributario && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.regimen_tributario}</span>}
+                            </div>
                             <div>
                                 <label style={styles.labelForm}>Tipo Documento *</label>
                                 <select 
@@ -930,6 +962,14 @@ export default function ProvidersPage() {
                         {/* --- GRUPO 1: IDENTIDAD --- */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px', marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                             <div>
+                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>RÉGIMEN TRIBUTARIO</label>
+                                <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
+                                    {proveedores[0]?.descripcion_regimen_tributario 
+                                        ? `${proveedores[0]?.regimen_tributario || proveedores[0]?.codigo_regimen_tributario ? (proveedores[0]?.regimen_tributario || proveedores[0]?.codigo_regimen_tributario) + ' - ' : ''}${proveedores[0]?.descripcion_regimen_tributario}`
+                                        : proveedores[0]?.regimen_tributario || 'No registrado'}
+                                </div>
+                            </div>
+                            <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>TIPO DOCUMENTO</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.descripcion_tipo_documento || proveedores[0]?.tipo_documento}</div>
                             </div>
@@ -1087,6 +1127,7 @@ export default function ProvidersPage() {
                         <table style={styles.table}>
                             <thead>
                                 <tr>
+                                    <th style={styles.th}>Régimen Tributario</th>
                                     <th style={styles.th}>Tipo Documento</th>
                                     <th style={styles.th}>Nro Documento</th>
                                     <th style={styles.th}>Razón Social</th>
@@ -1100,10 +1141,11 @@ export default function ProvidersPage() {
                             <tbody>
                                 {proveedores.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} style={styles.emptyState}>No se encontraron proveedores.</td>
+                                        <td colSpan={9} style={styles.emptyState}>No se encontraron proveedores.</td>
                                     </tr>
                                 ) : proveedores.map(item => (
                                     <tr key={item.proveedor_id}>
+                                        <td style={styles.td}>{item.regimen_tributario}</td>
                                         <td style={styles.td}>{item.tipo_documento}</td>
                                         <td style={styles.td}>{item.nro_documento}</td>
                                         <td style={styles.td}>{item.proveedor}</td>

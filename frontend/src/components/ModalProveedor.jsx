@@ -33,6 +33,8 @@ export default function ModalProveedor({
 
     const [form,setForm] = useState({
 
+    regimen_tributario:'',
+
     tipo_documento:'06',
 
     nro_documento:'',
@@ -92,6 +94,11 @@ const [
 ] = useState([]);
 
 const [
+    regimenesTributarios,
+    setRegimenesTributarios
+] = useState([]);
+
+const [
     errors,
     setErrors
 ] = useState({});
@@ -118,6 +125,9 @@ useEffect(() => {
         }
 
         setForm({
+
+            regimen_tributario:
+                proveedorEditar.regimen_tributario || proveedorEditar.codigo_regimen_tributario || '',
 
             tipo_documento:
                 proveedorEditar.tipo_documento || '06',
@@ -221,11 +231,15 @@ async () => {
                 'CODIGO_CIIU_SUNAT'
             );
 
-console.log(
-    'CIIUS',
-    ciiu
-);
         setCiius(ciiu);
+
+        const regTrib =
+            await obtenerCatalogo(
+                '0007',
+                'TIPO_REG_TRIBUTARIO'
+            );
+
+        setRegimenesTributarios(regTrib);
 
     }
     catch(error){
@@ -246,6 +260,10 @@ const validarForm = () => {
     const newErrors = {};
     const soloNumeros = /^\d+$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!form.regimen_tributario) {
+        newErrors.regimen_tributario = 'El régimen tributario es obligatorio.';
+    }
 
     if (!form.tipo_documento) {
         newErrors.tipo_documento = 'El tipo de documento es obligatorio.';
@@ -372,6 +390,8 @@ else{
 		
 		setForm({
 
+    regimen_tributario:'',
+
     tipo_documento:'06',
 
     nro_documento:'',
@@ -460,7 +480,28 @@ else{
                 <h2>{proveedorEditar ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
                 
                 {/* --- GRUPO 1: IDENTIDAD --- */}
-<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Régimen Tributario *</label>
+        <select
+            required
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.regimen_tributario ? '5px' : '0' }}
+            value={form.regimen_tributario}
+            onChange={(e)=>{
+                setForm({ ...form, regimen_tributario: e.target.value });
+                setErrors(prev => ({ ...prev, regimen_tributario: null }));
+            }}
+        >
+            <option value="">Seleccione Régimen</option>
+            {regimenesTributarios.map(item => (
+                <option key={item.codigo_valor} value={item.codigo_valor}>
+                    {item.codigo_valor} - {item.descripcion}
+                </option>
+            ))}
+        </select>
+        {errors.regimen_tributario && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.regimen_tributario}</span>}
+    </div>
+
     <div>
         <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Tipo Documento *</label>
         <select

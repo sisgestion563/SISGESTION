@@ -53,6 +53,19 @@ export default function ModalVerProveedor({
                         </tr>
 
                         <tr>
+                            <td><b>Régimen Tributario</b></td>
+                            <td>
+                                {
+                                    proveedor.descripcion_regimen_tributario || proveedor.regimen_tributario
+                                    ? (proveedor.descripcion_regimen_tributario
+                                        ? `${proveedor.regimen_tributario || proveedor.codigo_regimen_tributario ? (proveedor.regimen_tributario || proveedor.codigo_regimen_tributario) + ' - ' : ''}${proveedor.descripcion_regimen_tributario}`
+                                        : proveedor.regimen_tributario)
+                                    : ''
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
                             <td><b>Tipo Documento</b></td>                        
                             <td>
                                 {
