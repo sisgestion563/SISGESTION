@@ -58,7 +58,7 @@ const listar = async (campo = 'ALL', valor = '') => {
                 params.push(texto);
 
                 where = `
-                    WHERE MLV_REG.descripcion ILIKE $1 OR MPRO.regimen_tributario ILIKE $1
+                    WHERE MLV_REG.descripcion ILIKE $1 OR MPRO.regimen_tributario::text ILIKE $1
                 `;
                 break;
 
@@ -125,7 +125,7 @@ const listar = async (campo = 'ALL', valor = '') => {
 
                     MLV_REG.descripcion ILIKE $1
 
-                    OR MPRO.regimen_tributario ILIKE $1
+                    OR MPRO.regimen_tributario::text ILIKE $1
 
                     OR ${SQL_PROVEEDOR} ILIKE $1
 
@@ -154,7 +154,7 @@ const listar = async (campo = 'ALL', valor = '') => {
 
             MPRO.regimen_tributario AS codigo_regimen_tributario,
 
-            COALESCE(MLV_REG.descripcion, MPRO.regimen_tributario) AS regimen_tributario,
+            COALESCE(MLV_REG.descripcion, MPRO.regimen_tributario::varchar) AS regimen_tributario,
 
             MLV.descripcion AS tipo_documento,
 
@@ -181,7 +181,7 @@ const listar = async (campo = 'ALL', valor = '') => {
         FROM "SISGES"."MAE_PROVEEDOR" MPRO
 
         LEFT JOIN "SISGES"."MAE_LISTA_VALORES" MLV_REG
-               ON MLV_REG.codigo_valor = MPRO.regimen_tributario
+               ON MLV_REG.codigo_valor::varchar = MPRO.regimen_tributario::varchar
               AND MLV_REG.cod_grupo='0007'
               AND MLV_REG.tipo_grupo='TIPO_REG_TRIBUTARIO'
 
