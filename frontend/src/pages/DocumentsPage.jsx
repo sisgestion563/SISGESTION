@@ -370,10 +370,13 @@ export default function DocumentsPage() {
 				const resultados = await Promise.all(promesas);
 
 				const excelRows = [];
-				const razonSocialStr = proveedorSeleccionado.razon_social || 
-					`${proveedorSeleccionado.nombre || ''} ${proveedorSeleccionado.apellido_paterno || ''} ${proveedorSeleccionado.apellido_materno || ''}`.trim();
+				const esEmpresa = proveedorSeleccionado.tipo_documento === '06' || proveedorSeleccionado.tipo_documento === 'RUC';
+				const labelNombre = esEmpresa ? 'RAZÓN SOCIAL' : 'NOMBRES Y APELLIDOS';
+				const nombreStr = esEmpresa 
+					? proveedorSeleccionado.razon_social 
+					: `${proveedorSeleccionado.nombre || ''} ${proveedorSeleccionado.apellido_paterno || ''} ${proveedorSeleccionado.apellido_materno || ''}`.trim();
 					
-				excelRows.push({ "Columna": `RAZÓN SOCIAL: ${razonSocialStr}` });
+				excelRows.push({ "Columna": `${labelNombre}: ${nombreStr || ''}` });
 				excelRows.push({ "Columna": `DOCUMENTO: ${proveedorSeleccionado.nro_documento || ''}` });
 				excelRows.push({ "Columna": "" });
 
@@ -560,8 +563,9 @@ export default function DocumentsPage() {
 										<td style={styles.td}>{item.nro_documento}</td>
 										<td style={styles.td}>
 											{
-												item.razon_social ||
-												`${item.nombre || ''} ${item.apellido_paterno || ''} ${item.apellido_materno || ''}`
+												item.tipo_documento === '06' || item.tipo_documento === 'RUC'
+												? item.razon_social || 'No registrada'
+												: `${item.nombre || ''} ${item.apellido_paterno || ''} ${item.apellido_materno || ''}`.trim() || 'No registrado'
 											}
 										</td>
 										<td style={styles.td}>
@@ -588,13 +592,19 @@ export default function DocumentsPage() {
 
 							<div style={{ ...styles.infoBlock, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
 								<div>
-									<p style={styles.infoLine}>
-										<b>Razón Social:</b>{' '}
-										{
-											proveedorSeleccionado.razon_social ||
-											`${proveedorSeleccionado.nombre || ''} ${proveedorSeleccionado.apellido_paterno || ''} ${proveedorSeleccionado.apellido_materno || ''}`
-										}
-									</p>
+									{proveedorSeleccionado.tipo_documento === '06' || proveedorSeleccionado.tipo_documento === 'RUC' ? (
+										<p style={styles.infoLine}>
+											<b>Razón Social:</b>{' '}
+											{proveedorSeleccionado.razon_social || 'No registrada'}
+										</p>
+									) : (
+										<p style={styles.infoLine}>
+											<b>Nombres y Apellidos:</b>{' '}
+											{
+												`${proveedorSeleccionado.nombre || ''} ${proveedorSeleccionado.apellido_paterno || ''} ${proveedorSeleccionado.apellido_materno || ''}`.trim() || 'No registrado'
+											}
+										</p>
+									)}
 
 									<p style={styles.infoLine}>
 										<b>Tipo Empresa:</b>{' '}

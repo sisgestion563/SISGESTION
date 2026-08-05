@@ -1004,6 +1004,12 @@ export default function ProvidersPage() {
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.descripcion_tipo_documento || proveedores[0]?.tipo_documento}</div>
                             </div>
                             <div>
+                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NRO. TRABAJADORES</label>
+                                <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
+                                    {proveedores[0]?.descripcion_nro_trabajadores || proveedores[0]?.nro_trabajadores || 'No especificado'}
+                                </div>
+                            </div>
+                            <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NÚMERO DE DOCUMENTO</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.nro_documento}</div>
                             </div>
@@ -1014,20 +1020,12 @@ export default function ProvidersPage() {
                                     <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.razon_social || 'No registrada'}</div>
                                 </div>
                             ) : (
-                                <>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NOMBRE</label>
-                                        <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.nombre || 'No registrado'}</div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NOMBRES Y APELLIDOS</label>
+                                    <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
+                                        {`${proveedores[0]?.nombre || ''} ${proveedores[0]?.apellido_paterno || ''} ${proveedores[0]?.apellido_materno || ''}`.trim() || 'No registrado'}
                                     </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>APELLIDO PATERNO</label>
-                                        <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.apellido_paterno || 'No registrado'}</div>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>APELLIDO MATERNO</label>
-                                        <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.apellido_materno || 'No registrado'}</div>
-                                    </div>
-                                </>
+                                </div>
                             )}
                         </div>
 
@@ -1087,12 +1085,6 @@ export default function ProvidersPage() {
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>ACTIVIDAD ECONÓMICA (CIIU)</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
                                     {proveedores[0]?.ciiu ? `${proveedores[0].ciiu} - ${proveedores[0]?.descripcion_ciiu || ''}` : 'No especificada'}
-                                </div>
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NRO DE PERSONAS</label>
-                                <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
-                                    {proveedores[0]?.descripcion_nro_trabajadores || proveedores[0]?.nro_trabajadores || 'No especificado'}
                                 </div>
                             </div>
                         </div>
