@@ -153,6 +153,8 @@ export default function ModalDocumento({visible,
 										onClose,
 										onSuccess,
 										proveedorId,
+										documentosExistentes = [],
+										regimenTributario,
 										grupoDocumento,
 										modo = 'NUEVO',
 										documento = null}) 
@@ -183,46 +185,42 @@ export default function ModalDocumento({visible,
 			]
 		};
 
-		const MAPA_TIPOS_DOCUMENTO = {
-			'GSG': [
-				{ codigo_valor: '01', descripcion: 'Accidentes de Trabajo, Enfermedades Ocupacionales e Incidentes' },
-				{ codigo_valor: '02', descripcion: 'Exámenes Médicos Ocupacionales' },
-				{ codigo_valor: '03', descripcion: 'Monitoreo de Agentes' },
-				{ codigo_valor: '04', descripcion: 'Inspecciones Internas' },
-				{ codigo_valor: '05', descripcion: 'Estadísticas' },
-				{ codigo_valor: '06', descripcion: 'Equipos de Seguridad o Emergencia' },
-				{ codigo_valor: '07', descripcion: 'Capacitación y Simulacros' },
-				{ codigo_valor: '08', descripcion: 'Auditorías' },
-				{ codigo_valor: '09', descripcion: 'Política y objetivos en materia de SST' },
-				{ codigo_valor: '10', descripcion: 'Reglamento Interno de Seguridad y Salud en el Trabajo' },
-				{ codigo_valor: '11', descripcion: 'Identificación de peligros, evaluación de riesgos y medidas de control (IPERC)' },
-				{ codigo_valor: '12', descripcion: 'Mapa de Riesgos' },
-				{ codigo_valor: '13', descripcion: 'Planificación de la Actividad Preventiva' },
-				{ codigo_valor: '14', descripcion: 'Programa Anual de Seguridad y Salud en el Trabajo' }
-			],
-			'GMA': [
-				{ codigo_valor: '01', descripcion: 'Matriz PAMA' },
-				{ codigo_valor: '02', descripcion: 'Otros (Certificaciones, declaraciones, manifiestos, informes)' }
-			],
-			'GCA': [
-				{ codigo_valor: '01', descripcion: 'Certificaciones ISO 9001' },
-				{ codigo_valor: '02', descripcion: 'Certificaciones Diversas (Homologaciones)' }
-			],
-			'GPA': [
-				{ codigo_valor: '01', descripcion: 'Plan de Contingencias' },
-				{ codigo_valor: '02', descripcion: 'Otros' }
-			],
-			'GTR': [
-				{ codigo_valor: '01', descripcion: 'Carta de Presentación' },
-				{ codigo_valor: '02', descripcion: 'Otros' }
-			]
-		};
-
 		const [form, setForm] = useState(formInicial);
+		const [tiposDocumento, setTiposDocumento] = useState([]);
+		const [errorMessage, setErrorMessage] = useState('');
 
 		// Obtenemos las listas a partir de los mapas
 		const alcances = MAPA_ALCANCES[grupoDocumento] || [];
-		const tiposDocumento = MAPA_TIPOS_DOCUMENTO[form.alcance] || [];
+
+		useEffect(() => {
+			if (form.alcance) {
+				obtenerCatalogo('0001', 'TIPO_DOC_' + form.alcance)
+					.then(res => {
+						let data = res.data ? res.data : res;
+						
+						if (form.alcance === 'GSG') {
+							if (regimenTributario === 'RG') {
+								const permitidos = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+								data = data.filter(d => permitidos.includes(d.codigo_valor));
+							} else if (regimenTributario === 'RP') {
+								const permitidos = ['01','02','03','04','05','07','09','10','12','15'];
+								data = data.filter(d => permitidos.includes(d.codigo_valor));
+							} else if (regimenTributario === 'RM') {
+								const permitidos = ['01','02','04','07','09','12','13'];
+								data = data.filter(d => permitidos.includes(d.codigo_valor));
+							}
+						} else if (['GMA', 'GCA', 'GPA', 'GTR'].includes(form.alcance)) {
+							const permitidos = ['01', '02'];
+							data = data.filter(d => permitidos.includes(d.codigo_valor));
+						}
+						
+						setTiposDocumento(data);
+					})
+					.catch(err => console.error(err));
+			} else {
+				setTiposDocumento([]);
+			}
+		}, [form.alcance, regimenTributario]);
 
 
 		const cargarCatalogos = async () => 
@@ -272,6 +270,7 @@ export default function ModalDocumento({visible,
 			{
 				if (!visible) {return;}
 
+				setErrorMessage('');
 				cargarCatalogos();
 				if (modo === 'NUEVO') 
 					{
@@ -287,8 +286,34 @@ export default function ModalDocumento({visible,
 
 		const guardar = async () => 
 			{
+				setErrorMessage('');
+				
 				if (!form.alcance || !form.tipo_documento_id || !form.fecha_vigencia || !form.ruta_documento) {
-					alert('Los primeros 4 campos (Alcance, Tipo Documento, Fecha Vigencia y Ruta Documento) son obligatorios.');
+					setErrorMessage('Los primeros 4 campos (Alcance, Tipo Documento, Fecha Vigencia y Ruta Documento) son obligatorios.');
+					return;
+				}
+
+				// Validation 1: No duplicate document type
+				if (modo === 'NUEVO') {
+					const existeDoble = documentosExistentes.some(d => d.alcance === form.alcance && d.tipo_documento_id === form.tipo_documento_id && d.estado_documento !== 'INACTIVO');
+					if (existeDoble) {
+						setErrorMessage('No se permite el doble ingreso de registro para este tipo de documento en esta gestión.');
+						return;
+					}
+				}
+
+				// Validation 2: Fecha de vigencia must be > current date
+				const vigenciaStr = form.fecha_vigencia.split('T')[0];
+				const currentDate = new Date();
+				currentDate.setHours(0, 0, 0, 0);
+				
+				// Create local date properly without timezone shifting
+				const parts = vigenciaStr.split('-');
+				const vigenciaDate = new Date(parts[0], parts[1] - 1, parts[2]);
+				vigenciaDate.setHours(0, 0, 0, 0);
+
+				if (vigenciaDate <= currentDate) {
+					setErrorMessage('No se permite ingreso de documentos con Fecha de vigencia menor o igual a la fecha del sistema.');
 					return;
 				}
 
@@ -326,7 +351,7 @@ export default function ModalDocumento({visible,
 					}
 				catch(error)
 					{
-						alert(error.response?.data?.message ||error.message);
+						setErrorMessage(error.response?.data?.message ||error.message);
 					}
 			};
 
@@ -340,6 +365,7 @@ export default function ModalDocumento({visible,
 
 			const cerrarModal = () => 
 				{
+					setErrorMessage('');
 					setForm({tipo_documento_id:'',
 							tipo_documento:'',
 							fecha_inicio:'',
@@ -541,19 +567,29 @@ export default function ModalDocumento({visible,
 
                 </div>
 
-                <div style={styles.actions}>
+                <div style={{ ...styles.actions, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+					
+					<div style={{ flex: 1, marginRight: '16px' }}>
+						{errorMessage && (
+							<span style={{ color: '#dc2626', fontSize: '13px', fontWeight: '500', lineHeight: '1.2', display: 'block' }}>
+								{errorMessage}
+							</span>
+						)}
+					</div>
+					
+					<div style={{ display: 'flex', gap: '12px' }}>
+						{
+							modo !== 'VER' && (
+								<button style={styles.btnPrimary} onClick={guardar}>
+									{modo === 'NUEVO' ? 'Guardar' : 'Actualizar'}
+								</button>
+							)
+						}
 
-                    {
-                        modo !== 'VER' && (
-                            <button style={styles.btnPrimary} onClick={guardar}>
-                                {modo === 'NUEVO' ? 'Guardar' : 'Actualizar'}
-                            </button>
-                        )
-                    }
-
-                    <button style={styles.btnGhost} onClick={cerrarModal}>
-                        {modo === 'VER' ? 'Cerrar' : 'Cancelar'}
-                    </button>
+						<button style={styles.btnGhost} onClick={cerrarModal}>
+							{modo === 'VER' ? 'Cerrar' : 'Cancelar'}
+						</button>
+					</div>
 
                 </div>
 

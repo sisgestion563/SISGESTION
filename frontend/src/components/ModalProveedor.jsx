@@ -99,6 +99,11 @@ const [
 ] = useState([]);
 
 const [
+    nroTrabajadoresList,
+    setNroTrabajadoresList
+] = useState([]);
+
+const [
     errors,
     setErrors
 ] = useState({});
@@ -126,7 +131,8 @@ useEffect(() => {
                 direccion: '',
                 ciiu: '',
                 calificacion: 'R',
-                status: 'A'
+                status: 'A',
+                nro_trabajadores: ''
             });
             setProvincias([]);
             setCiudades([]);
@@ -165,7 +171,8 @@ useEffect(() => {
                 direccion: '',
                 ciiu: '',
                 calificacion: 'R',
-                status: 'A'
+                status: 'A',
+                nro_trabajadores: ''
             });
             setProvincias([]);
             setCiudades([]);
@@ -230,7 +237,10 @@ useEffect(() => {
                 proveedorEditar.calificacion || 'R',
 
             status:
-                proveedorEditar.status || 'A'
+                proveedorEditar.status || 'A',
+                
+            nro_trabajadores:
+                proveedorEditar.nro_trabajadores || ''
         });
 
         const provinciasData =
@@ -283,11 +293,19 @@ async () => {
 
         const regTrib =
             await obtenerCatalogo(
-                '0007',
-                'TIPO_REG_TRIBUTARIO'
+                '0100',
+                'TIPO_REGIMEN'
             );
 
         setRegimenesTributarios(regTrib);
+
+        const nroTrab =
+            await obtenerCatalogo(
+                '0101',
+                'TIPO_NRO_TRABAJADORES'
+            );
+        
+        setNroTrabajadoresList(nroTrab);
 
     }
     catch(error){
@@ -310,7 +328,7 @@ const validarForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!form.regimen_tributario) {
-        newErrors.regimen_tributario = 'El régimen tributario es obligatorio.';
+        newErrors.regimen_tributario = 'El tipo de empresa es obligatorio.';
     }
 
     if (!form.tipo_documento) {
@@ -528,22 +546,22 @@ else{
                 <h2>{proveedorEditar ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h2>
                 
                 {/* --- GRUPO 1: IDENTIDAD --- */}
-<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginBottom: '15px' }}>
     <div>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Régimen Tributario *</label>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Tipo Empresa *</label>
         <select
             required
             style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.regimen_tributario ? '5px' : '0' }}
             value={form.regimen_tributario}
-            onChange={(e)=>{
+            onChange={(e) => {
                 setForm({ ...form, regimen_tributario: e.target.value });
                 setErrors(prev => ({ ...prev, regimen_tributario: null }));
             }}
         >
-            <option value="">Seleccione Régimen</option>
+            <option value="">Seleccione...</option>
             {regimenesTributarios.map(item => (
                 <option key={item.codigo_valor} value={item.codigo_valor}>
-                    {item.codigo_valor} - {item.descripcion}
+                    {item.descripcion}
                 </option>
             ))}
         </select>
@@ -568,6 +586,24 @@ else{
             <option value="A0">Cédula Diplomática</option>
         </select>
         {errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.tipo_documento}</span>}
+    </div>
+
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Nro. Trabajadores</label>
+        <select
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }}
+            value={form.nro_trabajadores}
+            onChange={(e) => {
+                setForm({ ...form, nro_trabajadores: e.target.value });
+            }}
+        >
+            <option value="">Seleccione...</option>
+            {nroTrabajadoresList.map(item => (
+                <option key={item.codigo_valor} value={item.codigo_valor}>
+                    {item.descripcion}
+                </option>
+            ))}
+        </select>
     </div>
 
     <div>

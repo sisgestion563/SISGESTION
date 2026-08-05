@@ -53,7 +53,7 @@ export default function ModalVerProveedor({
                         </tr>
 
                         <tr>
-                            <td><b>Régimen Tributario</b></td>
+                            <td><b>Tipo Empresa</b></td>
                             <td>
                                 {
                                     proveedor.descripcion_regimen_tributario || proveedor.regimen_tributario
@@ -76,6 +76,11 @@ export default function ModalVerProveedor({
                                     ''
                                 }
                             </td>
+                        </tr>
+
+                        <tr>
+                            <td><b>Nro. Trabajadores</b></td>
+                            <td>{proveedor.descripcion_nro_trabajadores || proveedor.nro_trabajadores}</td>
                         </tr>
 
                         <tr>

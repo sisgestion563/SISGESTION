@@ -182,8 +182,8 @@ const listar = async (campo = 'ALL', valor = '') => {
 
         LEFT JOIN "SISGES"."MAE_LISTA_VALORES" MLV_REG
                ON MLV_REG.codigo_valor::varchar = MPRO.regimen_tributario::varchar
-              AND MLV_REG.cod_grupo='0007'
-              AND MLV_REG.tipo_grupo='TIPO_REG_TRIBUTARIO'
+              AND MLV_REG.cod_grupo='0100'
+              AND MLV_REG.tipo_grupo='TIPO_REGIMEN'
 
         LEFT JOIN "SISGES"."MAE_LISTA_VALORES" MLV
                ON MLV.codigo_valor = MPRO.tipo_documento
@@ -216,12 +216,14 @@ const obtenerPorId = async (proveedorId) => {
         reg_trib.descripcion AS descripcion_regimen_tributario,
         ciiu.descripcion AS descripcion_ciiu,
 		tipo_doc.descripcion AS descripcion_tipo_documento,
-		status_prov.descripcion AS descripcion_status_prov
+		status_prov.descripcion AS descripcion_status_prov,
+        nro_trab.descripcion AS descripcion_nro_trabajadores
 FROM 	"SISGES"."MAE_PROVEEDOR" p
-LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib ON reg_trib.cod_grupo = '0007' AND reg_trib.tipo_grupo = 'TIPO_REG_TRIBUTARIO' AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
+LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib ON reg_trib.cod_grupo = '0100' AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" ciiu ON ciiu.cod_grupo = '0002' AND ciiu.tipo_grupo = 'CODIGO_CIIU_SUNAT' AND ciiu.codigo_valor::varchar =  p.ciiu::varchar
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" tipo_doc ON tipo_doc.cod_grupo = '0001' AND tipo_doc.tipo_grupo = 'TIPO_DOC_SUNAT' AND tipo_doc.codigo_valor::varchar =  p.tipo_documento::varchar
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" status_prov ON status_prov.cod_grupo = '0000' AND status_prov.tipo_grupo = 'STATUS_PROVEEDOR' AND status_prov.codigo_valor::varchar =  p.status::varchar
+LEFT JOIN "SISGES"."MAE_LISTA_VALORES" nro_trab ON nro_trab.cod_grupo = '0101' AND nro_trab.tipo_grupo = 'TIPO_NRO_TRABAJADORES' AND nro_trab.codigo_valor::varchar = p.nro_trabajadores::varchar
 WHERE p.proveedor_id = $1
     `;
 
@@ -280,6 +282,7 @@ const crear = async (proveedor) => {
             calificacion,
             representante_legal,
             status,
+            nro_trabajadores,
             create_date,
             create_by
         )
@@ -289,8 +292,9 @@ const crear = async (proveedor) => {
             $1,$2,$3,$4,$5,$6,$7,$8,$9,
             $10,$11,$12,$13,$14,$15,$16,
             $17,$18,$19,
+            $20,
             CURRENT_DATE,
-            $20
+            $21
         )
         RETURNING proveedor_id
     `;
@@ -315,6 +319,7 @@ const crear = async (proveedor) => {
         proveedor.calificacion || 'R',
         proveedor.representante_legal,
         proveedor.status || 'A',
+        proveedor.nro_trabajadores,
         proveedor.create_by
     ];
 
@@ -363,9 +368,10 @@ const actualizar = async (
             calificacion=$17,
             representante_legal=$18,
             status=$19,
+            nro_trabajadores=$20,
             last_update=CURRENT_DATE,
-            update_by=$20
-        WHERE proveedor_id=$21
+            update_by=$21
+        WHERE proveedor_id=$22
     `;
 
     await pool.query(
@@ -390,6 +396,7 @@ const actualizar = async (
             proveedor.calificacion,
             proveedor.representante_legal,
             proveedor.status,
+            proveedor.nro_trabajadores,
             proveedor.update_by,
             proveedorId
         ]

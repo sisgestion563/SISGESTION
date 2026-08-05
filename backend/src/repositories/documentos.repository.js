@@ -9,39 +9,11 @@ const listarPorProveedor = async (proveedorId) => {
     d.proveedor_id,
     d.tipo_documento_id,
     d.tipo_documento,
-    CASE d.grupo_documentos
-        WHEN 'DOC_NOR' THEN
-            (	select 	lv.descripcion
-                from	"SISGES"."MAE_LISTA_VALORES" lv
-                where	lv.cod_grupo = '0001'
-                and		lv.tipo_grupo = 'TIPO_DOC_NORMATIVO'
-                and		lv.codigo_valor = d.tipo_documento_id ) 
-        WHEN 'DOC_EXT_NOR' THEN
-            (	select 	lv.descripcion
-                from	"SISGES"."MAE_LISTA_VALORES" lv
-                where	lv.cod_grupo = '0001'
-                and		lv.tipo_grupo = 'TIPO_DOC_EXT_NOR'
-                and		lv.codigo_valor = d.tipo_documento_id ) 
-        WHEN 'DOC_REQ_ESTATAL' THEN
-            (	select 	lv.descripcion
-                from	"SISGES"."MAE_LISTA_VALORES" lv
-                where	lv.cod_grupo = '0001'
-                and		lv.tipo_grupo = 'TIPO_DOC_REQ_EST'
-                and		lv.codigo_valor = d.tipo_documento_id ) 
-        WHEN 'DOC_OTROS' THEN
-            COALESCE(
-                (	select 	lv.descripcion
-                    from	"SISGES"."MAE_LISTA_VALORES" lv
-                    where	lv.cod_grupo = '0001'
-                    and		lv.tipo_grupo = 'TIPO_DOC_OTROS'
-                    and		lv.codigo_valor = d.tipo_documento_id ),
-                CASE d.tipo_documento_id
-                    WHEN '01' THEN 'Carta de Presentación'
-                    WHEN '02' THEN 'Otros'
-                    ELSE d.tipo_documento_id
-                END
-            )
-    END AS descripcion_tipo_documento,
+    (	select 	lv.descripcion
+        from	"SISGES"."MAE_LISTA_VALORES" lv
+        where	lv.cod_grupo = '0001'
+        and		lv.tipo_grupo = 'TIPO_DOC_' || d.alcance
+        and		lv.codigo_valor = d.tipo_documento_id ) AS descripcion_tipo_documento,
     d.fecha_inicio,
     d.fecha_fin,
     d.fecha_vigencia,
@@ -186,39 +158,11 @@ const listarPorGrupo = async (
         d.proveedor_id,
         d.tipo_documento_id,
         d.tipo_documento,
-        CASE d.grupo_documentos
-			WHEN 'DOC_NOR' THEN
-				(	select 	lv.descripcion
-			  		from	"SISGES"."MAE_LISTA_VALORES" lv
-			  		where	lv.cod_grupo = '0001'
-			  		and		lv.tipo_grupo = 'TIPO_DOC_NORMATIVO'
-			  		and		lv.codigo_valor = d.tipo_documento_id ) 
-			WHEN 'DOC_EXT_NOR' THEN
-				(	select 	lv.descripcion
-			  		from	"SISGES"."MAE_LISTA_VALORES" lv
-			  		where	lv.cod_grupo = '0001'
-			  		and		lv.tipo_grupo = 'TIPO_DOC_EXT_NOR'
-			  		and		lv.codigo_valor = d.tipo_documento_id ) 
-			WHEN 'DOC_REQ_ESTATAL' THEN
-				(	select 	lv.descripcion
-			  		from	"SISGES"."MAE_LISTA_VALORES" lv
-			  		where	lv.cod_grupo = '0001'
-			  		and		lv.tipo_grupo = 'TIPO_DOC_REQ_EST'
-			  		and		lv.codigo_valor = d.tipo_documento_id ) 
-			WHEN 'DOC_OTROS' THEN
-				COALESCE(
-					(	select 	lv.descripcion
-				  		from	"SISGES"."MAE_LISTA_VALORES" lv
-				  		where	lv.cod_grupo = '0001'
-				  		and		lv.tipo_grupo = 'TIPO_DOC_OTROS'
-				  		and		lv.codigo_valor = d.tipo_documento_id ),
-					CASE d.tipo_documento_id
-						WHEN '01' THEN 'Carta de Presentación'
-						WHEN '02' THEN 'Otros'
-						ELSE d.tipo_documento_id
-					END
-				) 		
-		END as descripcion_tipo_documento,
+        (	select 	lv.descripcion
+            from	"SISGES"."MAE_LISTA_VALORES" lv
+            where	lv.cod_grupo = '0001'
+            and		lv.tipo_grupo = 'TIPO_DOC_' || d.alcance
+            and		lv.codigo_valor = d.tipo_documento_id ) AS descripcion_tipo_documento,
 		lv_alcance.descripcion AS descripcion_alcance,
 		lv_estado_doc.descripcion as desc_estado_documento,
         d.fecha_inicio,
