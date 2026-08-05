@@ -597,6 +597,24 @@ export default function DocumentsPage() {
 									</p>
 
 									<p style={styles.infoLine}>
+										<b>Tipo Empresa:</b>{' '}
+										{
+											proveedorSeleccionado.descripcion_regimen_tributario || 
+											proveedorSeleccionado.regimen_tributario || 
+											'No especificado'
+										}
+									</p>
+
+									<p style={styles.infoLine}>
+										<b>Nro. Trabajadores:</b>{' '}
+										{
+											proveedorSeleccionado.descripcion_nro_trabajadores || 
+											proveedorSeleccionado.nro_trabajadores || 
+											'No especificado'
+										}
+									</p>
+
+									<p style={styles.infoLine}>
 										<b>CIIU:</b>{' '}
 										{proveedorSeleccionado.ciiu}
 										{' - '}
