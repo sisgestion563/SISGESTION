@@ -344,8 +344,9 @@ export default function DocumentsPage() {
 
 			const data = documentos.map(item => ({
 				"Alcance": item.descripcion_alcance || '',
-				"Tipo Documento": item.descripcion_tipo_documento || item.tipo_documento || 
-					(item.tipo_documento_id === '01' ? 'Carta de Presentación' : item.tipo_documento_id === '02' ? 'Otros' : item.tipo_documento_id || ''),
+				"Tipo Documento": item.tipo_documento_id 
+					? `${item.tipo_documento_id} - ${item.descripcion_tipo_documento || item.tipo_documento || (item.tipo_documento_id === '01' ? 'Carta de Presentación' : item.tipo_documento_id === '02' ? 'Otros' : '')}`
+					: (item.descripcion_tipo_documento || item.tipo_documento || ''),
 				"Fecha Vigencia": formatearFechaLocal(item.fecha_vigencia),
 				"Estado": item.estado_documento === 'V' ? 'VIGENTE' : 'VENCIDO'
 			}));
@@ -395,8 +396,9 @@ export default function DocumentsPage() {
 						res.documentos.forEach(doc => {
 							excelRows.push({
 								"Columna": doc.descripcion_alcance || doc.alcance || '',
-								"Tipo": doc.descripcion_tipo_documento || doc.tipo_documento || 
-									(doc.tipo_documento_id === '01' ? 'Carta de Presentación' : doc.tipo_documento_id === '02' ? 'Otros' : doc.tipo_documento_id || ''),
+								"Tipo": doc.tipo_documento_id 
+									? `${doc.tipo_documento_id} - ${doc.descripcion_tipo_documento || doc.tipo_documento || (doc.tipo_documento_id === '01' ? 'Carta de Presentación' : doc.tipo_documento_id === '02' ? 'Otros' : '')}`
+									: (doc.descripcion_tipo_documento || doc.tipo_documento || ''),
 								"Vigencia": formatearFechaLocal(doc.fecha_vigencia),
 								"Estado": doc.estado_documento === 'V' ? 'VIGENTE' : 'VENCIDO',
 								"Ruta": doc.ruta_documento || '',
@@ -746,9 +748,9 @@ export default function DocumentsPage() {
 
 											<td style={styles.td}>
 												{
-													item.descripcion_tipo_documento ||
-													item.tipo_documento ||
-													(item.tipo_documento_id === '01' ? 'Carta de Presentación' : item.tipo_documento_id === '02' ? 'Otros' : item.tipo_documento_id)
+													item.tipo_documento_id 
+													? `${item.tipo_documento_id} - ${item.descripcion_tipo_documento || item.tipo_documento || (item.tipo_documento_id === '01' ? 'Carta de Presentación' : item.tipo_documento_id === '02' ? 'Otros' : '')}`
+													: (item.descripcion_tipo_documento || item.tipo_documento || 'No especificado')
 												}
 											</td>
 
