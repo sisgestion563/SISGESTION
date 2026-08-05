@@ -1020,12 +1020,20 @@ export default function ProvidersPage() {
                                     <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.razon_social || 'No registrada'}</div>
                                 </div>
                             ) : (
-                                <div>
-                                    <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NOMBRES Y APELLIDOS</label>
-                                    <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
-                                        {`${proveedores[0]?.nombre || ''} ${proveedores[0]?.apellido_paterno || ''} ${proveedores[0]?.apellido_materno || ''}`.trim() || 'No registrado'}
+                                <>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NOMBRE</label>
+                                        <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.nombre || 'No registrado'}</div>
                                     </div>
-                                </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>APELLIDO PATERNO</label>
+                                        <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.apellido_paterno || 'No registrado'}</div>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>APELLIDO MATERNO</label>
+                                        <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.apellido_materno || 'No registrado'}</div>
+                                    </div>
+                                </>
                             )}
                         </div>
 

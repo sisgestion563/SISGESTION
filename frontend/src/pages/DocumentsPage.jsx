@@ -598,12 +598,20 @@ export default function DocumentsPage() {
 											{proveedorSeleccionado.razon_social || 'No registrada'}
 										</p>
 									) : (
-										<p style={styles.infoLine}>
-											<b>Nombres y Apellidos:</b>{' '}
-											{
-												`${proveedorSeleccionado.nombre || ''} ${proveedorSeleccionado.apellido_paterno || ''} ${proveedorSeleccionado.apellido_materno || ''}`.trim() || 'No registrado'
-											}
-										</p>
+										<>
+											<p style={styles.infoLine}>
+												<b>Nombre:</b>{' '}
+												{proveedorSeleccionado.nombre || 'No registrado'}
+											</p>
+											<p style={styles.infoLine}>
+												<b>Apellido Paterno:</b>{' '}
+												{proveedorSeleccionado.apellido_paterno || 'No registrado'}
+											</p>
+											<p style={styles.infoLine}>
+												<b>Apellido Materno:</b>{' '}
+												{proveedorSeleccionado.apellido_materno || 'No registrado'}
+											</p>
+										</>
 									)}
 
 									<p style={styles.infoLine}>
