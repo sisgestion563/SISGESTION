@@ -654,7 +654,7 @@ export default function ProvidersPage() {
 
                     <form noValidate onSubmit={guardarAutoregistro} style={styles.card}>
                         {/* --- GRUPO 1: IDENTIDAD --- */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginBottom: '15px' }}>
                             <div>
                                 <label style={styles.labelForm}>Régimen Tributario *</label>
                                 <select 
@@ -689,6 +689,26 @@ export default function ProvidersPage() {
                                     <option value="04">Carnet de Extranjería</option>
                                 </select>
                                 {errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.tipo_documento}</span>}
+                            </div>
+                            <div>
+                                <label style={styles.labelForm}>Nro. de Trabajadores *</label>
+                                <select 
+                                    required 
+                                    style={{ ...styles.inputForm, marginBottom: errors.nro_trabajadores ? '5px' : '0' }} 
+                                    value={form.nro_trabajadores} 
+                                    onChange={e => {
+                                        setForm({ ...form, nro_trabajadores: e.target.value });
+                                        setErrors(prev => ({ ...prev, nro_trabajadores: null }));
+                                    }}
+                                >
+                                    <option value="">Seleccione</option>
+                                    {nroTrabajadoresList.map((n, index) => {
+                                        const code = n.codigo_valor || n.codigo;
+                                        const label = n.descripcion || n.label;
+                                        return <option key={index} value={code}>{code} - {label}</option>;
+                                    })}
+                                </select>
+                                {errors.nro_trabajadores && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.nro_trabajadores}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Nro Documento *</label>
@@ -906,51 +926,29 @@ export default function ProvidersPage() {
                         </div>
 
                         {/* --- GRUPO 6: ACTIVIDAD ECONÓMICA --- */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '25px' }}>
-                            <div>
-                                <label style={styles.labelForm}>Actividad Económica (CIIU) *</label>
-                                <select 
-                                    required 
-                                    style={{ ...styles.inputForm, marginBottom: errors.ciiu ? '5px' : '0' }} 
-                                    value={form.ciiu} 
-                                    onChange={e => {
-                                        setForm({ ...form, ciiu: e.target.value });
-                                        setErrors(prev => ({ ...prev, ciiu: null }));
-                                    }}
-                                >
-                                    <option value="">Seleccione Actividad</option>
-                                    {ciius.map((c, index) => {
-                                        const obj = Object.keys(c).reduce((acc, key) => {
-                                            acc[key.toLowerCase()] = c[key];
-                                            return acc;
-                                        }, {});
-                                        const code = obj.codigo_valor || obj.ciiu || obj.id_ciiu || obj.nro_ciiu || obj.code || obj.codigo || obj.id_catalogo;
-                                        const label = obj.label || obj.descripcion || obj.nombre || obj.actividad || obj.descripcion_ciiu;
-                                        return <option key={index} value={code}>{code} - {label}</option>;
-                                    })}
-                                </select>
-                                {errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.ciiu}</span>}
-                            </div>
-                            <div>
-                                <label style={styles.labelForm}>Nro. de Trabajadores *</label>
-                                <select 
-                                    required 
-                                    style={{ ...styles.inputForm, marginBottom: errors.nro_trabajadores ? '5px' : '0' }} 
-                                    value={form.nro_trabajadores} 
-                                    onChange={e => {
-                                        setForm({ ...form, nro_trabajadores: e.target.value });
-                                        setErrors(prev => ({ ...prev, nro_trabajadores: null }));
-                                    }}
-                                >
-                                    <option value="">Seleccione</option>
-                                    {nroTrabajadoresList.map((n, index) => {
-                                        const code = n.codigo_valor || n.codigo;
-                                        const label = n.descripcion || n.label;
-                                        return <option key={index} value={code}>{code} - {label}</option>;
-                                    })}
-                                </select>
-                                {errors.nro_trabajadores && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.nro_trabajadores}</span>}
-                            </div>
+                        <div style={{ marginBottom: '25px' }}>
+                            <label style={styles.labelForm}>Actividad Económica (CIIU) *</label>
+                            <select 
+                                required 
+                                style={{ ...styles.inputForm, marginBottom: errors.ciiu ? '5px' : '0' }} 
+                                value={form.ciiu} 
+                                onChange={e => {
+                                    setForm({ ...form, ciiu: e.target.value });
+                                    setErrors(prev => ({ ...prev, ciiu: null }));
+                                }}
+                            >
+                                <option value="">Seleccione Actividad</option>
+                                {ciius.map((c, index) => {
+                                    const obj = Object.keys(c).reduce((acc, key) => {
+                                        acc[key.toLowerCase()] = c[key];
+                                        return acc;
+                                    }, {});
+                                    const code = obj.codigo_valor || obj.ciiu || obj.id_ciiu || obj.nro_ciiu || obj.code || obj.codigo || obj.id_catalogo;
+                                    const label = obj.label || obj.descripcion || obj.nombre || obj.actividad || obj.descripcion_ciiu;
+                                    return <option key={index} value={code}>{code} - {label}</option>;
+                                })}
+                            </select>
+                            {errors.ciiu && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.ciiu}</span>}
                         </div>
 
                         <button type="submit" style={{ ...styles.btnPrimary, width: '100%', padding: '12px' }}>
