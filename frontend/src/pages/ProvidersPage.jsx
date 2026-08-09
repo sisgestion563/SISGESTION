@@ -415,7 +415,7 @@ export default function ProvidersPage() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (!form.regimen_tributario) {
-            newErrors.regimen_tributario = 'El régimen tributario es obligatorio.';
+            newErrors.regimen_tributario = 'El tipo de empresa es obligatorio.';
         }
 
         if (!form.tipo_documento) {
@@ -568,7 +568,7 @@ export default function ProvidersPage() {
             titulo: 'SISGESTION',
             subtitulo: 'Listado de Proveedores',
             columnas: [
-                { titulo: 'Régimen Tributario', campo: 'regimen_tributario', ancho: 30 },
+                { titulo: 'Tipo Empresa', campo: 'regimen_tributario', ancho: 30 },
                 { titulo: 'Tipo Documento', campo: 'tipo_documento', ancho: 35 },
                 { titulo: 'N° Documento', campo: 'nro_documento', ancho: 20 },
                 { titulo: 'Razón Social', campo: 'proveedor', ancho: 45 },
@@ -583,6 +583,26 @@ export default function ProvidersPage() {
 
     // ── Control de búsqueda dinámico ──────────────────────────────────────────
     const renderControlBusqueda = () => {
+        if (campoBusqueda === 'regimen_tributario') {
+            return (
+                <select
+                    value={valorBusqueda}
+                    onChange={(e) => setValorBusqueda(e.target.value)}
+                    style={styles.searchInput}
+                >
+                    <option value="">-- Seleccione --</option>
+                    {regimenesTributarios.map((item) => {
+                        const code = item.codigo_valor || item.codigo;
+                        const desc = item.descripcion || item.label;
+                        return (
+                            <option key={code} value={code}>
+                                {code ? `${code} - ${desc}` : desc}
+                            </option>
+                        );
+                    })}
+                </select>
+            );
+        }
         if (campoBusqueda === 'estado') {
             return (
                 <select
@@ -656,7 +676,7 @@ export default function ProvidersPage() {
                         {/* --- GRUPO 1: IDENTIDAD --- */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginBottom: '15px' }}>
                             <div>
-                                <label style={styles.labelForm}>Régimen Tributario *</label>
+                                <label style={styles.labelForm}>Tipo Empresa *</label>
                                 <select 
                                     style={{ ...styles.inputForm, marginBottom: errors.regimen_tributario ? '5px' : '0' }} 
                                     value={form.regimen_tributario} 
@@ -665,7 +685,7 @@ export default function ProvidersPage() {
                                         setErrors(prev => ({ ...prev, regimen_tributario: null }));
                                     }}
                                 >
-                                    <option value="">Seleccione Régimen</option>
+                                    <option value="">Seleccione Tipo Empresa</option>
                                     {regimenesTributarios.map((r, index) => {
                                         const code = r.codigo_valor || r.codigo;
                                         const desc = r.descripcion || r.label;
@@ -673,22 +693,6 @@ export default function ProvidersPage() {
                                     })}
                                 </select>
                                 {errors.regimen_tributario && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.regimen_tributario}</span>}
-                            </div>
-                            <div>
-                                <label style={styles.labelForm}>Tipo Documento *</label>
-                                <select 
-                                    style={{ ...styles.inputForm, marginBottom: errors.tipo_documento ? '5px' : '0' }} 
-                                    value={form.tipo_documento} 
-                                    onChange={e => {
-                                        setForm({ ...form, tipo_documento: e.target.value });
-                                        setErrors(prev => ({ ...prev, tipo_documento: null, nro_documento: null }));
-                                    }}
-                                >
-                                    <option value="06">RUC</option>
-                                    <option value="01">DNI</option>
-                                    <option value="04">Carnet de Extranjería</option>
-                                </select>
-                                {errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.tipo_documento}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Nro. de Trabajadores *</label>
@@ -709,6 +713,22 @@ export default function ProvidersPage() {
                                     })}
                                 </select>
                                 {errors.nro_trabajadores && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.nro_trabajadores}</span>}
+                            </div>
+                            <div>
+                                <label style={styles.labelForm}>Tipo Documento *</label>
+                                <select 
+                                    style={{ ...styles.inputForm, marginBottom: errors.tipo_documento ? '5px' : '0' }} 
+                                    value={form.tipo_documento} 
+                                    onChange={e => {
+                                        setForm({ ...form, tipo_documento: e.target.value });
+                                        setErrors(prev => ({ ...prev, tipo_documento: null, nro_documento: null }));
+                                    }}
+                                >
+                                    <option value="06">RUC</option>
+                                    <option value="01">DNI</option>
+                                    <option value="04">Carnet de Extranjería</option>
+                                </select>
+                                {errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.tipo_documento}</span>}
                             </div>
                             <div>
                                 <label style={styles.labelForm}>Nro Documento *</label>
@@ -992,21 +1012,27 @@ export default function ProvidersPage() {
                         {/* --- GRUPO 1: IDENTIDAD --- */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px', marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                             <div>
-                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>RÉGIMEN TRIBUTARIO</label>
+                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>TIPO EMPRESA</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
-                                    {proveedores[0]?.descripcion_regimen_tributario 
-                                        ? `${proveedores[0]?.regimen_tributario || proveedores[0]?.codigo_regimen_tributario ? (proveedores[0]?.regimen_tributario || proveedores[0]?.codigo_regimen_tributario) + ' - ' : ''}${proveedores[0]?.descripcion_regimen_tributario}`
-                                        : proveedores[0]?.regimen_tributario || 'No registrado'}
+                                    {proveedores[0]?.codigo_regimen_tributario || proveedores[0]?.regimen_tributario
+                                        ? `${proveedores[0]?.codigo_regimen_tributario || proveedores[0]?.regimen_tributario} - ${proveedores[0]?.descripcion_regimen_tributario || ''}`
+                                        : (proveedores[0]?.descripcion_regimen_tributario || proveedores[0]?.regimen_tributario || 'No especificado')}
                                 </div>
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>TIPO DOCUMENTO</label>
-                                <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.descripcion_tipo_documento || proveedores[0]?.tipo_documento}</div>
                             </div>
                             <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NRO. TRABAJADORES</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
-                                    {proveedores[0]?.descripcion_nro_trabajadores || proveedores[0]?.nro_trabajadores || 'No especificado'}
+                                    {proveedores[0]?.nro_trabajadores
+                                        ? `${proveedores[0]?.nro_trabajadores} - ${proveedores[0]?.descripcion_nro_trabajadores || ''}`
+                                        : (proveedores[0]?.descripcion_nro_trabajadores || proveedores[0]?.nro_trabajadores || 'No especificado')}
+                                </div>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>TIPO DOCUMENTO</label>
+                                <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>
+                                    {proveedores[0]?.descripcion_tipo_documento 
+                                        ? `${proveedores[0]?.tipo_documento ? proveedores[0]?.tipo_documento + ' - ' : ''}${proveedores[0]?.descripcion_tipo_documento}`
+                                        : (proveedores[0]?.tipo_documento || 'No especificado')}
                                 </div>
                             </div>
                             <div>
@@ -1076,6 +1102,10 @@ export default function ProvidersPage() {
                             <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>DISTRITO / CIUDAD</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.ciudad || 'No registrado'}</div>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>UBIGEO</label>
+                                <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.ubigeo || 'No registrado'}</div>
                             </div>
                         </div>
 
@@ -1163,7 +1193,7 @@ export default function ProvidersPage() {
                         <table style={styles.table}>
                             <thead>
                                 <tr>
-                                    <th style={styles.th}>Régimen Tributario</th>
+                                    <th style={styles.th}>Tipo Empresa</th>
                                     <th style={styles.th}>Tipo Documento</th>
                                     <th style={styles.th}>Nro Documento</th>
                                     <th style={styles.th}>Razón Social</th>
@@ -1188,9 +1218,13 @@ export default function ProvidersPage() {
                                         <td style={styles.td}>{item.pagina_web}</td>
                                         <td style={styles.td}>{item.actividad_economica}</td>
                                         <td style={styles.td}>
-                                            <span style={styles.badge(item.estado_documentos === 'VIGENTES')}>
-                                                {item.estado_documentos}
-                                            </span>
+                                            {item.estado_documentos ? (
+                                                <span style={styles.badge(item.estado_documentos === 'VIGENTES')}>
+                                                    {item.estado_documentos}
+                                                </span>
+                                            ) : (
+                                                <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>-</span>
+                                            )}
                                         </td>
                                         <td style={styles.td}>
                                             <span style={styles.badge(item.estado === 'ACTIVO')}>

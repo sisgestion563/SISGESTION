@@ -70,7 +70,7 @@ const crear = async (documento) =>
 				
 					if (documento.alcance === 'GSG' || documento.alcance === 'GMA' || documento.alcance === 'GCA' || documento.alcance === 'GPA')
 						{
-							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión de Transporte " para el campo ALCANCE');
+							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión Ética" para el campo ALCANCE');
 						}
 						
 					
@@ -145,7 +145,7 @@ const actualizar = async (documentoId,documento) =>
 				
 					if (documento.alcance === 'GSG' || documento.alcance === 'GMA' || documento.alcance === 'GCA' || documento.alcance === 'GPA')
 						{
-							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión de Transporte " para el campo ALCANCE');
+							throw new Error('Alcance NO permitido en este Grupo de Documentos. Solo puede seleccionar "Gestión Ética" para el campo ALCANCE');
 						}
 						
 					

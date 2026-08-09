@@ -190,7 +190,7 @@ const NOMBRES_GRUPOS = {
     'DOC_NOR':        'Gestión SST-MA',
     'DOC_EXT_NOR':    'Gestión de Calidad',
     'DOC_REQ_ESTATAL':'Gestión Seg. Patrimonial',
-    'DOC_OTROS':      'Gestión Transporte'
+    'DOC_OTROS':      'Gestión Ética'
 };
 
 export default function DashboardPage() {

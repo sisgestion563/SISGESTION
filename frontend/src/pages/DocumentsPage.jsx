@@ -342,7 +342,12 @@ export default function DocumentsPage() {
 				return;
 			}
 
-			const data = documentos.map(item => ({
+			const docsOrdenados = [...documentos].sort((a, b) => 
+				String(a.alcance || '').localeCompare(String(b.alcance || '')) ||
+				String(a.tipo_documento_id || '').localeCompare(String(b.tipo_documento_id || ''))
+			);
+
+			const data = docsOrdenados.map(item => ({
 				"Alcance": item.descripcion_alcance || '',
 				"Tipo Documento": item.tipo_documento_id 
 					? `${item.tipo_documento_id} - ${item.descripcion_tipo_documento || item.tipo_documento || (item.tipo_documento_id === '01' ? 'Carta de Presentación' : item.tipo_documento_id === '02' ? 'Otros' : '')}`
@@ -393,7 +398,12 @@ export default function DocumentsPage() {
 							"Observaciones": "Observaciones"
 						});
 
-						res.documentos.forEach(doc => {
+						const docsGrupoOrdenados = [...res.documentos].sort((a, b) => 
+							String(a.alcance || '').localeCompare(String(b.alcance || '')) ||
+							String(a.tipo_documento_id || '').localeCompare(String(b.tipo_documento_id || ''))
+						);
+
+						docsGrupoOrdenados.forEach(doc => {
 							excelRows.push({
 								"Columna": doc.descripcion_alcance || doc.alcance || '',
 								"Tipo": doc.tipo_documento_id 
@@ -594,6 +604,17 @@ export default function DocumentsPage() {
 
 							<div style={{ ...styles.infoBlock, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
 								<div>
+									<p style={styles.infoLine}>
+										<b>Tipo Documento:</b>{' '}
+										{proveedorSeleccionado.descripcion_tipo_documento 
+											? `${proveedorSeleccionado.tipo_documento ? proveedorSeleccionado.tipo_documento + ' - ' : ''}${proveedorSeleccionado.descripcion_tipo_documento}`
+											: proveedorSeleccionado.tipo_documento || 'No especificado'}
+									</p>
+									<p style={styles.infoLine}>
+										<b>Nro. Documento:</b>{' '}
+										{proveedorSeleccionado.nro_documento || 'No especificado'}
+									</p>
+
 									{proveedorSeleccionado.tipo_documento === '06' || proveedorSeleccionado.tipo_documento === 'RUC' ? (
 										<p style={styles.infoLine}>
 											<b>Razón Social:</b>{' '}
@@ -619,18 +640,18 @@ export default function DocumentsPage() {
 									<p style={styles.infoLine}>
 										<b>Tipo Empresa:</b>{' '}
 										{
-											proveedorSeleccionado.descripcion_regimen_tributario || 
-											proveedorSeleccionado.regimen_tributario || 
-											'No especificado'
+											proveedorSeleccionado.codigo_regimen_tributario || proveedorSeleccionado.regimen_tributario
+												? `${proveedorSeleccionado.codigo_regimen_tributario || proveedorSeleccionado.regimen_tributario} - ${proveedorSeleccionado.descripcion_regimen_tributario || ''}`
+												: (proveedorSeleccionado.descripcion_regimen_tributario || proveedorSeleccionado.regimen_tributario || 'No especificado')
 										}
 									</p>
 
 									<p style={styles.infoLine}>
 										<b>Nro. Trabajadores:</b>{' '}
 										{
-											proveedorSeleccionado.descripcion_nro_trabajadores || 
-											proveedorSeleccionado.nro_trabajadores || 
-											'No especificado'
+											proveedorSeleccionado.nro_trabajadores
+												? `${proveedorSeleccionado.nro_trabajadores} - ${proveedorSeleccionado.descripcion_nro_trabajadores || ''}`
+												: (proveedorSeleccionado.descripcion_nro_trabajadores || proveedorSeleccionado.nro_trabajadores || 'No especificado')
 										}
 									</p>
 

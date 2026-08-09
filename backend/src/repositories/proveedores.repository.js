@@ -30,11 +30,19 @@ END
 
 const SQL_ESTADO_DOCUMENTOS = `
 CASE
+    WHEN NOT EXISTS (
+        SELECT 1
+        FROM "SISGES"."MOV_DOCUMENTOS" MD
+        WHERE MD.proveedor_id = MPRO.proveedor_id
+          AND MD.status = 'A'
+    )
+    THEN NULL
     WHEN EXISTS (
         SELECT 1
         FROM "SISGES"."MOV_DOCUMENTOS" MD
         WHERE MD.proveedor_id = MPRO.proveedor_id
           AND MD.estado_documento = 'C'
+          AND MD.status = 'A'
     )
     THEN 'VENCIDOS'
     ELSE 'VIGENTES'
@@ -58,7 +66,9 @@ const listar = async (campo = 'ALL', valor = '') => {
                 params.push(texto);
 
                 where = `
-                    WHERE MLV_REG.descripcion ILIKE $1 OR MPRO.regimen_tributario::text ILIKE $1
+                    WHERE MLV_REG.descripcion ILIKE $1 
+                       OR MPRO.regimen_tributario::text ILIKE $1 
+                       OR MLV_REG.codigo_valor::text ILIKE $1
                 `;
                 break;
 
@@ -434,12 +444,32 @@ const buscarProveedor = async (
         sql = `
             SELECT
                 p.*,
-                c.descripcion AS descripcion_ciiu
+                c.descripcion AS descripcion_ciiu,
+                reg_trib.descripcion AS descripcion_regimen_tributario,
+                tipo_doc.descripcion AS descripcion_tipo_documento,
+                status_prov.descripcion AS descripcion_status_prov,
+                nro_trab.descripcion AS descripcion_nro_trabajadores
             FROM "SISGES"."MAE_PROVEEDOR" p
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" c
                 ON c.cod_grupo = '0002'
                AND c.tipo_grupo = 'CODIGO_CIIU_SUNAT'
                AND c.codigo_valor::varchar = p.ciiu::varchar
+            LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib 
+                ON reg_trib.cod_grupo = '0100' 
+               AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' 
+               AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
+            LEFT JOIN "SISGES"."MAE_LISTA_VALORES" tipo_doc 
+                ON tipo_doc.cod_grupo = '0001' 
+               AND tipo_doc.tipo_grupo = 'TIPO_DOC_SUNAT' 
+               AND tipo_doc.codigo_valor::varchar = p.tipo_documento::varchar
+            LEFT JOIN "SISGES"."MAE_LISTA_VALORES" status_prov 
+                ON status_prov.cod_grupo = '0000' 
+               AND status_prov.tipo_grupo = 'STATUS_PROVEEDOR' 
+               AND status_prov.codigo_valor::varchar = p.status::varchar
+            LEFT JOIN "SISGES"."MAE_LISTA_VALORES" nro_trab 
+                ON nro_trab.cod_grupo = '0101' 
+               AND nro_trab.tipo_grupo = 'TIPO_NRO_TRABAJADORES' 
+               AND nro_trab.codigo_valor::varchar = p.nro_trabajadores::varchar
             WHERE p.nro_documento = $1
         `;
 
@@ -449,12 +479,32 @@ const buscarProveedor = async (
         sql = `
             SELECT
                 p.*,
-                c.descripcion AS descripcion_ciiu
+                c.descripcion AS descripcion_ciiu,
+                reg_trib.descripcion AS descripcion_regimen_tributario,
+                tipo_doc.descripcion AS descripcion_tipo_documento,
+                status_prov.descripcion AS descripcion_status_prov,
+                nro_trab.descripcion AS descripcion_nro_trabajadores
             FROM "SISGES"."MAE_PROVEEDOR" p
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" c
                 ON c.cod_grupo = '0002'
                AND c.tipo_grupo = 'CODIGO_CIIU_SUNAT'
                AND c.codigo_valor::varchar = p.ciiu::varchar
+            LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib 
+                ON reg_trib.cod_grupo = '0100' 
+               AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' 
+               AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
+            LEFT JOIN "SISGES"."MAE_LISTA_VALORES" tipo_doc 
+                ON tipo_doc.cod_grupo = '0001' 
+               AND tipo_doc.tipo_grupo = 'TIPO_DOC_SUNAT' 
+               AND tipo_doc.codigo_valor::varchar = p.tipo_documento::varchar
+            LEFT JOIN "SISGES"."MAE_LISTA_VALORES" status_prov 
+                ON status_prov.cod_grupo = '0000' 
+               AND status_prov.tipo_grupo = 'STATUS_PROVEEDOR' 
+               AND status_prov.codigo_valor::varchar = p.status::varchar
+            LEFT JOIN "SISGES"."MAE_LISTA_VALORES" nro_trab 
+                ON nro_trab.cod_grupo = '0101' 
+               AND nro_trab.tipo_grupo = 'TIPO_NRO_TRABAJADORES' 
+               AND nro_trab.codigo_valor::varchar = p.nro_trabajadores::varchar
             WHERE
 (
     COALESCE(p.razon_social,'')

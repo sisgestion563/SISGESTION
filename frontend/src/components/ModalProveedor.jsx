@@ -561,11 +561,29 @@ else{
             <option value="">Seleccione...</option>
             {regimenesTributarios.map(item => (
                 <option key={item.codigo_valor} value={item.codigo_valor}>
-                    {item.descripcion}
+                    {item.codigo_valor ? `${item.codigo_valor} - ${item.descripcion}` : item.descripcion}
                 </option>
             ))}
         </select>
         {errors.regimen_tributario && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.regimen_tributario}</span>}
+    </div>
+
+    <div>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Nro. Trabajadores</label>
+        <select
+            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }}
+            value={form.nro_trabajadores}
+            onChange={(e) => {
+                setForm({ ...form, nro_trabajadores: e.target.value });
+            }}
+        >
+            <option value="">Seleccione...</option>
+            {nroTrabajadoresList.map(item => (
+                <option key={item.codigo_valor} value={item.codigo_valor}>
+                    {item.codigo_valor ? `${item.codigo_valor} - ${item.descripcion}` : item.descripcion}
+                </option>
+            ))}
+        </select>
     </div>
 
     <div>
@@ -586,24 +604,6 @@ else{
             <option value="A0">Cédula Diplomática</option>
         </select>
         {errors.tipo_documento && <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', fontWeight: '500', marginTop: '5px' }}>{errors.tipo_documento}</span>}
-    </div>
-
-    <div>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Nro. Trabajadores</label>
-        <select
-            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px' }}
-            value={form.nro_trabajadores}
-            onChange={(e) => {
-                setForm({ ...form, nro_trabajadores: e.target.value });
-            }}
-        >
-            <option value="">Seleccione...</option>
-            {nroTrabajadoresList.map(item => (
-                <option key={item.codigo_valor} value={item.codigo_valor}>
-                    {item.descripcion}
-                </option>
-            ))}
-        </select>
     </div>
 
     <div>

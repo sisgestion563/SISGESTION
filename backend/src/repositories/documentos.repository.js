@@ -27,7 +27,7 @@ FROM "SISGES"."MOV_DOCUMENTOS" d
 WHERE d.proveedor_id = $1
 AND d.status = 'A'
 
-ORDER BY d.fecha_vigencia
+ORDER BY d.alcance ASC, d.tipo_documento_id ASC, d.fecha_vigencia ASC
     `;
 
     const result =
@@ -179,7 +179,7 @@ LEFT JOIN "SISGES"."MAE_LISTA_VALORES" lv_estado_doc ON lv_estado_doc.codigo_val
 WHERE 	d.proveedor_id = $1
 AND 	d.grupo_documentos = $2
 AND		d.status = 'A'
-ORDER BY d.fecha_vigencia`;
+ORDER BY d.alcance ASC, d.tipo_documento_id ASC, d.fecha_vigencia ASC`;
 
     const result =
         await pool.query(
