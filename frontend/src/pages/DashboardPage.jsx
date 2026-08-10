@@ -153,11 +153,14 @@ const responsiveCSS = `
         gap: 20px;
         margin-top: 30px;
     }
+    .stats-grid.proveedor {
+        grid-template-columns: 2fr 1fr 1fr;
+    }
     @media (max-width: 900px) {
-        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .stats-grid, .stats-grid.proveedor { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 560px) {
-        .stats-grid { grid-template-columns: 1fr; }
+        .stats-grid, .stats-grid.proveedor { grid-template-columns: 1fr; }
     }
     .pie-chart-wrap {
         width: 60%;
@@ -328,21 +331,64 @@ export default function DashboardPage() {
                 </div>
             ) : (
                 <>
-                    {/* ── Tarjetas de estadísticas ─────────────────────────── */}
+                    {/* ── Tarjetas de estadísticas y KPI ─────────────────────────── */}
                     {resumen && (
-                        <div className="stats-grid">
+                        <div className={`stats-grid ${esProveedor ? 'proveedor' : ''}`}>
 
-                            {/* Primer stat: Proveedores (ADMIN/CONSULTOR) o Total Docs (PROVEEDOR) */}
+                            {/* Primer stat: Proveedores (ADMIN) o KPI (PROVEEDOR) */}
                             {!esProveedor ? (
                                 <div style={styles.statCard(colors.primary)}>
                                     <p style={styles.statLabel}>Proveedores</p>
                                     <p style={styles.statValue(colors.text)}>{resumen.total_proveedores}</p>
                                 </div>
                             ) : (
-                                <div style={styles.statCard(colors.primary)}>
-                                    <p style={styles.statLabel}>Total Documentos Cargados</p>
-                                    <p style={styles.statValue(colors.text)}>{resumen.total_documentos}</p>
-                                </div>
+                                kpisGestion && kpisGestion.length > 0 ? (
+                                    <div style={{ ...styles.card, padding: '20px 24px' }}>
+                                        <h2 style={{ ...styles.sectionTitle, marginBottom: '16px' }}>MI DESEMPEÑO POR GESTIÓN</h2>
+                                        <div className="table-scroll">
+                                            <table style={{ ...styles.table, marginTop: 0 }}>
+                                                <thead>
+                                                    <tr>
+                                                        <th style={{ ...styles.th, width: '30%', padding: '8px 12px' }}>Gestión</th>
+                                                        <th style={{ ...styles.th, width: '50%', padding: '8px 12px' }}>Estado de Avance</th>
+                                                        <th style={{ ...styles.th, textAlign: 'right', width: '20%', padding: '8px 12px' }}>Cumplimiento</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {kpisGestion.map((kpi, index) => {
+                                                        const pct = Number(kpi.porcentaje);
+                                                        const progressColor = pct === 100 ? colors.success : pct >= 50 ? colors.amber : colors.danger;
+                                                        return (
+                                                            <tr key={index}>
+                                                                <td style={{ ...styles.td, padding: '10px 12px' }}><strong>{kpi.gestion}</strong></td>
+                                                                <td style={{ ...styles.td, padding: '10px 12px' }}>
+                                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'center' }}>
+                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: colors.textMuted }}>
+                                                                            <span>{kpi.documentos_registrados} de {kpi.documentos_exigibles} documentos</span>
+                                                                        </div>
+                                                                        <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '6px' }}>
+                                                                            <div style={{ width: `${pct}%`, background: progressColor, height: '100%', transition: 'width 1s ease-in-out', borderRadius: '4px' }}></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td style={{ ...styles.td, textAlign: 'right', padding: '10px 12px' }}>
+                                                                    <span style={styles.badge(pct === 100 ? colors.successBg : pct >= 50 ? '#fef3c7' : colors.dangerBg, pct === 100 ? colors.success : pct >= 50 ? '#b45309' : colors.danger)}>
+                                                                        {pct.toFixed(2)}%
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={styles.statCard(colors.primary)}>
+                                        <p style={styles.statLabel}>Total Documentos Cargados</p>
+                                        <p style={styles.statValue(colors.text)}>{resumen.total_documentos}</p>
+                                    </div>
+                                )
                             )}
 
                             <div style={styles.statCard(colors.success)}>
@@ -355,50 +401,6 @@ export default function DashboardPage() {
                                 <p style={styles.statValue(colors.danger)}>{resumen.documentos_vencidos}</p>
                             </div>
 
-                        </div>
-                    )}
-
-                    {/* ── KPI Cumplimiento por Gestión ────────────────────────── */}
-                    {esProveedor && kpisGestion && kpisGestion.length > 0 && (
-                        <div style={{ ...styles.card, marginTop: '30px' }}>
-                            <h2 style={styles.sectionTitle}>MI DESEMPEÑO POR GESTIÓN</h2>
-                            <div className="table-scroll">
-                                <table style={styles.table}>
-                                    <thead>
-                                        <tr>
-                                            <th style={{ ...styles.th, width: '30%' }}>Gestión</th>
-                                            <th style={{ ...styles.th, width: '50%' }}>Estado de Avance</th>
-                                            <th style={{ ...styles.th, textAlign: 'right', width: '20%' }}>Cumplimiento</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {kpisGestion.map((kpi, index) => {
-                                            const pct = Number(kpi.porcentaje);
-                                            const progressColor = pct === 100 ? colors.success : pct >= 50 ? colors.amber : colors.danger;
-                                            return (
-                                                <tr key={index}>
-                                                    <td style={styles.td}><strong>{kpi.gestion}</strong></td>
-                                                    <td style={styles.td}>
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: colors.textMuted }}>
-                                                                <span>{kpi.documentos_registrados} de {kpi.documentos_exigibles} documentos</span>
-                                                            </div>
-                                                            <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '8px' }}>
-                                                                <div style={{ width: `${pct}%`, background: progressColor, height: '100%', transition: 'width 1s ease-in-out', borderRadius: '4px' }}></div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td style={{ ...styles.td, textAlign: 'right' }}>
-                                                        <span style={styles.badge(pct === 100 ? colors.successBg : pct >= 50 ? '#fef3c7' : colors.dangerBg, pct === 100 ? colors.success : pct >= 50 ? '#b45309' : colors.danger)}>
-                                                            {pct.toFixed(2)}%
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
                         </div>
                     )}
 
