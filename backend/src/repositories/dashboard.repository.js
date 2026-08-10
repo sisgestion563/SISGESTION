@@ -196,10 +196,10 @@ WITH proveedor_info AS (
         proveedor_id, 
         regimen_tributario,
         CASE 
-            WHEN regimen_tributario = 'RG' THEN 13
-            WHEN regimen_tributario = 'RP' THEN 11
-            WHEN regimen_tributario = 'RM' THEN 8
-            ELSE 13
+            WHEN regimen_tributario = 'RG' THEN 12
+            WHEN regimen_tributario = 'RP' THEN 10
+            WHEN regimen_tributario = 'RM' THEN 7
+            ELSE NULL
         END as exigible_sst_ma,
         1 as exigible_calidad,
         1 as exigible_patrimonial,
