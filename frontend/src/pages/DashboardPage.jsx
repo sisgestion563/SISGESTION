@@ -366,25 +366,36 @@ export default function DashboardPage() {
                                 <table style={styles.table}>
                                     <thead>
                                         <tr>
-                                            <th style={styles.th}>Gestión</th>
-                                            <th style={{ ...styles.th, textAlign: 'center' }}>Documentos Registrados</th>
-                                            <th style={{ ...styles.th, textAlign: 'center' }}>Documentos Exigibles</th>
-                                            <th style={{ ...styles.th, textAlign: 'right' }}>Cumplimiento</th>
+                                            <th style={{ ...styles.th, width: '30%' }}>Gestión</th>
+                                            <th style={{ ...styles.th, width: '50%' }}>Estado de Avance</th>
+                                            <th style={{ ...styles.th, textAlign: 'right', width: '20%' }}>Cumplimiento</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {kpisGestion.map((kpi, index) => (
-                                            <tr key={index}>
-                                                <td style={styles.td}><strong>{kpi.gestion}</strong></td>
-                                                <td style={{ ...styles.td, textAlign: 'center' }}>{kpi.documentos_registrados}</td>
-                                                <td style={{ ...styles.td, textAlign: 'center' }}>{kpi.documentos_exigibles}</td>
-                                                <td style={{ ...styles.td, textAlign: 'right' }}>
-                                                    <span style={styles.badge(Number(kpi.porcentaje) === 100 ? colors.successBg : Number(kpi.porcentaje) >= 50 ? '#fef3c7' : colors.dangerBg, Number(kpi.porcentaje) === 100 ? colors.success : Number(kpi.porcentaje) >= 50 ? '#b45309' : colors.danger)}>
-                                                        {Number(kpi.porcentaje).toFixed(2)}%
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {kpisGestion.map((kpi, index) => {
+                                            const pct = Number(kpi.porcentaje);
+                                            const progressColor = pct === 100 ? colors.success : pct >= 50 ? colors.amber : colors.danger;
+                                            return (
+                                                <tr key={index}>
+                                                    <td style={styles.td}><strong>{kpi.gestion}</strong></td>
+                                                    <td style={styles.td}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: colors.textMuted }}>
+                                                                <span>{kpi.documentos_registrados} de {kpi.documentos_exigibles} documentos</span>
+                                                            </div>
+                                                            <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '8px' }}>
+                                                                <div style={{ width: `${pct}%`, background: progressColor, height: '100%', transition: 'width 1s ease-in-out', borderRadius: '4px' }}></div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ ...styles.td, textAlign: 'right' }}>
+                                                        <span style={styles.badge(pct === 100 ? colors.successBg : pct >= 50 ? '#fef3c7' : colors.dangerBg, pct === 100 ? colors.success : pct >= 50 ? '#b45309' : colors.danger)}>
+                                                            {pct.toFixed(2)}%
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
                             </div>
