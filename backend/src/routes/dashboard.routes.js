@@ -63,4 +63,14 @@ router.get(
     controller.proximosVencer
 );
 
+/*******************************************
+ CUMPLIMIENTO POR GESTIÓN
+********************************************/
+
+router.get(
+    '/dashboard/cumplimiento-gestion/:proveedorId',
+    authenticateToken,
+    controller.cumplimientoPorGestion
+);
+
 module.exports = router;

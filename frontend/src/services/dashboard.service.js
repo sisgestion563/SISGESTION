@@ -62,3 +62,12 @@ async () => {
     return response.data.data;
 
 };
+
+export const obtenerCumplimientoGestion =
+async (proveedorId) => {
+    const response = await api.get(
+        `/dashboard/cumplimiento-gestion/${proveedorId}`,
+        getHeaders()
+    );
+    return response.data.data;
+};

@@ -22,7 +22,8 @@ import {
     obtenerResumen,
     obtenerDocumentosPorGrupo,
     obtenerDocumentosPorEstado,
-    obtenerProximosVencer
+    obtenerProximosVencer,
+    obtenerCumplimientoGestion
 } from '../services/dashboard.service';
 
 // Reutilizamos el servicio para listar los expedientes por grupo corporativo
@@ -199,6 +200,7 @@ export default function DashboardPage() {
     const [grupos, setGrupos] = useState([]);
     const [estados, setEstados] = useState([]);
     const [proximos, setProximos] = useState([]);
+    const [kpisGestion, setKpisGestion] = useState([]);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
 
     // ── Identidad del usuario logueado ──────────────────────────────────────
@@ -284,6 +286,9 @@ export default function DashboardPage() {
             }));
 
             setProximos(alertasVencimiento);
+
+            const dataKpis = await obtenerCumplimientoGestion(miProveedorId);
+            setKpisGestion(dataKpis);
         } catch (error) {
             console.error("Error consolidando indicadores de proveedor:", error);
         } finally {
@@ -350,6 +355,39 @@ export default function DashboardPage() {
                                 <p style={styles.statValue(colors.danger)}>{resumen.documentos_vencidos}</p>
                             </div>
 
+                        </div>
+                    )}
+
+                    {/* ── KPI Cumplimiento por Gestión ────────────────────────── */}
+                    {esProveedor && kpisGestion && kpisGestion.length > 0 && (
+                        <div style={{ ...styles.card, marginTop: '30px' }}>
+                            <h2 style={styles.sectionTitle}>MI DESEMPEÑO POR GESTIÓN</h2>
+                            <div className="table-scroll">
+                                <table style={styles.table}>
+                                    <thead>
+                                        <tr>
+                                            <th style={styles.th}>Gestión</th>
+                                            <th style={{ ...styles.th, textAlign: 'center' }}>Documentos Registrados</th>
+                                            <th style={{ ...styles.th, textAlign: 'center' }}>Documentos Exigibles</th>
+                                            <th style={{ ...styles.th, textAlign: 'right' }}>Cumplimiento</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {kpisGestion.map((kpi, index) => (
+                                            <tr key={index}>
+                                                <td style={styles.td}><strong>{kpi.gestion}</strong></td>
+                                                <td style={{ ...styles.td, textAlign: 'center' }}>{kpi.documentos_registrados}</td>
+                                                <td style={{ ...styles.td, textAlign: 'center' }}>{kpi.documentos_exigibles}</td>
+                                                <td style={{ ...styles.td, textAlign: 'right' }}>
+                                                    <span style={styles.badge(Number(kpi.porcentaje) === 100 ? colors.successBg : Number(kpi.porcentaje) >= 50 ? '#fef3c7' : colors.dangerBg, Number(kpi.porcentaje) === 100 ? colors.success : Number(kpi.porcentaje) >= 50 ? '#b45309' : colors.danger)}>
+                                                        {Number(kpi.porcentaje).toFixed(2)}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
 

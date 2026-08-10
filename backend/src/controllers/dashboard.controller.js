@@ -131,10 +131,21 @@ async (req,res) => {
 
 };
 
+const cumplimientoPorGestion = async (req, res) => {
+    try {
+        const { proveedorId } = req.params;
+        const data = await service.obtenerCumplimientoPorGestion(proveedorId);
+        return res.status(200).json({ success: true, data });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     resumen,
     documentosPorGrupo,
     documentosPorEstado,
     proveedoresVencidos,
-    proximosVencer
+    proximosVencer,
+    cumplimientoPorGestion
 };

@@ -189,10 +189,65 @@ const obtenerDocumentosProximosVencer = async () => {
     return result.rows;
 };
 
+const obtenerCumplimientoPorGestion = async (proveedorId) => {
+    const sql = `
+WITH proveedor_info AS (
+    SELECT 
+        proveedor_id, 
+        regimen_tributario,
+        CASE 
+            WHEN regimen_tributario = 'RG' THEN 13
+            WHEN regimen_tributario = 'RP' THEN 11
+            WHEN regimen_tributario = 'RM' THEN 8
+            ELSE 13
+        END as exigible_sst_ma,
+        1 as exigible_calidad,
+        1 as exigible_patrimonial,
+        1 as exigible_etica
+    FROM "SISGES"."MAE_PROVEEDOR"
+    WHERE proveedor_id = $1
+),
+doc_counts AS (
+    SELECT
+        p.proveedor_id,
+        COUNT(DISTINCT CASE WHEN d.alcance IN ('GSG', 'GMA') THEN d.tipo_documento_id END) as docs_sst_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' THEN d.tipo_documento_id END) as docs_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' THEN d.tipo_documento_id END) as docs_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' THEN d.tipo_documento_id END) as docs_etica
+    FROM proveedor_info p
+    LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
+      ON p.proveedor_id = d.proveedor_id AND d.status = 'A'
+    GROUP BY p.proveedor_id
+)
+SELECT 
+    'SST / MA' as gestion, COALESCE(c.docs_sst_ma, 0) as documentos_registrados, p.exigible_sst_ma as documentos_exigibles,
+    ROUND(LEAST((COALESCE(c.docs_sst_ma, 0)::numeric / NULLIF(p.exigible_sst_ma, 0)) * 100, 100), 2) as porcentaje
+FROM proveedor_info p LEFT JOIN doc_counts c ON p.proveedor_id = c.proveedor_id
+UNION ALL
+SELECT 
+    'CALIDAD', COALESCE(c.docs_calidad, 0), p.exigible_calidad,
+    ROUND(LEAST((COALESCE(c.docs_calidad, 0)::numeric / NULLIF(p.exigible_calidad, 0)) * 100, 100), 2)
+FROM proveedor_info p LEFT JOIN doc_counts c ON p.proveedor_id = c.proveedor_id
+UNION ALL
+SELECT 
+    'PATRIMONIAL', COALESCE(c.docs_patrimonial, 0), p.exigible_patrimonial,
+    ROUND(LEAST((COALESCE(c.docs_patrimonial, 0)::numeric / NULLIF(p.exigible_patrimonial, 0)) * 100, 100), 2)
+FROM proveedor_info p LEFT JOIN doc_counts c ON p.proveedor_id = c.proveedor_id
+UNION ALL
+SELECT 
+    'ETICA', COALESCE(c.docs_etica, 0), p.exigible_etica,
+    ROUND(LEAST((COALESCE(c.docs_etica, 0)::numeric / NULLIF(p.exigible_etica, 0)) * 100, 100), 2)
+FROM proveedor_info p LEFT JOIN doc_counts c ON p.proveedor_id = c.proveedor_id;
+    `;
+    const result = await pool.query(sql, [proveedorId]);
+    return result.rows;
+};
+
 module.exports = {
     obtenerResumen,
     obtenerDocumentosPorGrupo,
     obtenerDocumentosPorEstado,
     obtenerProveedoresVencidos,
-    obtenerDocumentosProximosVencer
+    obtenerDocumentosProximosVencer,
+    obtenerCumplimientoPorGestion
 };
