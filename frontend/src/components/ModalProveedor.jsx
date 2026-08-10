@@ -380,10 +380,6 @@ const validarForm = () => {
 
     if (!form.telefono || !form.telefono.trim()) {
         newErrors.telefono = 'El teléfono es obligatorio.';
-    } else if (!soloNumeros.test(form.telefono)) {
-        newErrors.telefono = 'El teléfono debe contener solo números.';
-    } else if (form.telefono.length < 7 || form.telefono.length > 9) {
-        newErrors.telefono = 'El teléfono debe tener entre 7 y 9 dígitos.';
     }
 
     if (!form.departamento) {

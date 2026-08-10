@@ -307,6 +307,20 @@ export default function ProvidersPage() {
         }
     }, [esProveedor]);
 
+    // Catálogos iniciales para filtros de búsqueda
+    useEffect(() => {
+        const cargarCatalogosFiltro = async () => {
+            try {
+                const res = await obtenerCatalogo('0100', 'TIPO_REGIMEN');
+                const list = res?.data || res || [];
+                setRegimenesTributarios(Array.isArray(list) ? list : []);
+            } catch (error) {
+                console.error("Error al cargar regímenes tributarios:", error);
+            }
+        };
+        cargarCatalogosFiltro();
+    }, []);
+
     // Catálogos iniciales (necesarios para el formulario de autoregistro)
     useEffect(() => {
         if (esProveedor && !miProveedorId) {
@@ -467,10 +481,6 @@ export default function ProvidersPage() {
 
         if (!form.telefono || !form.telefono.trim()) {
             newErrors.telefono = 'El teléfono es obligatorio.';
-        } else if (!soloNumeros.test(form.telefono)) {
-            newErrors.telefono = 'El teléfono debe contener solo números.';
-        } else if (form.telefono.length < 7 || form.telefono.length > 9) {
-            newErrors.telefono = 'El teléfono debe tener entre 7 y 9 dígitos.';
         }
 
         if (!form.departamento) {
