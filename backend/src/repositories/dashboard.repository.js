@@ -19,14 +19,14 @@ const obtenerResumen = async () => {
             (
                 SELECT COUNT(*)
                 FROM "SISGES"."MOV_DOCUMENTOS"
-                WHERE estado_documento = 'V'
+                WHERE fecha_vigencia >= CURRENT_DATE
                 AND status = 'A'
             ) documentos_vigentes,
 
             (
                 SELECT COUNT(*)
                 FROM "SISGES"."MOV_DOCUMENTOS"
-                WHERE estado_documento = 'C'
+                WHERE fecha_vigencia < CURRENT_DATE
                 AND status = 'A'
             ) documentos_vencidos
     `;
@@ -261,7 +261,7 @@ conteo_documentos AS (
     SELECT
         COUNT(*) FILTER (WHERE fecha_vigencia < CURRENT_DATE) AS vencidos,
         COUNT(*) FILTER (WHERE fecha_vigencia >= CURRENT_DATE AND fecha_vigencia <= CURRENT_DATE + INTERVAL '7 days') AS por_vencer,
-        COUNT(*) FILTER (WHERE fecha_vigencia > CURRENT_DATE) AS vigentes,
+        COUNT(*) FILTER (WHERE fecha_vigencia >= CURRENT_DATE) AS vigentes,
         COUNT(DISTINCT tipo_documento_id) AS total_registrados
     FROM "SISGES"."MOV_DOCUMENTOS"
     WHERE proveedor_id = $1 AND status = 'A'

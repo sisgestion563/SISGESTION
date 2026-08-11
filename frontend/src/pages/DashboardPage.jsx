@@ -264,9 +264,23 @@ export default function DashboardPage() {
                 }
             }
 
-            // Separación de documentos por estatus
-            const vigentesCount = acumuladoDocs.filter(d => d.estado_documento === 'V').length;
-            const vencidosCount = acumuladoDocs.filter(d => d.estado_documento === 'C').length;
+            // Separación de documentos por estatus evaluando fecha_vigencia (ignorando horas)
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            const vigentesCount = acumuladoDocs.filter(d => {
+                if (!d.fecha_vigencia) return false;
+                const f = new Date(d.fecha_vigencia);
+                f.setHours(0,0,0,0);
+                return f >= hoy;
+            }).length;
+
+            const vencidosCount = acumuladoDocs.filter(d => {
+                if (!d.fecha_vigencia) return false;
+                const f = new Date(d.fecha_vigencia);
+                f.setHours(0,0,0,0);
+                return f < hoy;
+            }).length;
 
             setResumen({
                 total_proveedores: 'N/A',
@@ -398,10 +412,25 @@ export default function DashboardPage() {
                                 )
                             )}
 
-                            <div style={styles.statCard(colors.success)}>
-                                <p style={styles.statLabel}>Documentos Vigentes</p>
-                                <p style={styles.statValue(colors.success)}>{resumen.documentos_vigentes}</p>
-                            </div>
+                            {(() => {
+                                const registrados = resumen.total_documentos || 0;
+                                const vigentes = resumen.documentos_vigentes || 0;
+                                const porcentaje = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(2) : 0;
+                                return (
+                                    <div style={{ ...styles.card, padding: '20px 24px', borderLeft: `4px solid ${colors.success}`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                        <p style={styles.statLabel}>VIGENCIA DOCUMENTAL</p>
+                                        <p style={styles.statValue(colors.success)}>{porcentaje}%</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '16px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: colors.textMuted }}>
+                                                <span>{vigentes} de {registrados} documentos vigentes</span>
+                                            </div>
+                                            <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '6px' }}>
+                                                <div style={{ width: `${porcentaje}%`, background: colors.success, height: '100%', transition: 'width 1s ease-in-out', borderRadius: '4px' }}></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
 
                             {!esProveedor ? (
                                 <div style={styles.statCard(colors.danger)}>
