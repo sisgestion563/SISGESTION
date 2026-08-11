@@ -156,7 +156,7 @@ const responsiveCSS = `
         margin-top: 30px;
     }
     .stats-grid.proveedor {
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 1.3fr 1.2fr 1fr;
     }
     @media (max-width: 900px) {
         .stats-grid, .stats-grid.proveedor { grid-template-columns: repeat(2, 1fr); }
@@ -352,55 +352,7 @@ export default function DashboardPage() {
                 </div>
             ) : (
                 <>
-                    {/* ── MIS DOCUMENTOS (Solo Proveedor) ────────────────────── */}
-                    {esProveedor && estadoExpediente && (
-                        <div style={{ ...styles.card, marginBottom: '30px', padding: '24px' }}>
-                            <h2 style={{ ...styles.sectionTitle, textAlign: 'center', marginBottom: '30px' }}>MIS DOCUMENTOS</h2>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', textAlign: 'center' }}>
-                                {/* REGISTRO DOCUMENTAL */}
-                                {(() => {
-                                    const exigibles = estadoExpediente.total_exigibles || 0;
-                                    const registrados = estadoExpediente.total_registrados || 0;
-                                    const pctRegistro = exigibles > 0 ? ((registrados / exigibles) * 100).toFixed(2) : 0;
-                                    return (
-                                        <div style={{ borderRight: `1px solid ${colors.border}`, paddingRight: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                            <p style={{ ...styles.statLabel, color: colors.textMuted }}>REGISTRO DOCUMENTAL</p>
-                                            <p style={{ fontSize: '38px', fontWeight: 700, color: colors.primary, margin: '20px 0 16px 0' }}>{pctRegistro}%</p>
-                                            <div style={{ width: '70%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '8px' }}>
-                                                <div style={{ width: `${pctRegistro}%`, background: colors.primary, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
-                                            </div>
-                                        </div>
-                                    );
-                                })()}
-                                {/* VIGENCIA DOCUMENTAL */}
-                                {(() => {
-                                    const registrados = estadoExpediente.total_registrados || 0;
-                                    const vigentes = estadoExpediente.vigentes || 0;
-                                    const pctVigencia = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(2) : 0;
-                                    return (
-                                        <div style={{ borderRight: `1px solid ${colors.border}`, padding: '0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                            <p style={{ ...styles.statLabel, color: colors.textMuted }}>VIGENCIA DOCUMENTAL</p>
-                                            <p style={{ fontSize: '38px', fontWeight: 700, color: colors.success, margin: '20px 0 16px 0' }}>{pctVigencia}%</p>
-                                            <div style={{ width: '70%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '8px' }}>
-                                                <div style={{ width: `${pctVigencia}%`, background: colors.success, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
-                                            </div>
-                                        </div>
-                                    );
-                                })()}
-                                {/* DOCUMENTOS POR VENCER */}
-                                <div style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <p style={{ ...styles.statLabel, color: colors.textMuted }}>DOCUMENTOS POR VENCER</p>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', margin: '20px 0 16px 0' }}>
-                                        <p style={{ fontSize: '38px', fontWeight: 700, color: '#b45309', margin: 0 }}>
-                                            {estadoExpediente.por_vencer}
-                                        </p>
-                                        <span style={{ fontSize: '28px' }}>⚠️</span>
-                                    </div>
-                                    <div style={{ width: '70%', height: '8px' }}></div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
 
                     {/* ── Tarjetas de estadísticas y KPI ─────────────────────────── */}
                     {resumen && (
@@ -460,6 +412,56 @@ export default function DashboardPage() {
                                         <p style={styles.statValue(colors.text)}>{resumen.total_documentos}</p>
                                     </div>
                                 )
+                            )}
+
+                            {/* ── MIS DOCUMENTOS (Solo Proveedor, ahora más pequeña en medio) ────────────────────── */}
+                            {esProveedor && estadoExpediente && (
+                                <div style={{ ...styles.card, padding: '20px' }}>
+                                    <h2 style={{ ...styles.sectionTitle, textAlign: 'center', marginBottom: '16px', fontSize: '14px' }}>MIS DOCUMENTOS</h2>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', textAlign: 'center' }}>
+                                        {/* REGISTRO DOCUMENTAL */}
+                                        {(() => {
+                                            const exigibles = estadoExpediente.total_exigibles || 0;
+                                            const registrados = estadoExpediente.total_registrados || 0;
+                                            const pctRegistro = exigibles > 0 ? ((registrados / exigibles) * 100).toFixed(2) : 0;
+                                            return (
+                                                <div style={{ borderRight: `1px solid ${colors.border}`, paddingRight: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>REGISTRO<br/>DOC.</p>
+                                                    <p style={{ fontSize: '20px', fontWeight: 700, color: colors.primary, margin: '8px 0' }}>{pctRegistro}%</p>
+                                                    <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
+                                                        <div style={{ width: `${pctRegistro}%`, background: colors.primary, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
+                                        {/* VIGENCIA DOCUMENTAL */}
+                                        {(() => {
+                                            const registrados = estadoExpediente.total_registrados || 0;
+                                            const vigentes = estadoExpediente.vigentes || 0;
+                                            const pctVigencia = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(2) : 0;
+                                            return (
+                                                <div style={{ borderRight: `1px solid ${colors.border}`, padding: '0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>VIGENCIA<br/>DOC.</p>
+                                                    <p style={{ fontSize: '20px', fontWeight: 700, color: colors.success, margin: '8px 0' }}>{pctVigencia}%</p>
+                                                    <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
+                                                        <div style={{ width: `${pctVigencia}%`, background: colors.success, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
+                                        {/* DOCUMENTOS POR VENCER */}
+                                        <div style={{ paddingLeft: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>POR<br/>VENCER</p>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', margin: '8px 0' }}>
+                                                <p style={{ fontSize: '20px', fontWeight: 700, color: '#b45309', margin: 0 }}>
+                                                    {estadoExpediente.por_vencer}
+                                                </p>
+                                                <span style={{ fontSize: '16px' }}>⚠️</span>
+                                            </div>
+                                            <div style={{ width: '100%', height: '4px' }}></div>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
 
                             {!esProveedor && (() => {
