@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import {buscarProveedor, obtenerProveedorPorId} from '../services/providers.service';
 import {listarPorGrupo} from '../services/documentos.service';
@@ -281,6 +282,13 @@ const obtenerUsuario = () => {
 };
 
 export default function DocumentsPage() {
+		const location = useLocation();
+		const navigate = useNavigate();
+		const searchParams = new URLSearchParams(location.search);
+		const estadoFiltroUrl = searchParams.get('estado');
+
+		const limpiarFiltro = () => navigate('/documents');
+
 		// ── Identidad del usuario logueado ──────────────────────────────────────
 		const usuarioLogueado = obtenerUsuario();
 		const rolCodigo       = usuarioLogueado?.rol_codigo || '';
@@ -738,6 +746,17 @@ export default function DocumentsPage() {
 								)}
 							</div>
 
+							{estadoFiltroUrl && (
+								<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px' }}>
+									<span style={{ fontSize: '14px', color: '#1e40af', fontWeight: 500 }}>
+										Filtrando documentos por estado: <strong>{estadoFiltroUrl.replace('_', ' ')}</strong>
+									</span>
+									<button onClick={limpiarFiltro} style={{ background: '#fff', border: '1px solid #bfdbfe', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', color: '#1e40af', cursor: 'pointer', fontWeight: 600 }}>
+										Quitar Filtro
+									</button>
+								</div>
+							)}
+
 							<div className="table-scroll">
 							<table style={styles.table}>
 
@@ -753,15 +772,39 @@ export default function DocumentsPage() {
 
 								<tbody>
 
-									{documentos.length === 0 && (
-										<tr>
-											<td colSpan={5} style={{...styles.td, textAlign:'center', color: colors.textMuted}}>
-												No hay documentos registrados en este grupo.
-											</td>
-										</tr>
-									)}
+									{(() => {
+                                        const hoy = new Date();
+                                        hoy.setHours(0,0,0,0);
+                                        const en7Dias = new Date(hoy);
+                                        en7Dias.setDate(en7Dias.getDate() + 7);
+                                        
+                                        const documentosFiltrados = documentos.filter(item => {
+                                            if (!estadoFiltroUrl) return true;
+                                            
+                                            const fVigencia = new Date(item.fecha_vigencia);
+                                            if (estadoFiltroUrl === 'VENCIDOS') {
+                                                return item.estado_documento === 'C' || fVigencia < hoy;
+                                            }
+                                            if (estadoFiltroUrl === 'POR_VENCER') {
+                                                return item.estado_documento === 'V' && fVigencia >= hoy && fVigencia <= en7Dias;
+                                            }
+                                            if (estadoFiltroUrl === 'VIGENTES') {
+                                                return item.estado_documento === 'V' && fVigencia >= hoy;
+                                            }
+                                            return true;
+                                        });
 
-									{documentos.map(item => (
+                                        if (documentosFiltrados.length === 0) {
+                                            return (
+                                                <tr>
+                                                    <td colSpan={5} style={{...styles.td, textAlign:'center', color: colors.textMuted}}>
+                                                        No hay documentos registrados en este grupo con el filtro seleccionado.
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
+
+                                        return documentosFiltrados.map(item => (
 
 										<tr key={item.documento_id}>
 										
@@ -816,12 +859,12 @@ export default function DocumentsPage() {
 
 												</div>
 											</td>
-
 										</tr>
 
-									))}
+                                        ));
+                                    })()}
 
-								</tbody>
+									</tbody>
 
 							</table>
 							</div>

@@ -3,6 +3,7 @@ import {
     useEffect,
     useState
 } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import MainLayout from '../layouts/MainLayout';
 
@@ -199,6 +200,7 @@ const NOMBRES_GRUPOS = {
 };
 
 export default function DashboardPage() {
+    const navigate = useNavigate();
 
     const [resumen, setResumen] = useState(null);
     const [grupos, setGrupos] = useState([]);
@@ -411,30 +413,20 @@ export default function DashboardPage() {
                                     <div style={{ ...styles.statCard(colors.danger), display: 'flex', flexDirection: 'column' }}>
                                         <p style={styles.statLabel}>ESTADO DE MI EXPEDIENTE</p>
                                         <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <button onClick={() => navigate('/documents?estado=VIGENTES')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', width: '100%', textAlign: 'left' }}>
                                                 <span style={{ fontSize: '13px', color: colors.textMuted }}>Vigentes</span>
                                                 <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.success }}>{estadoExpediente.vigentes}</span>
-                                            </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            </button>
+                                            <button onClick={() => navigate('/documents?estado=POR_VENCER')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', width: '100%', textAlign: 'left' }}>
                                                 <span style={{ fontSize: '13px', color: colors.textMuted }}>Por vencer</span>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                     {estadoExpediente.por_vencer > 0 && <span style={{ background: colors.danger, width: 6, height: 6, borderRadius: '50%' }}></span>}
                                                     <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.amber }}>{estadoExpediente.por_vencer}</span>
                                                 </div>
-                                            </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            </button>
+                                            <button onClick={() => navigate('/documents?estado=VENCIDOS')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', width: '100%', textAlign: 'left' }}>
                                                 <span style={{ fontSize: '13px', color: colors.textMuted }}>Vencidos</span>
                                                 <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.danger }}>{estadoExpediente.vencidos}</span>
-                                            </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '13px', color: colors.textMuted }}>Pendientes</span>
-                                                <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.amber }}>{estadoExpediente.pendientes}</span>
-                                            </div>
-                                            <button 
-                                                onClick={(e) => { e.preventDefault(); }}
-                                                style={{ marginTop: '12px', background: colors.primary, color: 'white', border: 'none', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', width: '100%' }}
-                                            >
-                                                VER QUÉ DEBO HACER
                                             </button>
                                         </div>
                                     </div>
