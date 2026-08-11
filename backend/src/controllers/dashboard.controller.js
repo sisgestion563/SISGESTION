@@ -151,6 +151,16 @@ const estadoExpediente = async (req, res) => {
     }
 };
 
+const calificacionProveedor = async (req, res) => {
+    try {
+        const { proveedorId } = req.params;
+        const data = await service.obtenerCalificacionProveedor(proveedorId);
+        return res.status(200).json({ success: true, data });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     resumen,
     documentosPorGrupo,
@@ -158,5 +168,6 @@ module.exports = {
     proveedoresVencidos,
     proximosVencer,
     cumplimientoPorGestion,
-    estadoExpediente
+    estadoExpediente,
+    calificacionProveedor
 };

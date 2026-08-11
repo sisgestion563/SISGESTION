@@ -80,3 +80,12 @@ export const obtenerEstadoExpediente =
         );
         return response.data.data;
     };
+
+export const obtenerCalificacionProveedor =
+    async (proveedorId) => {
+        const response = await api.get(
+            `/dashboard/calificacion-proveedor/${proveedorId}`,
+            getHeaders()
+        );
+        return response.data.data;
+    };

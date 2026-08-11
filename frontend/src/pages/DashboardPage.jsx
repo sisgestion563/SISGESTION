@@ -25,7 +25,8 @@ import {
     obtenerDocumentosPorEstado,
     obtenerProximosVencer,
     obtenerCumplimientoGestion,
-    obtenerEstadoExpediente
+    obtenerEstadoExpediente,
+    obtenerCalificacionProveedor
 } from '../services/dashboard.service';
 
 // Reutilizamos el servicio para listar los expedientes por grupo corporativo
@@ -208,6 +209,7 @@ export default function DashboardPage() {
     const [proximos, setProximos] = useState([]);
     const [kpisGestion, setKpisGestion] = useState([]);
     const [estadoExpediente, setEstadoExpediente] = useState(null);
+    const [calificacion, setCalificacion] = useState(null);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
 
     // ── Identidad del usuario logueado ──────────────────────────────────────
@@ -313,6 +315,9 @@ export default function DashboardPage() {
 
             const dataEstado = await obtenerEstadoExpediente(miProveedorId);
             setEstadoExpediente(dataEstado);
+
+            const dataCalificacion = await obtenerCalificacionProveedor(miProveedorId);
+            setCalificacion(dataCalificacion);
         } catch (error) {
             console.error("Error consolidando indicadores de proveedor:", error);
         } finally {
@@ -540,6 +545,55 @@ export default function DashboardPage() {
                                 )
                             )}
 
+                        </div>
+                    )}
+
+                    {/* ── Calificación de Proveedor ─────────────────────────── */}
+                    {esProveedor && calificacion && (
+                        <div style={{ ...styles.card, marginTop: '24px', borderLeft: `6px solid ${calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? colors.amber : colors.danger}`, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
+                                <div>
+                                    <h2 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        MI CALIFICACIÓN PARA LOS CLIENTES
+                                    </h2>
+                                    <p style={{ fontSize: '13px', color: colors.textMuted, margin: '4px 0 0 0' }}>
+                                        Régimen Tributario: <strong>{calificacion.regimen_tributario}</strong>
+                                    </p>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <span style={{ 
+                                        ...styles.badge(
+                                            calificacion.nivel_documental === 'ALTO' ? colors.successBg : calificacion.nivel_documental === 'MEDIO' ? '#fef3c7' : colors.dangerBg, 
+                                            calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? '#b45309' : colors.danger
+                                        ), 
+                                        fontSize: '14px', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px'
+                                    }}>
+                                        {calificacion.nivel_documental === 'ALTO' && '⭐'}
+                                        {calificacion.nivel_documental === 'MEDIO' && '⚠️'}
+                                        {calificacion.nivel_documental === 'BAJO' && '❌'}
+                                        {calificacion.recomendacion}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', padding: '20px', borderRadius: '12px', minWidth: '150px' }}>
+                                    <span style={{ fontSize: '32px', fontWeight: 900, color: calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? '#b45309' : colors.danger, lineHeight: '1' }}>
+                                        {calificacion.puntaje_formateado.split(' ')[0]}
+                                    </span>
+                                    <span style={{ fontSize: '14px', fontWeight: 700, color: colors.textMuted, marginTop: '4px' }}>
+                                        / 100
+                                    </span>
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: colors.text, margin: '0 0 8px 0' }}>
+                                        Nivel de Gestión Documental: {calificacion.nivel_documental}
+                                    </h3>
+                                    <p style={{ fontSize: '15px', color: colors.textMuted, margin: 0, lineHeight: '1.5' }}>
+                                        {calificacion.descripcion_nivel}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     )}
 

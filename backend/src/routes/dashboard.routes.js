@@ -83,4 +83,14 @@ router.get(
     controller.estadoExpediente
 );
 
+/*******************************************
+ CALIFICACIÓN DEL PROVEEDOR
+********************************************/
+
+router.get(
+    '/dashboard/calificacion-proveedor/:proveedorId',
+    authenticateToken,
+    controller.calificacionProveedor
+);
+
 module.exports = router;

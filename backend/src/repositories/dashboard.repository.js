@@ -280,6 +280,62 @@ CROSS JOIN conteo_documentos c;
     return result.rows[0];
 };
 
+const obtenerCalificacionProveedor = async (proveedorId) => {
+    const sql = `
+WITH doc_vigentes AS (
+    SELECT 
+        prov.proveedor_id,
+        prov.regimen_tributario,
+        COUNT(DISTINCT docu.tipo_documento_id) AS cantidad_documentos_vigentes
+    FROM "SISGES"."MAE_PROVEEDOR" prov
+    LEFT JOIN "SISGES"."MOV_DOCUMENTOS" docu 
+        ON prov.proveedor_id = docu.proveedor_id 
+        AND docu.status = 'A'
+        AND docu.fecha_vigencia >= CURRENT_DATE
+    WHERE prov.regimen_tributario IS NOT NULL
+      AND prov.proveedor_id = $1
+    GROUP BY prov.proveedor_id, prov.regimen_tributario
+),
+evaluacion AS (
+    SELECT 
+        proveedor_id,
+        regimen_tributario,
+        cantidad_documentos_vigentes,
+        CASE regimen_tributario
+            WHEN 'RG' THEN LEAST((cantidad_documentos_vigentes / 16.0) * 100, 100)
+            WHEN 'RP' THEN LEAST((cantidad_documentos_vigentes / 14.0) * 100, 100)
+            WHEN 'RM' THEN LEAST((cantidad_documentos_vigentes / 11.0) * 100, 100)
+            ELSE 0
+        END AS puntaje_raw
+    FROM doc_vigentes
+)
+SELECT 
+    proveedor_id,
+    regimen_tributario,
+    cantidad_documentos_vigentes,
+    CAST(ROUND(puntaje_raw, 0) AS VARCHAR) || ' / 100' AS puntaje_formateado,
+    ROUND(puntaje_raw, 0) AS puntaje_numerico,
+    CASE 
+        WHEN puntaje_raw > 90 THEN 'RECOMENDADO'
+        WHEN puntaje_raw >= 75 AND puntaje_raw <= 90 THEN 'RECOMENDADO CON RESTRICCIONES'
+        ELSE 'NO RECOMENDADO'
+    END AS recomendacion,
+    CASE 
+        WHEN puntaje_raw > 90 THEN 'ALTO'
+        WHEN puntaje_raw >= 75 AND puntaje_raw <= 90 THEN 'MEDIO'
+        ELSE 'BAJO'
+    END AS nivel_documental,
+    CASE 
+        WHEN puntaje_raw > 90 THEN 'Mantienes un alto nivel de registro y vigencia documental'
+        WHEN puntaje_raw >= 75 AND puntaje_raw <= 90 THEN 'Mantienes un nivel aceptable de registro y vigencia documental'
+        ELSE 'Presentas un bajo nivel de registro y vigencia documental'
+    END AS descripcion_nivel
+FROM evaluacion;
+    `;
+    const result = await pool.query(sql, [proveedorId]);
+    return result.rows[0] || null;
+};
+
 module.exports = {
     obtenerResumen,
     obtenerDocumentosPorGrupo,
@@ -287,5 +343,6 @@ module.exports = {
     obtenerProveedoresVencidos,
     obtenerDocumentosProximosVencer,
     obtenerCumplimientoPorGestion,
-    obtenerEstadoExpediente
+    obtenerEstadoExpediente,
+    obtenerCalificacionProveedor
 };
