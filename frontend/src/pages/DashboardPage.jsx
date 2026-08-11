@@ -477,7 +477,7 @@ export default function DashboardPage() {
                                         {(() => {
                                             const exigibles = estadoExpediente.total_exigibles || 0;
                                             const registrados = estadoExpediente.total_registrados || 0;
-                                            const pctRegistro = exigibles > 0 ? ((registrados / exigibles) * 100).toFixed(2) : 0;
+                                            const pctRegistro = exigibles > 0 ? Math.min((registrados / exigibles) * 100, 100).toFixed(0) : 0;
                                             return (
                                                 <div style={{ borderRight: `1px solid ${colors.border}`, paddingRight: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                                                     <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>REGISTRO<br />DOC.</p>
@@ -491,8 +491,8 @@ export default function DashboardPage() {
                                         {/* VIGENCIA DOCUMENTAL */}
                                         {(() => {
                                             const registrados = estadoExpediente.total_registrados || 0;
-                                            const vigentes = estadoExpediente.vigentes || 0;
-                                            const pctVigencia = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(2) : 0;
+                                            const vigentesParaPorcentaje = estadoExpediente.vigentes_para_porcentaje || 0;
+                                            const pctVigencia = registrados > 0 ? Math.min((vigentesParaPorcentaje / registrados) * 100, 100).toFixed(0) : 0;
                                             return (
                                                 <div style={{ borderRight: `1px solid ${colors.border}`, padding: '0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                                                     <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>VIGENCIA<br />DOC.</p>

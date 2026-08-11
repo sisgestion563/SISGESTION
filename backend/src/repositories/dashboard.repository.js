@@ -249,6 +249,16 @@ WITH proveedor_info AS (
     SELECT 
         proveedor_id, 
         CASE 
+            WHEN regimen_tributario = 'RG' THEN 12
+            WHEN regimen_tributario = 'RP' THEN 10
+            WHEN regimen_tributario = 'RM' THEN 7
+            ELSE 12
+        END as exigible_sst,
+        1 as exigible_ma,
+        1 as exigible_calidad,
+        1 as exigible_patrimonial,
+        1 as exigible_etica,
+        CASE 
             WHEN regimen_tributario = 'RG' THEN 16
             WHEN regimen_tributario = 'RP' THEN 14
             WHEN regimen_tributario = 'RM' THEN 11
@@ -257,24 +267,68 @@ WITH proveedor_info AS (
     FROM "SISGES"."MAE_PROVEEDOR"
     WHERE proveedor_id = $1
 ),
-conteo_documentos AS (
+doc_counts AS (
     SELECT
-        COUNT(*) FILTER (WHERE fecha_vigencia < CURRENT_DATE) AS vencidos,
-        COUNT(*) FILTER (WHERE fecha_vigencia >= CURRENT_DATE AND fecha_vigencia <= CURRENT_DATE + INTERVAL '7 days') AS por_vencer,
-        COUNT(*) FILTER (WHERE fecha_vigencia >= CURRENT_DATE) AS vigentes,
-        COUNT(DISTINCT tipo_documento_id) AS total_registrados
-    FROM "SISGES"."MOV_DOCUMENTOS"
-    WHERE proveedor_id = $1 AND status = 'A'
+        p.proveedor_id,
+        p.total_exigibles,
+        
+        -- Conteo de registros (cualquier estado, activos)
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GSG' THEN d.tipo_documento_id END) as reg_sst,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GMA' THEN d.tipo_documento_id END) as reg_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' THEN d.tipo_documento_id END) as reg_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' THEN d.tipo_documento_id END) as reg_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' THEN d.tipo_documento_id END) as reg_etica,
+
+        -- Conteo de vigentes (activos y fecha_vigencia >= hoy)
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GSG' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_sst,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GMA' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_etica,
+
+        -- Absolutos para botones
+        COUNT(d.documento_id) FILTER (WHERE d.fecha_vigencia < CURRENT_DATE) AS vencidos_abs,
+        COUNT(d.documento_id) FILTER (WHERE d.fecha_vigencia >= CURRENT_DATE AND d.fecha_vigencia <= CURRENT_DATE + INTERVAL '7 days') AS por_vencer_abs,
+        COUNT(d.documento_id) FILTER (WHERE d.fecha_vigencia >= CURRENT_DATE) AS vigentes_abs
+    FROM proveedor_info p
+    LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
+        ON p.proveedor_id = d.proveedor_id AND d.status = 'A'
+    GROUP BY p.proveedor_id, p.total_exigibles
+),
+capped_counts AS (
+    SELECT
+        c.proveedor_id,
+        c.total_exigibles,
+        c.vencidos_abs as vencidos,
+        c.por_vencer_abs as por_vencer,
+        c.vigentes_abs as vigentes, -- OJO: Esto es para el botón "ESTADO DE MI EXPEDIENTE"
+        
+        -- Suma de registrados capeados por categoría
+        LEAST(c.reg_sst, p.exigible_sst) +
+        LEAST(c.reg_ma, p.exigible_ma) +
+        LEAST(c.reg_calidad, p.exigible_calidad) +
+        LEAST(c.reg_patrimonial, p.exigible_patrimonial) +
+        LEAST(c.reg_etica, p.exigible_etica) AS total_registrados_capped,
+
+        -- Suma de vigentes capeados por categoría (usado para porcentaje)
+        LEAST(c.vig_sst, p.exigible_sst) +
+        LEAST(c.vig_ma, p.exigible_ma) +
+        LEAST(c.vig_calidad, p.exigible_calidad) +
+        LEAST(c.vig_patrimonial, p.exigible_patrimonial) +
+        LEAST(c.vig_etica, p.exigible_etica) AS total_vigentes_capped
+
+    FROM doc_counts c
+    JOIN proveedor_info p ON c.proveedor_id = p.proveedor_id
 )
 SELECT 
-    c.vencidos,
-    c.por_vencer,
-    c.vigentes,
-    p.total_exigibles,
-    c.total_registrados,
-    GREATEST(p.total_exigibles - c.total_registrados, 0) AS pendientes
-FROM proveedor_info p
-CROSS JOIN conteo_documentos c;
+    vencidos,
+    por_vencer,
+    total_vigentes_capped AS vigentes_para_porcentaje, 
+    vigentes,
+    total_exigibles,
+    total_registrados_capped AS total_registrados,
+    GREATEST(total_exigibles - total_registrados_capped, 0) AS pendientes
+FROM capped_counts;
     `;
     const result = await pool.query(sql, [proveedorId]);
     return result.rows[0];
