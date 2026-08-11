@@ -452,15 +452,6 @@ export default function DashboardPage() {
                                         </div>
                                     </div>
                                 </div>
-                            )}r: '#b45309', margin: 0 }}>
-                                                    {estadoExpediente.por_vencer}
-                                                </p>
-                                                <span style={{ fontSize: '16px' }}>⚠️</span>
-                                            </div>
-                                            <div style={{ width: '100%', height: '4px' }}></div>
-                                        </div>
-                                    </div>
-                                </div>
                             )}
 
                             {!esProveedor && (() => {
