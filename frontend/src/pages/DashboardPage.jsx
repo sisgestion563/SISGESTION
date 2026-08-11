@@ -156,7 +156,7 @@ const responsiveCSS = `
         margin-top: 30px;
     }
     .stats-grid.proveedor {
-        grid-template-columns: 1.3fr 1.1fr 0.9fr;
+        grid-template-columns: 1.3fr 1.2fr 1fr;
     }
     @media (max-width: 900px) {
         .stats-grid, .stats-grid.proveedor { grid-template-columns: repeat(2, 1fr); }
@@ -193,10 +193,10 @@ const obtenerUsuario = () => {
 // ── Grupos documentales fijos para el dashboard del PROVEEDOR ─────────────────
 const CODIGOS_GRUPOS = ['DOC_NOR', 'DOC_EXT_NOR', 'DOC_REQ_ESTATAL', 'DOC_OTROS'];
 const NOMBRES_GRUPOS = {
-    'DOC_NOR':        'Gestión SST-MA',
-    'DOC_EXT_NOR':    'Gestión de Calidad',
-    'DOC_REQ_ESTATAL':'Gestión Seg. Patrimonial',
-    'DOC_OTROS':      'Gestión Ética'
+    'DOC_NOR': 'Gestión SST-MA',
+    'DOC_EXT_NOR': 'Gestión de Calidad',
+    'DOC_REQ_ESTATAL': 'Gestión Seg. Patrimonial',
+    'DOC_OTROS': 'Gestión Ética'
 };
 
 export default function DashboardPage() {
@@ -212,10 +212,10 @@ export default function DashboardPage() {
 
     // ── Identidad del usuario logueado ──────────────────────────────────────
     const usuarioLogueado = obtenerUsuario();
-    const rolCodigo       = usuarioLogueado?.rol_codigo || '';
-    const esProveedor     = rolCodigo === 'PROVEEDOR';
-    const esConsultor     = rolCodigo === 'CONSULTOR';
-    const miProveedorId   = usuarioLogueado?.proveedor_id;
+    const rolCodigo = usuarioLogueado?.rol_codigo || '';
+    const esProveedor = rolCodigo === 'PROVEEDOR';
+    const esConsultor = rolCodigo === 'CONSULTOR';
+    const miProveedorId = usuarioLogueado?.proveedor_id;
 
     useEffect(() => {
         if (esProveedor) {
@@ -227,11 +227,11 @@ export default function DashboardPage() {
     }, [esProveedor, miProveedorId]);
 
     // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
-    const cargarDashboardAdmin = async () => {
+    async function cargarDashboardAdmin() {
         try {
-            const resumenData  = await obtenerResumen();
-            const gruposData   = await obtenerDocumentosPorGrupo();
-            const estadosData  = await obtenerDocumentosPorEstado();
+            const resumenData = await obtenerResumen();
+            const gruposData = await obtenerDocumentosPorGrupo();
+            const estadosData = await obtenerDocumentosPorEstado();
             const proximosData = await obtenerProximosVencer();
 
             setResumen(resumenData);
@@ -244,13 +244,13 @@ export default function DashboardPage() {
     };
 
     // ── Dashboard PROVEEDOR (solo sus propios documentos) ────────────────────
-    const cargarDashboardProveedor = async () => {
+    async function cargarDashboardProveedor() {
         if (!miProveedorId) {
             setLoadingProveedor(false);
             return;
         }
         try {
-            let acumuladoDocs   = [];
+            let acumuladoDocs = [];
             let estadisticaGrupos = [];
 
             // Consultamos secuencialmente los 4 grupos documentales del proveedor logueado
@@ -271,14 +271,14 @@ export default function DashboardPage() {
             const vigentesCount = acumuladoDocs.filter(d => {
                 if (!d.fecha_vigencia) return false;
                 const f = new Date(d.fecha_vigencia);
-                f.setHours(0,0,0,0);
+                f.setHours(0, 0, 0, 0);
                 return f >= hoy;
             }).length;
 
             const vencidosCount = acumuladoDocs.filter(d => {
                 if (!d.fecha_vigencia) return false;
                 const f = new Date(d.fecha_vigencia);
-                f.setHours(0,0,0,0);
+                f.setHours(0, 0, 0, 0);
                 return f < hoy;
             }).length;
 
@@ -310,7 +310,7 @@ export default function DashboardPage() {
 
             const dataKpis = await obtenerCumplimientoGestion(miProveedorId);
             setKpisGestion(dataKpis);
-            
+
             const dataEstado = await obtenerEstadoExpediente(miProveedorId);
             setEstadoExpediente(dataEstado);
         } catch (error) {
@@ -404,21 +404,31 @@ export default function DashboardPage() {
                                                     })}
                                                 </tbody>
                                             </table>
-                                             {/* ── MIS DOCUMENTOS (Solo Proveedor, ahora más pequeña en medio) ────────────────────── */}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={styles.statCard(colors.primary)}>
+                                        <p style={styles.statLabel}>Total Documentos Cargados</p>
+                                        <p style={styles.statValue(colors.text)}>{resumen.total_documentos}</p>
+                                    </div>
+                                )
+                            )}
+
+                            {/* ── MIS DOCUMENTOS (Solo Proveedor, ahora más pequeña en medio) ────────────────────── */}
                             {esProveedor && estadoExpediente && (
-                                <div style={{ ...styles.card, padding: '16px 8px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                    <h2 style={{ ...styles.sectionTitle, textAlign: 'center', marginBottom: '12px', fontSize: '13px', letterSpacing: '-0.02em' }}>MIS DOCUMENTOS</h2>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', textAlign: 'center' }}>
+                                <div style={{ ...styles.card, padding: '20px' }}>
+                                    <h2 style={{ ...styles.sectionTitle, textAlign: 'center', marginBottom: '16px', fontSize: '14px' }}>MIS DOCUMENTOS</h2>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', textAlign: 'center' }}>
                                         {/* REGISTRO DOCUMENTAL */}
                                         {(() => {
                                             const exigibles = estadoExpediente.total_exigibles || 0;
                                             const registrados = estadoExpediente.total_registrados || 0;
-                                            const pctRegistro = exigibles > 0 ? ((registrados / exigibles) * 100).toFixed(1) : 0;
+                                            const pctRegistro = exigibles > 0 ? ((registrados / exigibles) * 100).toFixed(2) : 0;
                                             return (
-                                                <div style={{ borderRight: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 2px' }}>
-                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '9px', lineHeight: '1.2' }}>REGISTRO<br/>DOC.</p>
-                                                    <p style={{ fontSize: '18px', fontWeight: 800, color: colors.primary, margin: '6px 0', letterSpacing: '-0.03em' }}>{pctRegistro}%</p>
-                                                    <div style={{ width: '90%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
+                                                <div style={{ borderRight: `1px solid ${colors.border}`, paddingRight: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>REGISTRO<br />DOC.</p>
+                                                    <p style={{ fontSize: '20px', fontWeight: 700, color: colors.primary, margin: '8px 0' }}>{pctRegistro}%</p>
+                                                    <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
                                                         <div style={{ width: `${pctRegistro}%`, background: colors.primary, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
                                                     </div>
                                                 </div>
@@ -428,27 +438,27 @@ export default function DashboardPage() {
                                         {(() => {
                                             const registrados = estadoExpediente.total_registrados || 0;
                                             const vigentes = estadoExpediente.vigentes || 0;
-                                            const pctVigencia = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(1) : 0;
+                                            const pctVigencia = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(2) : 0;
                                             return (
-                                                <div style={{ borderRight: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 2px' }}>
-                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '9px', lineHeight: '1.2' }}>VIGENCIA<br/>DOC.</p>
-                                                    <p style={{ fontSize: '18px', fontWeight: 800, color: colors.success, margin: '6px 0', letterSpacing: '-0.03em' }}>{pctVigencia}%</p>
-                                                    <div style={{ width: '90%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
+                                                <div style={{ borderRight: `1px solid ${colors.border}`, padding: '0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>VIGENCIA<br />DOC.</p>
+                                                    <p style={{ fontSize: '20px', fontWeight: 700, color: colors.success, margin: '8px 0' }}>{pctVigencia}%</p>
+                                                    <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
                                                         <div style={{ width: `${pctVigencia}%`, background: colors.success, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
                                                     </div>
                                                 </div>
                                             );
                                         })()}
                                         {/* DOCUMENTOS POR VENCER */}
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 2px' }}>
-                                            <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '9px', lineHeight: '1.2' }}>POR<br/>VENCER</p>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px', margin: '6px 0' }}>
-                                                <p style={{ fontSize: '18px', fontWeight: 800, color: '#b45309', margin: 0, letterSpacing: '-0.03em' }}>
+                                        <div style={{ paddingLeft: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>POR<br />VENCER</p>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', margin: '8px 0' }}>
+                                                <p style={{ fontSize: '20px', fontWeight: 700, color: '#b45309', margin: 0 }}>
                                                     {estadoExpediente.por_vencer}
                                                 </p>
-                                                {estadoExpediente.por_vencer > 0 && <span style={{ fontSize: '12px' }}>⚠️</span>}
+                                                <span style={{ fontSize: '16px' }}></span>
                                             </div>
-                                            <div style={{ width: '90%', height: '4px' }}></div>
+                                            <div style={{ width: '100%', height: '4px' }}></div>
                                         </div>
                                     </div>
                                 </div>
@@ -486,7 +496,7 @@ export default function DashboardPage() {
                                             ESTADO DE MI EXPEDIENTE
                                         </h3>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                            <button 
+                                            <button
                                                 onClick={() => navigate('/documents?estado=VIGENTES')}
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: colors.successBg, border: `1px solid #a7f3d0`, borderRadius: '10px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
                                                 onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -496,7 +506,7 @@ export default function DashboardPage() {
                                                 <span style={{ fontSize: '18px', fontWeight: 800, color: colors.success }}>{estadoExpediente.vigentes}</span>
                                             </button>
 
-                                            <button 
+                                            <button
                                                 onClick={() => navigate('/documents?estado=POR_VENCER')}
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#fef3c7', border: `1px solid #fde68a`, borderRadius: '10px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
                                                 onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -511,7 +521,7 @@ export default function DashboardPage() {
                                                 <span style={{ fontSize: '18px', fontWeight: 800, color: '#b45309' }}>{estadoExpediente.por_vencer}</span>
                                             </button>
 
-                                            <button 
+                                            <button
                                                 onClick={() => navigate('/documents?estado=VENCIDOS')}
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: colors.dangerBg, border: `1px solid #fecaca`, borderRadius: '10px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
                                                 onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
