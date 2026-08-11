@@ -270,6 +270,8 @@ SELECT
     c.vencidos,
     c.por_vencer,
     c.vigentes,
+    p.total_exigibles,
+    c.total_registrados,
     GREATEST(p.total_exigibles - c.total_registrados, 0) AS pendientes
 FROM proveedor_info p
 CROSS JOIN conteo_documentos c;
