@@ -439,9 +439,9 @@ export default function DashboardPage() {
                                                 ), 
                                                 fontSize: '14px', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px'
                                             }}>
-                                                {calificacion.nivel_documental === 'ALTO' && '⭐'}
-                                                {calificacion.nivel_documental === 'MEDIO' && '⚠️'}
-                                                {calificacion.nivel_documental === 'BAJO' && '❌'}
+                                                {calificacion.nivel_documental === 'ALTO' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>}
+                                                {calificacion.nivel_documental === 'MEDIO' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>}
+                                                {calificacion.nivel_documental === 'BAJO' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>}
                                                 {calificacion.recomendacion}
                                             </span>
                                         </div>
@@ -470,20 +470,23 @@ export default function DashboardPage() {
 
                             {/* ── MIS DOCUMENTOS (Solo Proveedor, ahora más pequeña en medio) ────────────────────── */}
                             {esProveedor && estadoExpediente && (
-                                <div style={{ ...styles.card, padding: '20px' }}>
-                                    <h2 style={{ ...styles.sectionTitle, textAlign: 'center', marginBottom: '16px', fontSize: '14px' }}>MIS DOCUMENTOS</h2>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', textAlign: 'center' }}>
+                                <div style={{ ...styles.card, padding: '24px' }}>
+                                    <h2 style={{ ...styles.sectionTitle, textAlign: 'center', marginBottom: '20px', fontSize: '15px', letterSpacing: '0.05em' }}>MIS DOCUMENTOS</h2>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', textAlign: 'center' }}>
                                         {/* REGISTRO DOCUMENTAL */}
                                         {(() => {
                                             const exigibles = estadoExpediente.total_exigibles || 0;
                                             const registrados = estadoExpediente.total_registrados || 0;
                                             const pctRegistro = exigibles > 0 ? Math.min((registrados / exigibles) * 100, 100).toFixed(0) : 0;
                                             return (
-                                                <div style={{ borderRight: `1px solid ${colors.border}`, paddingRight: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>REGISTRO<br />DOC.</p>
-                                                    <p style={{ fontSize: '20px', fontWeight: 700, color: colors.primary, margin: '8px 0' }}>{pctRegistro}%</p>
-                                                    <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
-                                                        <div style={{ width: `${pctRegistro}%`, background: colors.primary, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
+                                                <div style={{ background: '#eff6ff', padding: '16px 8px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid #bfdbfe', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.5)' }}>
+                                                    <p style={{ ...styles.statLabel, color: '#1e40af', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                        REGISTRO
+                                                    </p>
+                                                    <p style={{ fontSize: '24px', fontWeight: 800, color: '#1d4ed8', margin: '8px 0' }}>{pctRegistro}%</p>
+                                                    <div style={{ width: '80%', background: '#dbeafe', borderRadius: '6px', overflow: 'hidden', height: '6px' }}>
+                                                        <div style={{ width: `${pctRegistro}%`, background: '#2563eb', height: '100%', borderRadius: '6px', transition: 'width 1s ease-in-out', boxShadow: '0 0 8px rgba(37,99,235,0.4)' }}></div>
                                                     </div>
                                                 </div>
                                             );
@@ -494,25 +497,30 @@ export default function DashboardPage() {
                                             const vigentesParaPorcentaje = estadoExpediente.vigentes_para_porcentaje || 0;
                                             const pctVigencia = registrados > 0 ? Math.min((vigentesParaPorcentaje / registrados) * 100, 100).toFixed(0) : 0;
                                             return (
-                                                <div style={{ borderRight: `1px solid ${colors.border}`, padding: '0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>VIGENCIA<br />DOC.</p>
-                                                    <p style={{ fontSize: '20px', fontWeight: 700, color: colors.success, margin: '8px 0' }}>{pctVigencia}%</p>
-                                                    <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
-                                                        <div style={{ width: `${pctVigencia}%`, background: colors.success, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
+                                                <div style={{ background: '#f0fdf4', padding: '16px 8px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid #bbf7d0', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.5)' }}>
+                                                    <p style={{ ...styles.statLabel, color: '#166534', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                                        VIGENCIA
+                                                    </p>
+                                                    <p style={{ fontSize: '24px', fontWeight: 800, color: '#15803d', margin: '8px 0' }}>{pctVigencia}%</p>
+                                                    <div style={{ width: '80%', background: '#dcfce7', borderRadius: '6px', overflow: 'hidden', height: '6px' }}>
+                                                        <div style={{ width: `${pctVigencia}%`, background: '#16a34a', height: '100%', borderRadius: '6px', transition: 'width 1s ease-in-out', boxShadow: '0 0 8px rgba(22,163,74,0.4)' }}></div>
                                                     </div>
                                                 </div>
                                             );
                                         })()}
                                         {/* DOCUMENTOS POR VENCER */}
-                                        <div style={{ paddingLeft: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                            <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>POR<br />VENCER</p>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', margin: '8px 0' }}>
-                                                <p style={{ fontSize: '20px', fontWeight: 700, color: '#b45309', margin: 0 }}>
+                                        <div style={{ background: '#fffbeb', padding: '16px 8px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid #fde68a', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.5)' }}>
+                                            <p style={{ ...styles.statLabel, color: '#92400e', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                                POR VENCER
+                                            </p>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '8px 0' }}>
+                                                <p style={{ fontSize: '24px', fontWeight: 800, color: '#b45309', margin: 0 }}>
                                                     {estadoExpediente.por_vencer}
                                                 </p>
-                                                <span style={{ fontSize: '16px' }}></span>
                                             </div>
-                                            <div style={{ width: '100%', height: '4px' }}></div>
+                                            <div style={{ width: '80%', background: 'transparent', height: '6px' }}></div>
                                         </div>
                                     </div>
                                 </div>
