@@ -23,7 +23,8 @@ import {
     obtenerDocumentosPorGrupo,
     obtenerDocumentosPorEstado,
     obtenerProximosVencer,
-    obtenerCumplimientoGestion
+    obtenerCumplimientoGestion,
+    obtenerEstadoExpediente
 } from '../services/dashboard.service';
 
 // Reutilizamos el servicio para listar los expedientes por grupo corporativo
@@ -204,6 +205,7 @@ export default function DashboardPage() {
     const [estados, setEstados] = useState([]);
     const [proximos, setProximos] = useState([]);
     const [kpisGestion, setKpisGestion] = useState([]);
+    const [estadoExpediente, setEstadoExpediente] = useState(null);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
 
     // ── Identidad del usuario logueado ──────────────────────────────────────
@@ -292,6 +294,9 @@ export default function DashboardPage() {
 
             const dataKpis = await obtenerCumplimientoGestion(miProveedorId);
             setKpisGestion(dataKpis);
+            
+            const dataEstado = await obtenerEstadoExpediente(miProveedorId);
+            setEstadoExpediente(dataEstado);
         } catch (error) {
             console.error("Error consolidando indicadores de proveedor:", error);
         } finally {
@@ -396,10 +401,50 @@ export default function DashboardPage() {
                                 <p style={styles.statValue(colors.success)}>{resumen.documentos_vigentes}</p>
                             </div>
 
-                            <div style={styles.statCard(colors.danger)}>
-                                <p style={styles.statLabel}>Documentos Vencidos</p>
-                                <p style={styles.statValue(colors.danger)}>{resumen.documentos_vencidos}</p>
-                            </div>
+                            {!esProveedor ? (
+                                <div style={styles.statCard(colors.danger)}>
+                                    <p style={styles.statLabel}>Documentos Vencidos</p>
+                                    <p style={styles.statValue(colors.danger)}>{resumen.documentos_vencidos}</p>
+                                </div>
+                            ) : (
+                                estadoExpediente ? (
+                                    <div style={{ ...styles.statCard(colors.danger), display: 'flex', flexDirection: 'column' }}>
+                                        <p style={styles.statLabel}>ESTADO DE MI EXPEDIENTE</p>
+                                        <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '13px', color: colors.textMuted }}>Vigentes</span>
+                                                <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.success }}>{estadoExpediente.vigentes}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '13px', color: colors.textMuted }}>Por vencer</span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    {estadoExpediente.por_vencer > 0 && <span style={{ background: colors.danger, width: 6, height: 6, borderRadius: '50%' }}></span>}
+                                                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.amber }}>{estadoExpediente.por_vencer}</span>
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '13px', color: colors.textMuted }}>Vencidos</span>
+                                                <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.danger }}>{estadoExpediente.vencidos}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '13px', color: colors.textMuted }}>Pendientes</span>
+                                                <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.amber }}>{estadoExpediente.pendientes}</span>
+                                            </div>
+                                            <button 
+                                                onClick={(e) => { e.preventDefault(); }}
+                                                style={{ marginTop: '12px', background: colors.primary, color: 'white', border: 'none', borderRadius: '6px', padding: '8px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', width: '100%' }}
+                                            >
+                                                VER QUÉ DEBO HACER
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={styles.statCard(colors.danger)}>
+                                        <p style={styles.statLabel}>Documentos Vencidos</p>
+                                        <p style={styles.statValue(colors.danger)}>{resumen.documentos_vencidos}</p>
+                                    </div>
+                                )
+                            )}
 
                         </div>
                     )}

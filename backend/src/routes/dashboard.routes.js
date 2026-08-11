@@ -73,4 +73,14 @@ router.get(
     controller.cumplimientoPorGestion
 );
 
+/*******************************************
+ ESTADO DE MI EXPEDIENTE
+********************************************/
+
+router.get(
+    '/dashboard/estado-expediente/:proveedorId',
+    authenticateToken,
+    controller.estadoExpediente
+);
+
 module.exports = router;

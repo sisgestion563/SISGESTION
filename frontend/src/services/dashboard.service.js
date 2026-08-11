@@ -64,10 +64,19 @@ async () => {
 };
 
 export const obtenerCumplimientoGestion =
-async (proveedorId) => {
-    const response = await api.get(
-        `/dashboard/cumplimiento-gestion/${proveedorId}`,
-        getHeaders()
-    );
-    return response.data.data;
-};
+    async (proveedorId) => {
+        const response = await api.get(
+            `/dashboard/cumplimiento-gestion/${proveedorId}`,
+            getHeaders()
+        );
+        return response.data.data;
+    };
+
+export const obtenerEstadoExpediente =
+    async (proveedorId) => {
+        const response = await api.get(
+            `/dashboard/estado-expediente/${proveedorId}`,
+            getHeaders()
+        );
+        return response.data.data;
+    };

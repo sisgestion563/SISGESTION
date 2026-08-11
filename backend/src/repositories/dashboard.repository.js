@@ -243,11 +243,47 @@ FROM proveedor_info p LEFT JOIN doc_counts c ON p.proveedor_id = c.proveedor_id;
     return result.rows;
 };
 
+const obtenerEstadoExpediente = async (proveedorId) => {
+    const sql = `
+WITH proveedor_info AS (
+    SELECT 
+        proveedor_id, 
+        CASE 
+            WHEN regimen_tributario = 'RG' THEN 16
+            WHEN regimen_tributario = 'RP' THEN 14
+            WHEN regimen_tributario = 'RM' THEN 11
+            ELSE 16
+        END as total_exigibles
+    FROM "SISGES"."MAE_PROVEEDOR"
+    WHERE proveedor_id = $1
+),
+conteo_documentos AS (
+    SELECT
+        COUNT(*) FILTER (WHERE fecha_vigencia < CURRENT_DATE) AS vencidos,
+        COUNT(*) FILTER (WHERE fecha_vigencia >= CURRENT_DATE AND fecha_vigencia <= CURRENT_DATE + INTERVAL '7 days') AS por_vencer,
+        COUNT(*) FILTER (WHERE fecha_vigencia > CURRENT_DATE) AS vigentes,
+        COUNT(DISTINCT tipo_documento_id) AS total_registrados
+    FROM "SISGES"."MOV_DOCUMENTOS"
+    WHERE proveedor_id = $1 AND status = 'A'
+)
+SELECT 
+    c.vencidos,
+    c.por_vencer,
+    c.vigentes,
+    GREATEST(p.total_exigibles - c.total_registrados, 0) AS pendientes
+FROM proveedor_info p
+CROSS JOIN conteo_documentos c;
+    `;
+    const result = await pool.query(sql, [proveedorId]);
+    return result.rows[0];
+};
+
 module.exports = {
     obtenerResumen,
     obtenerDocumentosPorGrupo,
     obtenerDocumentosPorEstado,
     obtenerProveedoresVencidos,
     obtenerDocumentosProximosVencer,
-    obtenerCumplimientoPorGestion
+    obtenerCumplimientoPorGestion,
+    obtenerEstadoExpediente
 };

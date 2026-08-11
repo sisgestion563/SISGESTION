@@ -44,11 +44,16 @@ const obtenerCumplimientoPorGestion = async (proveedorId) => {
     return await repository.obtenerCumplimientoPorGestion(proveedorId);
 };
 
+const obtenerEstadoExpediente = async (proveedorId) => {
+    return await repository.obtenerEstadoExpediente(proveedorId);
+};
+
 module.exports = {
     obtenerResumen,
     obtenerDocumentosPorGrupo,
     obtenerDocumentosPorEstado,
     obtenerProveedoresVencidos,
     obtenerDocumentosProximosVencer,
-    obtenerCumplimientoPorGestion
+    obtenerCumplimientoPorGestion,
+    obtenerEstadoExpediente
 };
