@@ -730,9 +730,9 @@ export default function DocumentsPage() {
 								{textoGrupo}
 							</div>
 
-							{/* Botón Agregar: solo para ADMIN y PROVEEDOR */}
+							{/* Botón Agregar: solo para ADMIN y PROVEEDOR, y solo si NO hay un filtro activo */}
 							<div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
-								{puedeEscribir && (
+								{puedeEscribir && !estadoFiltroUrl && (
 									<button
 										style={styles.btnPrimary}
 										onClick={() => {

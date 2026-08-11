@@ -410,23 +410,44 @@ export default function DashboardPage() {
                                 </div>
                             ) : (
                                 estadoExpediente ? (
-                                    <div style={{ ...styles.statCard(colors.danger), display: 'flex', flexDirection: 'column' }}>
-                                        <p style={styles.statLabel}>ESTADO DE MI EXPEDIENTE</p>
-                                        <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                            <button onClick={() => navigate('/documents?estado=VIGENTES')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', width: '100%', textAlign: 'left' }}>
-                                                <span style={{ fontSize: '13px', color: colors.textMuted }}>Vigentes</span>
-                                                <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.success }}>{estadoExpediente.vigentes}</span>
+                                    <div style={{ ...styles.card, padding: '20px', borderLeft: `4px solid ${colors.danger}`, display: 'flex', flexDirection: 'column' }}>
+                                        <h3 style={{ fontSize: '13px', fontWeight: 700, color: colors.textMuted, margin: '0 0 16px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            ESTADO DE MI EXPEDIENTE
+                                        </h3>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            <button 
+                                                onClick={() => navigate('/documents?estado=VIGENTES')}
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: colors.successBg, border: `1px solid #a7f3d0`, borderRadius: '10px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                            >
+                                                <span style={{ fontSize: '14px', fontWeight: 600, color: colors.success }}>Vigentes</span>
+                                                <span style={{ fontSize: '18px', fontWeight: 800, color: colors.success }}>{estadoExpediente.vigentes}</span>
                                             </button>
-                                            <button onClick={() => navigate('/documents?estado=POR_VENCER')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', width: '100%', textAlign: 'left' }}>
-                                                <span style={{ fontSize: '13px', color: colors.textMuted }}>Por vencer</span>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                    {estadoExpediente.por_vencer > 0 && <span style={{ background: colors.danger, width: 6, height: 6, borderRadius: '50%' }}></span>}
-                                                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.amber }}>{estadoExpediente.por_vencer}</span>
+
+                                            <button 
+                                                onClick={() => navigate('/documents?estado=POR_VENCER')}
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#fef3c7', border: `1px solid #fde68a`, borderRadius: '10px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#b45309' }}>Por vencer</span>
+                                                    {estadoExpediente.por_vencer > 0 && (
+                                                        <span style={{ background: colors.danger, width: 8, height: 8, borderRadius: '50%', boxShadow: `0 0 4px ${colors.danger}` }}></span>
+                                                    )}
                                                 </div>
+                                                <span style={{ fontSize: '18px', fontWeight: 800, color: '#b45309' }}>{estadoExpediente.por_vencer}</span>
                                             </button>
-                                            <button onClick={() => navigate('/documents?estado=VENCIDOS')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', width: '100%', textAlign: 'left' }}>
-                                                <span style={{ fontSize: '13px', color: colors.textMuted }}>Vencidos</span>
-                                                <span style={{ fontSize: '15px', fontWeight: 'bold', color: colors.danger }}>{estadoExpediente.vencidos}</span>
+
+                                            <button 
+                                                onClick={() => navigate('/documents?estado=VENCIDOS')}
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: colors.dangerBg, border: `1px solid #fecaca`, borderRadius: '10px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                            >
+                                                <span style={{ fontSize: '14px', fontWeight: 600, color: colors.danger }}>Vencidos</span>
+                                                <span style={{ fontSize: '18px', fontWeight: 800, color: colors.danger }}>{estadoExpediente.vencidos}</span>
                                             </button>
                                         </div>
                                     </div>
