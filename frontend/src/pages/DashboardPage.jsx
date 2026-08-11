@@ -156,7 +156,7 @@ const responsiveCSS = `
         margin-top: 30px;
     }
     .stats-grid.proveedor {
-        grid-template-columns: 1.3fr 1.2fr 1fr;
+        grid-template-columns: 1.3fr 1.1fr 0.9fr;
     }
     @media (max-width: 900px) {
         .stats-grid, .stats-grid.proveedor { grid-template-columns: repeat(2, 1fr); }
@@ -404,31 +404,21 @@ export default function DashboardPage() {
                                                     })}
                                                 </tbody>
                                             </table>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div style={styles.statCard(colors.primary)}>
-                                        <p style={styles.statLabel}>Total Documentos Cargados</p>
-                                        <p style={styles.statValue(colors.text)}>{resumen.total_documentos}</p>
-                                    </div>
-                                )
-                            )}
-
-                            {/* ── MIS DOCUMENTOS (Solo Proveedor, ahora más pequeña en medio) ────────────────────── */}
+                                             {/* ── MIS DOCUMENTOS (Solo Proveedor, ahora más pequeña en medio) ────────────────────── */}
                             {esProveedor && estadoExpediente && (
-                                <div style={{ ...styles.card, padding: '20px' }}>
-                                    <h2 style={{ ...styles.sectionTitle, textAlign: 'center', marginBottom: '16px', fontSize: '14px' }}>MIS DOCUMENTOS</h2>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', textAlign: 'center' }}>
+                                <div style={{ ...styles.card, padding: '16px 8px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <h2 style={{ ...styles.sectionTitle, textAlign: 'center', marginBottom: '12px', fontSize: '13px', letterSpacing: '-0.02em' }}>MIS DOCUMENTOS</h2>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', textAlign: 'center' }}>
                                         {/* REGISTRO DOCUMENTAL */}
                                         {(() => {
                                             const exigibles = estadoExpediente.total_exigibles || 0;
                                             const registrados = estadoExpediente.total_registrados || 0;
-                                            const pctRegistro = exigibles > 0 ? ((registrados / exigibles) * 100).toFixed(2) : 0;
+                                            const pctRegistro = exigibles > 0 ? ((registrados / exigibles) * 100).toFixed(1) : 0;
                                             return (
-                                                <div style={{ borderRight: `1px solid ${colors.border}`, paddingRight: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>REGISTRO<br/>DOC.</p>
-                                                    <p style={{ fontSize: '20px', fontWeight: 700, color: colors.primary, margin: '8px 0' }}>{pctRegistro}%</p>
-                                                    <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
+                                                <div style={{ borderRight: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 2px' }}>
+                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '9px', lineHeight: '1.2' }}>REGISTRO<br/>DOC.</p>
+                                                    <p style={{ fontSize: '18px', fontWeight: 800, color: colors.primary, margin: '6px 0', letterSpacing: '-0.03em' }}>{pctRegistro}%</p>
+                                                    <div style={{ width: '90%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
                                                         <div style={{ width: `${pctRegistro}%`, background: colors.primary, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
                                                     </div>
                                                 </div>
@@ -438,22 +428,31 @@ export default function DashboardPage() {
                                         {(() => {
                                             const registrados = estadoExpediente.total_registrados || 0;
                                             const vigentes = estadoExpediente.vigentes || 0;
-                                            const pctVigencia = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(2) : 0;
+                                            const pctVigencia = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(1) : 0;
                                             return (
-                                                <div style={{ borderRight: `1px solid ${colors.border}`, padding: '0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>VIGENCIA<br/>DOC.</p>
-                                                    <p style={{ fontSize: '20px', fontWeight: 700, color: colors.success, margin: '8px 0' }}>{pctVigencia}%</p>
-                                                    <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
+                                                <div style={{ borderRight: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 2px' }}>
+                                                    <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '9px', lineHeight: '1.2' }}>VIGENCIA<br/>DOC.</p>
+                                                    <p style={{ fontSize: '18px', fontWeight: 800, color: colors.success, margin: '6px 0', letterSpacing: '-0.03em' }}>{pctVigencia}%</p>
+                                                    <div style={{ width: '90%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '4px' }}>
                                                         <div style={{ width: `${pctVigencia}%`, background: colors.success, height: '100%', borderRadius: '4px', transition: 'width 1s ease-in-out' }}></div>
                                                     </div>
                                                 </div>
                                             );
                                         })()}
                                         {/* DOCUMENTOS POR VENCER */}
-                                        <div style={{ paddingLeft: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                            <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '10px' }}>POR<br/>VENCER</p>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', margin: '8px 0' }}>
-                                                <p style={{ fontSize: '20px', fontWeight: 700, color: '#b45309', margin: 0 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 2px' }}>
+                                            <p style={{ ...styles.statLabel, color: colors.textMuted, fontSize: '9px', lineHeight: '1.2' }}>POR<br/>VENCER</p>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px', margin: '6px 0' }}>
+                                                <p style={{ fontSize: '18px', fontWeight: 800, color: '#b45309', margin: 0, letterSpacing: '-0.03em' }}>
+                                                    {estadoExpediente.por_vencer}
+                                                </p>
+                                                {estadoExpediente.por_vencer > 0 && <span style={{ fontSize: '12px' }}>⚠️</span>}
+                                            </div>
+                                            <div style={{ width: '90%', height: '4px' }}></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}r: '#b45309', margin: 0 }}>
                                                     {estadoExpediente.por_vencer}
                                                 </p>
                                                 <span style={{ fontSize: '16px' }}>⚠️</span>
