@@ -8,10 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 
 import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
     Tooltip,
     ResponsiveContainer,
     PieChart,
@@ -437,23 +433,60 @@ export default function DashboardPage() {
         (a, b) => new Date(a.fecha_vigencia) - new Date(b.fecha_vigencia)
     );
 
+    const limpiarFiltroGestion = () => {
+        setGestionFiltro('ALL');
+        localStorage.setItem('sisgestion_gestion_actual', 'ALL');
+        window.dispatchEvent(new CustomEvent('sisgestion:gestion_change', { detail: 'ALL' }));
+    };
+
     return (
         <MainLayout>
             <style>{responsiveCSS}</style>
 
             {/* ── Encabezado dinámico por rol ─────────────────────────────── */}
-            <h1 style={styles.heading}>
-                {esProveedor
-                    ? `Panel de Control - ${usuarioLogueado?.username}`
-                    : 'Dashboard SISGESTION'}
-            </h1>
-            <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
-                {esProveedor
-                    ? 'Resumen analítico y alertas del estado de vigencia de sus expedientes cargados.'
-                    : esConsultor
-                        ? 'Vista general del sistema. Acceso de solo lectura para auditorías corporativas.'
-                        : 'Vista general del sistema para gestión de auditorías corporativas.'}
-            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                    <h1 style={styles.heading}>
+                        {esProveedor
+                            ? `Panel de Control - ${usuarioLogueado?.username}`
+                            : 'Dashboard SISGESTION'}
+                    </h1>
+                    <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
+                        {esProveedor
+                            ? 'Resumen analítico y alertas del estado de vigencia de sus expedientes cargados.'
+                            : esConsultor
+                                ? 'Vista general del sistema. Acceso de solo lectura para auditorías corporativas.'
+                                : 'Vista general del sistema para gestión de auditorías corporativas.'}
+                    </p>
+                </div>
+
+                {/* Botón para eliminar el filtro activo */}
+                {gestionFiltro !== 'ALL' && GESTION_MAP[gestionFiltro] && (
+                    <button
+                        onClick={limpiarFiltroGestion}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            background: '#EFF6FF',
+                            border: '1px solid #BFDBFE',
+                            color: '#1D4ED8',
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.background = '#DBEAFE'}
+                        onMouseOut={(e) => e.currentTarget.style.background = '#EFF6FF'}
+                    >
+                        <span>Filtro: <strong>{GESTION_MAP[gestionFiltro]?.nombre}</strong></span>
+                        <span style={{ color: '#2563EB', fontWeight: '700', marginLeft: '4px' }}>✕ Ver todo</span>
+                    </button>
+                )}
+            </div>
 
             {/* ── PROVEEDOR sin ficha → aviso ──────────────────────────────── */}
             {esProveedor && !miProveedorId && !loadingProveedor ? (
@@ -709,29 +742,6 @@ export default function DashboardPage() {
                                 )
                             )}
 
-                        </div>
-                    )}
-
-                    {/* ── Gráfico de barras: documentos por grupo ──────────── */}
-                    {grupos.length > 0 && (
-                        <div style={{ ...styles.card, marginTop: '30px' }}>
-                            <h2 style={styles.sectionTitle}>
-                                {esProveedor ? 'Mis Documentos por Grupo' : 'Documentos por Grupo'}
-                            </h2>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={grupos}>
-                                    <XAxis
-                                        dataKey="descripcion"
-                                        tick={{ fill: colors.textMuted, fontSize: 12 }}
-                                    />
-                                    <YAxis
-                                        tick={{ fill: colors.textMuted, fontSize: 12 }}
-                                        allowDecimals={false}
-                                    />
-                                    <Tooltip />
-                                    <Bar dataKey="cantidad" fill={colors.primary} radius={[6, 6, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
                         </div>
                     )}
 

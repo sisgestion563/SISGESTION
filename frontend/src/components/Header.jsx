@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layers, CalendarDays, Calendar, User, ChevronDown } from 'lucide-react';
+import { Layers, CalendarDays, Calendar, User, ChevronDown, RotateCcw } from 'lucide-react';
 import { obtenerCatalogo } from '../services/catalogos.service';
 import { obtenerProveedorPorId } from '../services/providers.service';
 
@@ -61,11 +61,22 @@ export default function Header() {
         { codigo_valor: 'GTR', descripcion: 'Gestión Ética' }
     ]);
     const [gestionSeleccionada, setGestionSeleccionada] = useState(() => {
-        return localStorage.getItem('sisgestion_gestion_actual') || 'GSG';
+        return localStorage.getItem('sisgestion_gestion_actual') || 'ALL';
     });
 
     // 5. Estado para Periodo (fijo en 2026)
     const [periodo, setPeriodo] = useState('2026');
+
+    // Sincronizar selección si se limpia desde el Dashboard
+    useEffect(() => {
+        const handleSync = (e) => {
+            if (e.detail) {
+                setGestionSeleccionada(e.detail);
+            }
+        };
+        window.addEventListener('sisgestion:gestion_change', handleSync);
+        return () => window.removeEventListener('sisgestion:gestion_change', handleSync);
+    }, []);
 
     // Cargar información del proveedor para obtener el RUC real si existe proveedor_id
     useEffect(() => {
@@ -98,13 +109,6 @@ export default function Header() {
                         descripcion: formatearNombreGestion(item.descripcion)
                     }));
                     setGestiones(gestionesFormateadas);
-
-                    setGestionSeleccionada(prev => {
-                        const existe = gestionesFormateadas.some(g => g.codigo_valor === prev);
-                        const valorFinal = existe ? prev : gestionesFormateadas[0].codigo_valor;
-                        localStorage.setItem('sisgestion_gestion_actual', valorFinal);
-                        return valorFinal;
-                    });
                 }
             } catch (error) {
                 console.error('Error al cargar catálogo de gestiones desde backend:', error);
@@ -114,11 +118,18 @@ export default function Header() {
         return () => { isMounted = false; };
     }, []);
 
+    const cambiarGestion = (valor) => {
+        setGestionSeleccionada(valor);
+        localStorage.setItem('sisgestion_gestion_actual', valor);
+        window.dispatchEvent(new CustomEvent('sisgestion:gestion_change', { detail: valor }));
+    };
+
     const handleGestionChange = (e) => {
-        const nuevoValor = e.target.value;
-        setGestionSeleccionada(nuevoValor);
-        localStorage.setItem('sisgestion_gestion_actual', nuevoValor);
-        window.dispatchEvent(new CustomEvent('sisgestion:gestion_change', { detail: nuevoValor }));
+        cambiarGestion(e.target.value);
+    };
+
+    const limpiarFiltro = () => {
+        cambiarGestion('ALL');
     };
 
     return (
@@ -215,7 +226,7 @@ export default function Header() {
                         display: 'flex',
                         alignItems: 'center',
                         flexWrap: 'wrap',
-                        gap: '18px'
+                        gap: '14px'
                     }}
                 >
                     {/* Selector de Gestión */}
@@ -261,6 +272,7 @@ export default function Header() {
                                     outline: 'none'
                                 }}
                             >
+                                <option value="ALL">Todas las Gestiones</option>
                                 {gestiones.map((item) => (
                                     <option key={item.codigo_valor} value={item.codigo_valor}>
                                         {item.descripcion}
@@ -278,6 +290,34 @@ export default function Header() {
                             />
                         </div>
                     </div>
+
+                    {/* Botón para eliminar filtro si está activo */}
+                    {gestionSeleccionada !== 'ALL' && (
+                        <button
+                            onClick={limpiarFiltro}
+                            title="Eliminar filtro y ver toda la información"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: '#EFF6FF',
+                                border: '1px solid #BFDBFE',
+                                color: '#1D4ED8',
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.background = '#DBEAFE'}
+                            onMouseOut={(e) => e.currentTarget.style.background = '#EFF6FF'}
+                        >
+                            <RotateCcw size={13} />
+                            <span>Ver todo</span>
+                        </button>
+                    )}
 
                     {/* Selector de Periodo */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
