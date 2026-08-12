@@ -200,6 +200,14 @@ const NOMBRES_GRUPOS = {
     'DOC_OTROS': 'Gestión Ética'
 };
 
+const GESTION_MAP = {
+    'GSG': { nombre: 'Gestión SST', grupo: 'DOC_NOR', alcances: ['GSG'], kpiMatch: 'SST' },
+    'GMA': { nombre: 'Gestión MA', grupo: 'DOC_NOR', alcances: ['GMA'], kpiMatch: 'MA' },
+    'GCA': { nombre: 'Gestión de Calidad', grupo: 'DOC_EXT_NOR', alcances: ['GCA'], kpiMatch: 'CALIDAD' },
+    'GPA': { nombre: 'Gestión Seg. Patrimonial', grupo: 'DOC_REQ_ESTATAL', alcances: ['GPA'], kpiMatch: 'PATRIMONIAL' },
+    'GTR': { nombre: 'Gestión Ética', grupo: 'DOC_OTROS', alcances: ['GTR'], kpiMatch: 'ETICA' }
+};
+
 export default function DashboardPage() {
     const navigate = useNavigate();
 
@@ -212,6 +220,19 @@ export default function DashboardPage() {
     const [calificacion, setCalificacion] = useState(null);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
 
+    // Estado para la gestión seleccionada actualmente
+    const [gestionFiltro, setGestionFiltro] = useState(() => {
+        return localStorage.getItem('sisgestion_gestion_actual') || 'GSG';
+    });
+
+    // Copias de datos brutos para filtrado reactivo
+    const [rawDocsProveedor, setRawDocsProveedor] = useState([]);
+    const [rawKpisProveedor, setRawKpisProveedor] = useState([]);
+    const [rawAdminGrupos, setRawAdminGrupos] = useState([]);
+    const [rawAdminProximos, setRawAdminProximos] = useState([]);
+    const [rawAdminResumen, setRawAdminResumen] = useState(null);
+    const [rawAdminEstados, setRawAdminEstados] = useState([]);
+
     // ── Identidad del usuario logueado ──────────────────────────────────────
     const usuarioLogueado = obtenerUsuario();
     const rolCodigo = usuarioLogueado?.rol_codigo || '';
@@ -219,14 +240,33 @@ export default function DashboardPage() {
     const esConsultor = rolCodigo === 'CONSULTOR';
     const miProveedorId = usuarioLogueado?.proveedor_id;
 
+    // Escucha de cambios de gestión desde el Header
+    useEffect(() => {
+        const handleGestionChange = (e) => {
+            if (e.detail) {
+                setGestionFiltro(e.detail);
+            }
+        };
+        window.addEventListener('sisgestion:gestion_change', handleGestionChange);
+        return () => window.removeEventListener('sisgestion:gestion_change', handleGestionChange);
+    }, []);
+
     useEffect(() => {
         if (esProveedor) {
             cargarDashboardProveedor();
         } else {
-            // ADMIN y CONSULTOR ven el dashboard general
             cargarDashboardAdmin();
         }
     }, [esProveedor, miProveedorId]);
+
+    // Reaccionar al cambio de gestión para filtrar los datos en pantalla
+    useEffect(() => {
+        if (esProveedor) {
+            aplicarFiltroProveedor(rawDocsProveedor, rawKpisProveedor, gestionFiltro);
+        } else {
+            aplicarFiltroAdmin(rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, gestionFiltro);
+        }
+    }, [gestionFiltro, rawDocsProveedor, rawKpisProveedor, rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, esProveedor]);
 
     // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
     async function cargarDashboardAdmin() {
@@ -236,13 +276,43 @@ export default function DashboardPage() {
             const estadosData = await obtenerDocumentosPorEstado();
             const proximosData = await obtenerProximosVencer();
 
-            setResumen(resumenData);
-            setGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
-            setEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
-            setProximos(proximosData);
+            setRawAdminResumen(resumenData);
+            setRawAdminGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
+            setRawAdminEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
+            setRawAdminProximos(proximosData);
         } catch (error) {
             console.error(error);
         }
+    };
+
+    const aplicarFiltroAdmin = (rawGrupos, rawProximosList, rawEstadosList, rawRes, gestionCode) => {
+        if (!rawGrupos) return;
+        const config = GESTION_MAP[gestionCode];
+
+        if (!config) {
+            setResumen(rawRes);
+            setGrupos(rawGrupos);
+            setEstados(rawEstadosList);
+            setProximos(rawProximosList);
+            return;
+        }
+
+        // Filtrar próximos a vencer por grupo asociado a la gestión
+        const proximosFiltrados = (rawProximosList || []).filter(item => {
+            return !item.grupo_documentos || item.grupo_documentos === config.grupo;
+        });
+        setProximos(proximosFiltrados);
+
+        // Filtrar grupos
+        const grupoEncontrado = (rawGrupos || []).filter(g => g.grupo_documentos === config.grupo);
+        if (grupoEncontrado.length > 0) {
+            setGrupos(grupoEncontrado);
+        } else {
+            setGrupos(rawGrupos);
+        }
+
+        setResumen(rawRes);
+        setEstados(rawEstadosList);
     };
 
     // ── Dashboard PROVEEDOR (solo sus propios documentos) ────────────────────
@@ -253,65 +323,19 @@ export default function DashboardPage() {
         }
         try {
             let acumuladoDocs = [];
-            let estadisticaGrupos = [];
 
             // Consultamos secuencialmente los 4 grupos documentales del proveedor logueado
             for (const grupoCode of CODIGOS_GRUPOS) {
                 const dataDocs = await listarPorGrupo(miProveedorId, grupoCode);
                 if (dataDocs && dataDocs.length > 0) {
                     acumuladoDocs = [...acumuladoDocs, ...dataDocs];
-                    estadisticaGrupos.push({ descripcion: NOMBRES_GRUPOS[grupoCode], cantidad: dataDocs.length });
-                } else {
-                    estadisticaGrupos.push({ descripcion: NOMBRES_GRUPOS[grupoCode], cantidad: 0 });
                 }
             }
 
-            // Separación de documentos por estatus evaluando fecha_vigencia (ignorando horas)
-            const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-
-            const vigentesCount = acumuladoDocs.filter(d => {
-                if (!d.fecha_vigencia) return false;
-                const f = new Date(d.fecha_vigencia);
-                f.setHours(0, 0, 0, 0);
-                return f >= hoy;
-            }).length;
-
-            const vencidosCount = acumuladoDocs.filter(d => {
-                if (!d.fecha_vigencia) return false;
-                const f = new Date(d.fecha_vigencia);
-                f.setHours(0, 0, 0, 0);
-                return f < hoy;
-            }).length;
-
-            setResumen({
-                total_proveedores: 'N/A',
-                documentos_vigentes: vigentesCount,
-                documentos_vencidos: vencidosCount,
-                total_documentos: acumuladoDocs.length
-            });
-
-            setGrupos(estadisticaGrupos);
-
-            setEstados([
-                { descripcion: 'VIGENTE', cantidad: vigentesCount },
-                { descripcion: 'VENCIDO', cantidad: vencidosCount }
-            ]);
-
-            // Filtrado de alertas: documentos vigentes próximos a vencer en los siguientes 90 días
-            const alertasVencimiento = acumuladoDocs.filter(d => {
-                if (d.estado_documento !== 'V') return false;
-                const diasRestantes = Math.ceil((new Date(d.fecha_vigencia) - new Date()) / 86400000);
-                return diasRestantes > 0 && diasRestantes <= 90;
-            }).map(d => ({
-                proveedor: d.descripcion_tipo_documento || d.tipo_documento || 'Documento',
-                fecha_vigencia: d.fecha_vigencia
-            }));
-
-            setProximos(alertasVencimiento);
+            setRawDocsProveedor(acumuladoDocs);
 
             const dataKpis = await obtenerCumplimientoGestion(miProveedorId);
-            setKpisGestion(dataKpis);
+            setRawKpisProveedor(dataKpis || []);
 
             const dataEstado = await obtenerEstadoExpediente(miProveedorId);
             setEstadoExpediente(dataEstado);
@@ -322,6 +346,89 @@ export default function DashboardPage() {
             console.error("Error consolidando indicadores de proveedor:", error);
         } finally {
             setLoadingProveedor(false);
+        }
+    };
+
+    const aplicarFiltroProveedor = (acumuladoDocs, dataKpis, gestionCode) => {
+        if (!acumuladoDocs) return;
+
+        const config = GESTION_MAP[gestionCode];
+
+        // Filtrar documentos según la gestión seleccionada
+        const docsFiltrados = config
+            ? acumuladoDocs.filter(d => {
+                if (d.alcance) {
+                    return config.alcances.includes(d.alcance);
+                }
+                return d.grupo_documentos === config.grupo;
+            })
+            : acumuladoDocs;
+
+        // Separación de documentos por estatus evaluando fecha_vigencia
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        const vigentesCount = docsFiltrados.filter(d => {
+            if (!d.fecha_vigencia) return false;
+            const f = new Date(d.fecha_vigencia);
+            f.setHours(0, 0, 0, 0);
+            return f >= hoy;
+        }).length;
+
+        const vencidosCount = docsFiltrados.filter(d => {
+            if (!d.fecha_vigencia) return false;
+            const f = new Date(d.fecha_vigencia);
+            f.setHours(0, 0, 0, 0);
+            return f < hoy;
+        }).length;
+
+        setResumen({
+            total_proveedores: 'N/A',
+            documentos_vigentes: vigentesCount,
+            documentos_vencidos: vencidosCount,
+            total_documentos: docsFiltrados.length
+        });
+
+        // Gráficos de grupo según filtro
+        if (config) {
+            setGrupos([{
+                descripcion: config.nombre,
+                cantidad: docsFiltrados.length
+            }]);
+        } else {
+            const estadisticaGrupos = CODIGOS_GRUPOS.map(grupoCode => {
+                const count = acumuladoDocs.filter(d => d.grupo_documentos === grupoCode).length;
+                return { descripcion: NOMBRES_GRUPOS[grupoCode], cantidad: count };
+            });
+            setGrupos(estadisticaGrupos);
+        }
+
+        setEstados([
+            { descripcion: 'VIGENTE', cantidad: vigentesCount },
+            { descripcion: 'VENCIDO', cantidad: vencidosCount }
+        ]);
+
+        // Filtrado de alertas: documentos vigentes próximos a vencer en los siguientes 90 días
+        const alertasVencimiento = docsFiltrados.filter(d => {
+            if (d.estado_documento !== 'V') return false;
+            const diasRestantes = Math.ceil((new Date(d.fecha_vigencia) - new Date()) / 86400000);
+            return diasRestantes > 0 && diasRestantes <= 90;
+        }).map(d => ({
+            proveedor: d.descripcion_tipo_documento || d.tipo_documento || 'Documento',
+            fecha_vigencia: d.fecha_vigencia
+        }));
+
+        setProximos(alertasVencimiento);
+
+        // Filtrar o resaltar KPIs de gestión
+        if (config && dataKpis && dataKpis.length > 0) {
+            const kpisFiltrados = dataKpis.filter(kpi => {
+                const nombreUpper = (kpi.gestion || '').toUpperCase();
+                return nombreUpper.includes(config.kpiMatch);
+            });
+            setKpisGestion(kpisFiltrados.length > 0 ? kpisFiltrados : dataKpis);
+        } else {
+            setKpisGestion(dataKpis || []);
         }
     };
 

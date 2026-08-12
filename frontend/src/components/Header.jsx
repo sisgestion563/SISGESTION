@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Layers, CalendarDays, Calendar, User, ChevronDown } from 'lucide-react';
 import { obtenerCatalogo } from '../services/catalogos.service';
 import { obtenerProveedorPorId } from '../services/providers.service';
 
@@ -41,7 +42,7 @@ export default function Header() {
         }
     })();
 
-    // 2. Fecha actual
+    // 2. Fecha actual formateada
     const fecha = new Date().toLocaleDateString('es-PE', {
         day: '2-digit',
         month: '2-digit',
@@ -63,7 +64,7 @@ export default function Header() {
         return localStorage.getItem('sisgestion_gestion_actual') || 'GSG';
     });
 
-    // 5. Estado para Periodo (fijo en 2026 con estructura de selector)
+    // 5. Estado para Periodo (fijo en 2026)
     const [periodo, setPeriodo] = useState('2026');
 
     // Cargar información del proveedor para obtener el RUC real si existe proveedor_id
@@ -125,31 +126,31 @@ export default function Header() {
             style={{
                 background: '#FFFFFF',
                 borderBottom: '1px solid #E2E8F0',
-                padding: '16px 24px',
+                padding: '16px 28px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '12px',
-                boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)'
+                gap: '14px',
+                boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03)'
             }}
         >
-            {/* ── Nivel 1 y Nivel 2: Título y Subtítulo ─────────────────────── */}
+            {/* ── Nivel 1 y Nivel 2: Título y Subtítulo + Fecha Institucional ── */}
             <div
                 style={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                     flexWrap: 'wrap',
-                    gap: '8px'
+                    gap: '12px'
                 }}
             >
                 <div>
                     <h1
                         style={{
                             margin: 0,
-                            fontSize: '20px',
+                            fontSize: '22px',
                             fontWeight: '800',
                             color: '#0F172A',
-                            letterSpacing: '-0.025em',
+                            letterSpacing: '-0.03em',
                             lineHeight: '1.2'
                         }}
                     >
@@ -168,22 +169,23 @@ export default function Header() {
                     </p>
                 </div>
 
-                {/* Fecha institucional */}
+                {/* Fecha institucional moderna sin emojis */}
                 <div
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
+                        gap: '8px',
                         fontSize: '12px',
-                        color: '#64748B',
+                        color: '#334155',
                         backgroundColor: '#F8FAFC',
-                        padding: '4px 10px',
-                        borderRadius: '6px',
+                        padding: '6px 14px',
+                        borderRadius: '8px',
                         border: '1px solid #E2E8F0',
-                        fontWeight: '500'
+                        fontWeight: '600',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
                     }}
                 >
-                    <span role="img" aria-label="calendario">📅</span>
+                    <Calendar size={15} color="#2563EB" />
                     <span>{fecha}</span>
                 </div>
             </div>
@@ -207,13 +209,13 @@ export default function Header() {
                     gap: '16px'
                 }}
             >
-                {/* Lado izquierdo: Selectores de Gestión y Periodo */}
+                {/* Lado izquierdo: Selectores modernos de Gestión y Periodo */}
                 <div
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         flexWrap: 'wrap',
-                        gap: '20px'
+                        gap: '18px'
                     }}
                 >
                     {/* Selector de Gestión */}
@@ -227,7 +229,20 @@ export default function Header() {
                         >
                             Gestión:
                         </span>
-                        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                        <div
+                            style={{
+                                position: 'relative',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                background: '#FFFFFF',
+                                border: '1px solid #CBD5E1',
+                                borderRadius: '8px',
+                                padding: '0 10px',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <Layers size={15} color="#2563EB" style={{ marginRight: '6px', flexShrink: 0 }} />
                             <select
                                 id="header-select-gestion"
                                 aria-label="Seleccionar Gestión"
@@ -236,20 +251,15 @@ export default function Header() {
                                 style={{
                                     appearance: 'none',
                                     WebkitAppearance: 'none',
-                                    backgroundColor: '#F8FAFC',
-                                    border: '1px solid #CBD5E1',
-                                    borderRadius: '6px',
-                                    padding: '6px 32px 6px 12px',
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
+                                    padding: '7px 24px 7px 0',
                                     fontSize: '13px',
                                     fontWeight: '600',
                                     color: '#0F172A',
                                     cursor: 'pointer',
-                                    outline: 'none',
-                                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                                    transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+                                    outline: 'none'
                                 }}
-                                onFocus={(e) => (e.target.style.borderColor = '#2563EB')}
-                                onBlur={(e) => (e.target.style.borderColor = '#CBD5E1')}
                             >
                                 {gestiones.map((item) => (
                                     <option key={item.codigo_valor} value={item.codigo_valor}>
@@ -257,17 +267,15 @@ export default function Header() {
                                     </option>
                                 ))}
                             </select>
-                            <span
+                            <ChevronDown
+                                size={14}
+                                color="#64748B"
                                 style={{
                                     position: 'absolute',
                                     right: '10px',
-                                    pointerEvents: 'none',
-                                    fontSize: '10px',
-                                    color: '#64748B'
+                                    pointerEvents: 'none'
                                 }}
-                            >
-                                ▼
-                            </span>
+                            />
                         </div>
                     </div>
 
@@ -282,7 +290,20 @@ export default function Header() {
                         >
                             Periodo:
                         </span>
-                        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                        <div
+                            style={{
+                                position: 'relative',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                background: '#FFFFFF',
+                                border: '1px solid #CBD5E1',
+                                borderRadius: '8px',
+                                padding: '0 10px',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <CalendarDays size={15} color="#2563EB" style={{ marginRight: '6px', flexShrink: 0 }} />
                             <select
                                 id="header-select-periodo"
                                 aria-label="Seleccionar Periodo"
@@ -291,39 +312,32 @@ export default function Header() {
                                 style={{
                                     appearance: 'none',
                                     WebkitAppearance: 'none',
-                                    backgroundColor: '#F8FAFC',
-                                    border: '1px solid #CBD5E1',
-                                    borderRadius: '6px',
-                                    padding: '6px 28px 6px 12px',
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
+                                    padding: '7px 22px 7px 0',
                                     fontSize: '13px',
                                     fontWeight: '600',
                                     color: '#0F172A',
                                     cursor: 'pointer',
-                                    outline: 'none',
-                                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                                    transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+                                    outline: 'none'
                                 }}
-                                onFocus={(e) => (e.target.style.borderColor = '#2563EB')}
-                                onBlur={(e) => (e.target.style.borderColor = '#CBD5E1')}
                             >
                                 <option value="2026">2026</option>
                             </select>
-                            <span
+                            <ChevronDown
+                                size={14}
+                                color="#64748B"
                                 style={{
                                     position: 'absolute',
                                     right: '10px',
-                                    pointerEvents: 'none',
-                                    fontSize: '10px',
-                                    color: '#64748B'
+                                    pointerEvents: 'none'
                                 }}
-                            >
-                                ▼
-                            </span>
+                            />
                         </div>
                     </div>
                 </div>
 
-                {/* Lado derecho: Separador vertical + MI PERFIL y RUC/DNI */}
+                {/* Lado derecho: Separador vertical + Tarjeta de MI PERFIL */}
                 <div
                     style={{
                         display: 'flex',
@@ -335,43 +349,74 @@ export default function Header() {
                         style={{
                             width: '1px',
                             height: '32px',
-                            backgroundColor: '#CBD5E1'
+                            backgroundColor: '#E2E8F0'
                         }}
                     />
 
                     <div
                         style={{
                             display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'flex-end',
-                            textAlign: 'right'
+                            alignItems: 'center',
+                            gap: '10px',
+                            background: '#F8FAFC',
+                            border: '1px solid #E2E8F0',
+                            padding: '6px 14px',
+                            borderRadius: '10px',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
                         }}
                     >
-                        <span
+                        <div
                             style={{
-                                fontSize: '11px',
-                                fontWeight: '700',
-                                color: '#64748B',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '8px',
+                                background: '#EFF6FF',
+                                border: '1px solid #DBEAFE',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
                             }}
                         >
-                            MI PERFIL
-                        </span>
-                        <span
+                            <User size={16} color="#2563EB" />
+                        </div>
+
+                        <div
                             style={{
-                                fontSize: '14px',
-                                fontWeight: '700',
-                                color: '#0F172A',
-                                letterSpacing: '0.02em',
-                                lineHeight: '1.2'
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                textAlign: 'left'
                             }}
                         >
-                            {documentoPerfil || '20123456789'}
-                        </span>
+                            <span
+                                style={{
+                                    fontSize: '10px',
+                                    fontWeight: '700',
+                                    color: '#64748B',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.06em',
+                                    lineHeight: '1.1'
+                                }}
+                            >
+                                MI PERFIL
+                            </span>
+                            <span
+                                style={{
+                                    fontSize: '13px',
+                                    fontWeight: '700',
+                                    color: '#0F172A',
+                                    letterSpacing: '0.02em',
+                                    lineHeight: '1.3'
+                                }}
+                            >
+                                {documentoPerfil || '20123456789'}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
         </header>
     );
-}
+}
+
