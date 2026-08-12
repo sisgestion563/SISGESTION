@@ -216,9 +216,9 @@ export default function DashboardPage() {
     const [calificacion, setCalificacion] = useState(null);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
 
-    // Estado para la gestión seleccionada actualmente
+    // Estado para la gestión seleccionada actualmente (por defecto ALL = Toda la información)
     const [gestionFiltro, setGestionFiltro] = useState(() => {
-        return localStorage.getItem('sisgestion_gestion_actual') || 'GSG';
+        return localStorage.getItem('sisgestion_gestion_actual') || 'ALL';
     });
 
     // Copias de datos brutos para filtrado reactivo
