@@ -193,14 +193,23 @@ const NOMBRES_GRUPOS = {
     'DOC_NOR': 'Gestión SST-MA',
     'DOC_EXT_NOR': 'Gestión de Calidad',
     'DOC_REQ_ESTATAL': 'Gestión Seg. Patrimonial',
-    'DOC_OTROS': 'Gestión Ética'
+    'DOC_OTROS': 'Código Ética'
 };
 
 const GESTION_MAP = {
     'GSG,GMA': { nombre: 'Gestión SST-MA', grupo: 'DOC_NOR', alcances: ['GSG', 'GMA'], kpiMatch: ['SST', 'MA'] },
     'GCA': { nombre: 'Gestión de Calidad', grupo: 'DOC_EXT_NOR', alcances: ['GCA'], kpiMatch: ['CALIDAD'] },
     'GPA': { nombre: 'Gestión Seg. Patrimonial', grupo: 'DOC_REQ_ESTATAL', alcances: ['GPA'], kpiMatch: ['PATRIMONIAL'] },
-    'GTR': { nombre: 'Gestión Ética', grupo: 'DOC_OTROS', alcances: ['GTR'], kpiMatch: ['ETICA'] }
+    'GTR': { nombre: 'Código Ética', grupo: 'DOC_OTROS', alcances: ['GTR'], kpiMatch: ['ETICA'] }
+};
+
+const obtenerNombreMostrado = (gestionRaw) => {
+    const rawUpper = (gestionRaw || '').toUpperCase();
+    if (rawUpper.includes('SST') || rawUpper.includes('MA')) return 'Gestión SST-MA';
+    if (rawUpper.includes('CALIDAD')) return 'Gestión de Calidad';
+    if (rawUpper.includes('PATRIMONIAL')) return 'Gestión Seg. Patrimonial';
+    if (rawUpper.includes('ETICA')) return 'Código Ética';
+    return gestionRaw;
 };
 
 export default function DashboardPage() {
@@ -450,32 +459,37 @@ export default function DashboardPage() {
             if (isAll) {
                 setCalificacion(rawCalificacion);
             } else {
-                const MAX_EXIGIBLES = {
-                    'RG': { 'GSG,GMA': 13, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
-                    'RP': { 'GSG,GMA': 11, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
-                    'RM': { 'GSG,GMA': 8,  'GCA': 1, 'GPA': 1, 'GTR': 1 }
+                const LIMITS_PER_ALCANCE = {
+                    'RG': { 'GSG': 12, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+                    'RP': { 'GSG': 10, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+                    'RM': { 'GSG': 7,  'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 }
                 };
                 const regimen = rawCalificacion.regimen_tributario;
-                
+                const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
+
                 let totalExigible = 0;
+                let totalCappedIngresados = 0;
+
                 gestionesCodeArray.forEach(code => {
-                    totalExigible += (MAX_EXIGIBLES[regimen]?.[code] || 0);
+                    const config = GESTION_MAP[code];
+                    if (config) {
+                        config.alcances.forEach(alcance => {
+                            const exigibleAlcance = limits[alcance] || 0;
+                            totalExigible += exigibleAlcance;
+
+                            const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
+                            const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
+                            const countUploaded = uniqueTypes.size;
+
+                            totalCappedIngresados += Math.min(countUploaded, exigibleAlcance);
+                        });
+                    }
                 });
 
                 if (totalExigible === 0) {
                     setCalificacion(rawCalificacion);
                 } else {
-                    const vigentesParaCalculo = docsFiltrados.filter(d => {
-                        if (!d.fecha_vigencia) return false;
-                        const f = new Date(d.fecha_vigencia);
-                        f.setHours(0, 0, 0, 0);
-                        return f >= hoy && d.estado_documento !== 'C';
-                    });
-                    
-                    const uniqueTypes = new Set(vigentesParaCalculo.map(d => d.tipo_documento_id));
-                    const vigentesUnicos = uniqueTypes.size;
-
-                    let puntajeRaw = (vigentesUnicos / totalExigible) * 100;
+                    let puntajeRaw = (totalCappedIngresados / totalExigible) * 100;
                     if (puntajeRaw > 100) puntajeRaw = 100;
                     
                     let recomendacion = 'NO RECOMENDADO';
@@ -494,7 +508,7 @@ export default function DashboardPage() {
 
                     setCalificacion({
                         ...rawCalificacion,
-                        cantidad_documentos_vigentes: vigentesUnicos,
+                        cantidad_documentos_vigentes: totalCappedIngresados,
                         puntaje_formateado: `${Math.round(puntajeRaw)} / 100`,
                         puntaje_numerico: Math.round(puntajeRaw),
                         recomendacion,
@@ -607,7 +621,7 @@ export default function DashboardPage() {
                                                         const progressColor = pct === 100 ? colors.success : pct >= 50 ? colors.amber : colors.danger;
                                                         return (
                                                             <tr key={index}>
-                                                                <td style={{ ...styles.td, padding: '10px 12px' }}><strong>{kpi.gestion}</strong></td>
+                                                                <td style={{ ...styles.td, padding: '10px 12px' }}><strong>{obtenerNombreMostrado(kpi.gestion)}</strong></td>
                                                                 <td style={{ ...styles.td, padding: '10px 12px' }}>
                                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'center' }}>
                                                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: colors.textMuted }}>
@@ -725,7 +739,7 @@ export default function DashboardPage() {
                             {/* ── MIS DOCUMENTOS (Solo Proveedor, ahora más pequeña en medio) ────────────────────── */}
                             {esProveedor && estadoExpediente && (
                                 <div style={{ ...styles.card, padding: '24px' }}>
-                                    <h2 style={{ ...styles.sectionTitle, textAlign: 'center', marginBottom: '20px', fontSize: '15px', letterSpacing: '0.05em' }}>MIS DOCUMENTOS</h2>
+                                    <h2 style={{ ...styles.sectionTitle, marginBottom: '16px' }}>MIS DOCUMENTOS</h2>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', textAlign: 'center' }}>
                                         {/* REGISTRO DOCUMENTAL */}
                                         {(() => {

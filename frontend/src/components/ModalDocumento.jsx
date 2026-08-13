@@ -181,7 +181,7 @@ export default function ModalDocumento({visible,
 				{ codigo_valor: 'GPA', descripcion: 'GESTIÓN PATRIMONIAL' }
 			],
 			'DOC_OTROS': [
-				{ codigo_valor: 'GTR', descripcion: 'GESTIÓN ÉTICA' }
+				{ codigo_valor: 'GTR', descripcion: 'CÓDIGO ÉTICA' }
 			]
 		};
 
@@ -360,7 +360,7 @@ export default function ModalDocumento({visible,
 					DOC_NOR:'GESTION SST - MTA',
 					DOC_EXT_NOR:'GESTION DE CALIDAD',
 					DOC_REQ_ESTATAL:'GESTION SEG. PATRIMONIAL',
-					DOC_OTROS:'GESTIÓN ÉTICA'
+					DOC_OTROS:'CÓDIGO ÉTICA'
 				};
 
 			const cerrarModal = () => 

@@ -196,9 +196,9 @@ WITH proveedor_info AS (
         proveedor_id, 
         regimen_tributario,
         CASE 
-            WHEN regimen_tributario = 'RG' THEN 12
-            WHEN regimen_tributario = 'RP' THEN 10
-            WHEN regimen_tributario = 'RM' THEN 7
+            WHEN regimen_tributario = 'RG' THEN 13
+            WHEN regimen_tributario = 'RP' THEN 11
+            WHEN regimen_tributario = 'RM' THEN 8
             ELSE NULL
         END as exigible_sst_ma,
         1 as exigible_calidad,
@@ -336,32 +336,64 @@ FROM capped_counts;
 
 const obtenerCalificacionProveedor = async (proveedorId) => {
     const sql = `
-WITH doc_vigentes AS (
+WITH proveedor_info AS (
     SELECT 
-        prov.proveedor_id,
-        prov.regimen_tributario,
-        COUNT(DISTINCT docu.tipo_documento_id) AS cantidad_documentos_vigentes
-    FROM "SISGES"."MAE_PROVEEDOR" prov
-    LEFT JOIN "SISGES"."MOV_DOCUMENTOS" docu 
-        ON prov.proveedor_id = docu.proveedor_id 
-        AND docu.status = 'A'
-        AND docu.fecha_vigencia >= CURRENT_DATE
-    WHERE prov.regimen_tributario IS NOT NULL
-      AND prov.proveedor_id = $1
-    GROUP BY prov.proveedor_id, prov.regimen_tributario
+        proveedor_id, 
+        regimen_tributario,
+        CASE 
+            WHEN regimen_tributario = 'RG' THEN 12
+            WHEN regimen_tributario = 'RP' THEN 10
+            WHEN regimen_tributario = 'RM' THEN 7
+            ELSE 12
+        END as exigible_sst,
+        1 as exigible_ma,
+        1 as exigible_calidad,
+        1 as exigible_patrimonial,
+        1 as exigible_etica,
+        CASE 
+            WHEN regimen_tributario = 'RG' THEN 16
+            WHEN regimen_tributario = 'RP' THEN 14
+            WHEN regimen_tributario = 'RM' THEN 11
+            ELSE 16
+        END as total_exigibles
+    FROM "SISGES"."MAE_PROVEEDOR"
+    WHERE proveedor_id = $1
+),
+doc_counts AS (
+    SELECT
+        p.proveedor_id,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GSG' THEN d.tipo_documento_id END) as reg_sst,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GMA' THEN d.tipo_documento_id END) as reg_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' THEN d.tipo_documento_id END) as reg_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' THEN d.tipo_documento_id END) as reg_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' THEN d.tipo_documento_id END) as reg_etica
+    FROM proveedor_info p
+    LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
+        ON p.proveedor_id = d.proveedor_id AND d.status = 'A'
+    GROUP BY p.proveedor_id
+),
+capped_counts AS (
+    SELECT
+        c.proveedor_id,
+        p.regimen_tributario,
+        p.total_exigibles,
+        (
+            LEAST(c.reg_sst, p.exigible_sst) +
+            LEAST(c.reg_ma, p.exigible_ma) +
+            LEAST(c.reg_calidad, p.exigible_calidad) +
+            LEAST(c.reg_patrimonial, p.exigible_patrimonial) +
+            LEAST(c.reg_etica, p.exigible_etica)
+        ) AS cantidad_documentos_vigentes
+    FROM doc_counts c
+    JOIN proveedor_info p ON c.proveedor_id = p.proveedor_id
 ),
 evaluacion AS (
     SELECT 
         proveedor_id,
         regimen_tributario,
         cantidad_documentos_vigentes,
-        CASE regimen_tributario
-            WHEN 'RG' THEN LEAST((cantidad_documentos_vigentes / 16.0) * 100, 100)
-            WHEN 'RP' THEN LEAST((cantidad_documentos_vigentes / 14.0) * 100, 100)
-            WHEN 'RM' THEN LEAST((cantidad_documentos_vigentes / 11.0) * 100, 100)
-            ELSE 0
-        END AS puntaje_raw
-    FROM doc_vigentes
+        (cantidad_documentos_vigentes::numeric / total_exigibles) * 100 AS puntaje_raw
+    FROM capped_counts
 )
 SELECT 
     proveedor_id,

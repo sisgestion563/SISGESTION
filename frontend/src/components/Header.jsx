@@ -18,9 +18,9 @@ const formatearNombreGestion = (texto) => {
         'GESTIÓN PATRIMONIAL': 'Gestión Patrimonial',
         'GESTION PATRIMONIAL': 'Gestión Patrimonial',
         'GESTIÓN SEG. PATRIMONIAL': 'Gestión Seg. Patrimonial',
-        'GESTIÓN ÉTICA': 'Gestión Ética',
-        'GESTION ETICA': 'Gestión Ética',
-        'GESTIÓN ETICA': 'Gestión Ética'
+        'GESTIÓN ÉTICA': 'Código Ética',
+        'GESTION ETICA': 'Código Ética',
+        'GESTIÓN ETICA': 'Código Ética'
     };
     const upper = texto.trim().toUpperCase();
     if (mapaNombres[upper]) return mapaNombres[upper];
@@ -57,7 +57,7 @@ export default function Header() {
         { codigo_valor: 'GSG,GMA', descripcion: 'Gestión SST-MA' },
         { codigo_valor: 'GCA', descripcion: 'Gestión de Calidad' },
         { codigo_valor: 'GPA', descripcion: 'Gestión Seg. Patrimonial' },
-        { codigo_valor: 'GTR', descripcion: 'Gestión Ética' }
+        { codigo_valor: 'GTR', descripcion: 'Código Ética' }
     ]);
     const [gestionSeleccionada, setGestionSeleccionada] = useState(() => {
         try {
