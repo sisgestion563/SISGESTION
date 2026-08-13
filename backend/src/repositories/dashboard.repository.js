@@ -196,6 +196,13 @@ WITH proveedor_info AS (
         proveedor_id, 
         regimen_tributario,
         CASE 
+            WHEN regimen_tributario = 'RG' THEN 12
+            WHEN regimen_tributario = 'RP' THEN 10
+            WHEN regimen_tributario = 'RM' THEN 7
+            ELSE 12
+        END as exigible_sst,
+        1 as exigible_ma,
+        CASE 
             WHEN regimen_tributario = 'RG' THEN 13
             WHEN regimen_tributario = 'RP' THEN 11
             WHEN regimen_tributario = 'RM' THEN 8
@@ -210,18 +217,21 @@ WITH proveedor_info AS (
 doc_counts AS (
     SELECT
         p.proveedor_id,
-        COUNT(DISTINCT CASE WHEN d.alcance IN ('GSG', 'GMA') THEN d.tipo_documento_id END) as docs_sst_ma,
-        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' THEN d.tipo_documento_id END) as docs_calidad,
-        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' THEN d.tipo_documento_id END) as docs_patrimonial,
-        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' THEN d.tipo_documento_id END) as docs_etica
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GSG' THEN d.tipo_documento_id END) as reg_sst,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GMA' THEN d.tipo_documento_id END) as reg_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' THEN d.tipo_documento_id END) as reg_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' THEN d.tipo_documento_id END) as reg_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' THEN d.tipo_documento_id END) as reg_etica
     FROM proveedor_info p
     LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
       ON p.proveedor_id = d.proveedor_id AND d.status = 'A'
     GROUP BY p.proveedor_id
 )
 SELECT 
-    'SST / MA' as gestion, COALESCE(c.docs_sst_ma, 0) as documentos_registrados, p.exigible_sst_ma as documentos_exigibles,
-    ROUND(LEAST((COALESCE(c.docs_sst_ma, 0)::numeric / NULLIF(p.exigible_sst_ma, 0)) * 100, 100), 2) as porcentaje
+    'SST / MA' as gestion, 
+    (LEAST(c.reg_sst, p.exigible_sst) + LEAST(c.reg_ma, p.exigible_ma)) as documentos_registrados, 
+    p.exigible_sst_ma as documentos_exigibles,
+    ROUND(LEAST(((LEAST(c.reg_sst, p.exigible_sst) + LEAST(c.reg_ma, p.exigible_ma))::numeric / NULLIF(p.exigible_sst_ma, 0)) * 100, 100), 2) as porcentaje
 FROM proveedor_info p LEFT JOIN doc_counts c ON p.proveedor_id = c.proveedor_id
 UNION ALL
 SELECT 
