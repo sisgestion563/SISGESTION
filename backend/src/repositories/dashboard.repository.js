@@ -136,6 +136,8 @@ const obtenerProveedoresVencidos = async () => {
     return result.rows;
 };
 
+
+
 const obtenerDocumentosProximosVencer = async () => {
 
     const sql = `
@@ -189,6 +191,8 @@ const obtenerDocumentosProximosVencer = async () => {
     return result.rows;
 };
 
+
+//mi desempeño por gestion
 const obtenerCumplimientoPorGestion = async (proveedorId) => {
     const sql = `
 WITH proveedor_info AS (
@@ -253,6 +257,8 @@ FROM proveedor_info p LEFT JOIN doc_counts c ON p.proveedor_id = c.proveedor_id;
     return result.rows;
 };
 
+
+//estado EXPEDIENTE
 const obtenerEstadoExpediente = async (proveedorId) => {
     const sql = `
 WITH proveedor_info AS (
@@ -344,6 +350,7 @@ FROM capped_counts;
     return result.rows[0];
 };
 
+//Mi calificacion
 const obtenerCalificacionProveedor = async (proveedorId) => {
     const sql = `
 WITH proveedor_info AS (
