@@ -464,7 +464,7 @@ export default function DashboardPage() {
                     'RP': { 'GSG': 10, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
                     'RM': { 'GSG': 7,  'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 }
                 };
-                const regimen = rawCalificacion.regimen_tributario;
+                const regimen = rawCalificacion.regimen_tributario_codigo || rawCalificacion.regimen_tributario;
                 const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
 
                 let totalExigible = 0;

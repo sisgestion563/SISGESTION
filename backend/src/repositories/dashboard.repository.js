@@ -338,12 +338,13 @@ const obtenerCalificacionProveedor = async (proveedorId) => {
     const sql = `
 WITH proveedor_info AS (
     SELECT 
-        proveedor_id, 
-        regimen_tributario,
+        p.proveedor_id, 
+        p.regimen_tributario AS regimen_tributario_codigo,
+        COALESCE(reg_trib.descripcion, p.regimen_tributario::varchar) AS regimen_tributario,
         CASE 
-            WHEN regimen_tributario = 'RG' THEN 12
-            WHEN regimen_tributario = 'RP' THEN 10
-            WHEN regimen_tributario = 'RM' THEN 7
+            WHEN p.regimen_tributario = 'RG' THEN 12
+            WHEN p.regimen_tributario = 'RP' THEN 10
+            WHEN p.regimen_tributario = 'RM' THEN 7
             ELSE 12
         END as exigible_sst,
         1 as exigible_ma,
@@ -351,13 +352,17 @@ WITH proveedor_info AS (
         1 as exigible_patrimonial,
         1 as exigible_etica,
         CASE 
-            WHEN regimen_tributario = 'RG' THEN 16
-            WHEN regimen_tributario = 'RP' THEN 14
-            WHEN regimen_tributario = 'RM' THEN 11
+            WHEN p.regimen_tributario = 'RG' THEN 16
+            WHEN p.regimen_tributario = 'RP' THEN 14
+            WHEN p.regimen_tributario = 'RM' THEN 11
             ELSE 16
         END as total_exigibles
-    FROM "SISGES"."MAE_PROVEEDOR"
-    WHERE proveedor_id = $1
+    FROM "SISGES"."MAE_PROVEEDOR" p
+    LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib 
+        ON reg_trib.cod_grupo = '0100' 
+        AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' 
+        AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
+    WHERE p.proveedor_id = $1
 ),
 doc_counts AS (
     SELECT
@@ -376,6 +381,7 @@ capped_counts AS (
     SELECT
         c.proveedor_id,
         p.regimen_tributario,
+        p.regimen_tributario_codigo,
         p.total_exigibles,
         (
             LEAST(c.reg_sst, p.exigible_sst) +
@@ -391,6 +397,7 @@ evaluacion AS (
     SELECT 
         proveedor_id,
         regimen_tributario,
+        regimen_tributario_codigo,
         cantidad_documentos_vigentes,
         (cantidad_documentos_vigentes::numeric / total_exigibles) * 100 AS puntaje_raw
     FROM capped_counts
@@ -398,6 +405,7 @@ evaluacion AS (
 SELECT 
     proveedor_id,
     regimen_tributario,
+    regimen_tributario_codigo,
     cantidad_documentos_vigentes,
     CAST(ROUND(puntaje_raw, 0) AS VARCHAR) || ' / 100' AS puntaje_formateado,
     ROUND(puntaje_raw, 0) AS puntaje_numerico,
