@@ -197,11 +197,10 @@ const NOMBRES_GRUPOS = {
 };
 
 const GESTION_MAP = {
-    'GSG': { nombre: 'Gestión SST', grupo: 'DOC_NOR', alcances: ['GSG'], kpiMatch: 'SST' },
-    'GMA': { nombre: 'Gestión MA', grupo: 'DOC_NOR', alcances: ['GMA'], kpiMatch: 'MA' },
-    'GCA': { nombre: 'Gestión de Calidad', grupo: 'DOC_EXT_NOR', alcances: ['GCA'], kpiMatch: 'CALIDAD' },
-    'GPA': { nombre: 'Gestión Seg. Patrimonial', grupo: 'DOC_REQ_ESTATAL', alcances: ['GPA'], kpiMatch: 'PATRIMONIAL' },
-    'GTR': { nombre: 'Gestión Ética', grupo: 'DOC_OTROS', alcances: ['GTR'], kpiMatch: 'ETICA' }
+    'GSG,GMA': { nombre: 'Gestión SST-MA', grupo: 'DOC_NOR', alcances: ['GSG', 'GMA'], kpiMatch: ['SST', 'MA'] },
+    'GCA': { nombre: 'Gestión de Calidad', grupo: 'DOC_EXT_NOR', alcances: ['GCA'], kpiMatch: ['CALIDAD'] },
+    'GPA': { nombre: 'Gestión Seg. Patrimonial', grupo: 'DOC_REQ_ESTATAL', alcances: ['GPA'], kpiMatch: ['PATRIMONIAL'] },
+    'GTR': { nombre: 'Gestión Ética', grupo: 'DOC_OTROS', alcances: ['GTR'], kpiMatch: ['ETICA'] }
 };
 
 export default function DashboardPage() {
@@ -216,14 +215,22 @@ export default function DashboardPage() {
     const [calificacion, setCalificacion] = useState(null);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
 
-    // Estado para la gestión seleccionada actualmente (por defecto ALL = Toda la información)
+    // Estado para la gestión seleccionada actualmente (por defecto ['ALL'] = Toda la información)
     const [gestionFiltro, setGestionFiltro] = useState(() => {
-        return localStorage.getItem('sisgestion_gestion_actual') || 'ALL';
+        try {
+            const raw = localStorage.getItem('sisgestion_gestion_actual');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed;
+            }
+        } catch { }
+        return ['ALL'];
     });
 
     // Copias de datos brutos para filtrado reactivo
     const [rawDocsProveedor, setRawDocsProveedor] = useState([]);
     const [rawKpisProveedor, setRawKpisProveedor] = useState([]);
+    const [rawCalificacion, setRawCalificacion] = useState(null);
     const [rawAdminGrupos, setRawAdminGrupos] = useState([]);
     const [rawAdminProximos, setRawAdminProximos] = useState([]);
     const [rawAdminResumen, setRawAdminResumen] = useState(null);
@@ -240,7 +247,7 @@ export default function DashboardPage() {
     useEffect(() => {
         const handleGestionChange = (e) => {
             if (e.detail) {
-                setGestionFiltro(e.detail);
+                setGestionFiltro(Array.isArray(e.detail) ? e.detail : [e.detail]);
             }
         };
         window.addEventListener('sisgestion:gestion_change', handleGestionChange);
@@ -262,7 +269,7 @@ export default function DashboardPage() {
         } else {
             aplicarFiltroAdmin(rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, gestionFiltro);
         }
-    }, [gestionFiltro, rawDocsProveedor, rawKpisProveedor, rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, esProveedor]);
+    }, [gestionFiltro, rawDocsProveedor, rawKpisProveedor, rawCalificacion, rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, esProveedor]);
 
     // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
     async function cargarDashboardAdmin() {
@@ -281,11 +288,11 @@ export default function DashboardPage() {
         }
     };
 
-    const aplicarFiltroAdmin = (rawGrupos, rawProximosList, rawEstadosList, rawRes, gestionCode) => {
+    const aplicarFiltroAdmin = (rawGrupos, rawProximosList, rawEstadosList, rawRes, gestionesCodeArray) => {
         if (!rawGrupos) return;
-        const config = GESTION_MAP[gestionCode];
+        const isAll = !gestionesCodeArray || gestionesCodeArray.length === 0 || gestionesCodeArray.includes('ALL');
 
-        if (!config) {
+        if (isAll) {
             setResumen(rawRes);
             setGrupos(rawGrupos);
             setEstados(rawEstadosList);
@@ -293,16 +300,19 @@ export default function DashboardPage() {
             return;
         }
 
+        const configs = gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
+        const gruposPermitidos = configs.map(c => c.grupo);
+
         // Filtrar próximos a vencer por grupo asociado a la gestión
         const proximosFiltrados = (rawProximosList || []).filter(item => {
-            return !item.grupo_documentos || item.grupo_documentos === config.grupo;
+            return !item.grupo_documentos || gruposPermitidos.includes(item.grupo_documentos);
         });
         setProximos(proximosFiltrados);
 
         // Filtrar grupos
-        const grupoEncontrado = (rawGrupos || []).filter(g => g.grupo_documentos === config.grupo);
-        if (grupoEncontrado.length > 0) {
-            setGrupos(grupoEncontrado);
+        const gruposEncontrados = (rawGrupos || []).filter(g => gruposPermitidos.includes(g.grupo_documentos));
+        if (gruposEncontrados.length > 0) {
+            setGrupos(gruposEncontrados);
         } else {
             setGrupos(rawGrupos);
         }
@@ -337,7 +347,8 @@ export default function DashboardPage() {
             setEstadoExpediente(dataEstado);
 
             const dataCalificacion = await obtenerCalificacionProveedor(miProveedorId);
-            setCalificacion(dataCalificacion);
+            setRawCalificacion(dataCalificacion);
+            // setCalificacion is handled inside aplicarFiltroProveedor which is triggered by rawCalificacion change
         } catch (error) {
             console.error("Error consolidando indicadores de proveedor:", error);
         } finally {
@@ -345,20 +356,23 @@ export default function DashboardPage() {
         }
     };
 
-    const aplicarFiltroProveedor = (acumuladoDocs, dataKpis, gestionCode) => {
+    const aplicarFiltroProveedor = (acumuladoDocs, dataKpis, gestionesCodeArray) => {
         if (!acumuladoDocs) return;
 
-        const config = GESTION_MAP[gestionCode];
+        const isAll = !gestionesCodeArray || gestionesCodeArray.length === 0 || gestionesCodeArray.includes('ALL');
+        const configs = isAll ? [] : gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
 
         // Filtrar documentos según la gestión seleccionada
-        const docsFiltrados = config
-            ? acumuladoDocs.filter(d => {
-                if (d.alcance) {
-                    return config.alcances.includes(d.alcance);
-                }
-                return d.grupo_documentos === config.grupo;
-            })
-            : acumuladoDocs;
+        const docsFiltrados = isAll
+            ? acumuladoDocs
+            : acumuladoDocs.filter(d => {
+                return configs.some(config => {
+                    if (d.alcance) {
+                        return config.alcances.includes(d.alcance);
+                    }
+                    return d.grupo_documentos === config.grupo;
+                });
+            });
 
         // Separación de documentos por estatus evaluando fecha_vigencia
         const hoy = new Date();
@@ -386,11 +400,15 @@ export default function DashboardPage() {
         });
 
         // Gráficos de grupo según filtro
-        if (config) {
-            setGrupos([{
-                descripcion: config.nombre,
-                cantidad: docsFiltrados.length
-            }]);
+        if (!isAll && configs.length > 0) {
+            const gruposEstadistica = configs.map(config => {
+                const count = docsFiltrados.filter(d => {
+                    if (d.alcance) return config.alcances.includes(d.alcance);
+                    return d.grupo_documentos === config.grupo;
+                }).length;
+                return { descripcion: config.nombre, cantidad: count };
+            });
+            setGrupos(gruposEstadistica);
         } else {
             const estadisticaGrupos = CODIGOS_GRUPOS.map(grupoCode => {
                 const count = acumuladoDocs.filter(d => d.grupo_documentos === grupoCode).length;
@@ -417,14 +435,74 @@ export default function DashboardPage() {
         setProximos(alertasVencimiento);
 
         // Filtrar o resaltar KPIs de gestión
-        if (config && dataKpis && dataKpis.length > 0) {
+        if (!isAll && configs.length > 0 && dataKpis && dataKpis.length > 0) {
             const kpisFiltrados = dataKpis.filter(kpi => {
                 const nombreUpper = (kpi.gestion || '').toUpperCase();
-                return nombreUpper.includes(config.kpiMatch);
+                return configs.some(config => config.kpiMatch.some(match => nombreUpper.includes(match)));
             });
             setKpisGestion(kpisFiltrados.length > 0 ? kpisFiltrados : dataKpis);
         } else {
             setKpisGestion(dataKpis || []);
+        }
+
+        // Calificación Dinámica
+        if (rawCalificacion) {
+            if (isAll) {
+                setCalificacion(rawCalificacion);
+            } else {
+                const MAX_EXIGIBLES = {
+                    'RG': { 'GSG,GMA': 13, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+                    'RP': { 'GSG,GMA': 11, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+                    'RM': { 'GSG,GMA': 8,  'GCA': 1, 'GPA': 1, 'GTR': 1 }
+                };
+                const regimen = rawCalificacion.regimen_tributario;
+                
+                let totalExigible = 0;
+                gestionesCodeArray.forEach(code => {
+                    totalExigible += (MAX_EXIGIBLES[regimen]?.[code] || 0);
+                });
+
+                if (totalExigible === 0) {
+                    setCalificacion(rawCalificacion);
+                } else {
+                    const vigentesParaCalculo = docsFiltrados.filter(d => {
+                        if (!d.fecha_vigencia) return false;
+                        const f = new Date(d.fecha_vigencia);
+                        f.setHours(0, 0, 0, 0);
+                        return f >= hoy && d.estado_documento !== 'C';
+                    });
+                    
+                    const uniqueTypes = new Set(vigentesParaCalculo.map(d => d.tipo_documento_id));
+                    const vigentesUnicos = uniqueTypes.size;
+
+                    let puntajeRaw = (vigentesUnicos / totalExigible) * 100;
+                    if (puntajeRaw > 100) puntajeRaw = 100;
+                    
+                    let recomendacion = 'NO RECOMENDADO';
+                    let nivel = 'BAJO';
+                    let desc = 'Presentas un bajo nivel de registro y vigencia documental';
+                    
+                    if (puntajeRaw > 90) {
+                        recomendacion = 'RECOMENDADO';
+                        nivel = 'ALTO';
+                        desc = 'Mantienes un alto nivel de registro y vigencia documental';
+                    } else if (puntajeRaw >= 75) {
+                        recomendacion = 'RECOMENDADO CON RESTRICCIONES';
+                        nivel = 'MEDIO';
+                        desc = 'Mantienes un nivel aceptable de registro y vigencia documental';
+                    }
+
+                    setCalificacion({
+                        ...rawCalificacion,
+                        cantidad_documentos_vigentes: vigentesUnicos,
+                        puntaje_formateado: `${Math.round(puntajeRaw)} / 100`,
+                        puntaje_numerico: Math.round(puntajeRaw),
+                        recomendacion,
+                        nivel_documental: nivel,
+                        descripcion_nivel: desc
+                    });
+                }
+            }
         }
     };
 
@@ -517,9 +595,10 @@ export default function DashboardPage() {
                                             <table style={{ ...styles.table, marginTop: 0 }}>
                                                 <thead>
                                                     <tr>
-                                                        <th style={{ ...styles.th, width: '30%', padding: '8px 12px' }}>Gestión</th>
-                                                        <th style={{ ...styles.th, width: '50%', padding: '8px 12px' }}>Estado de Avance</th>
-                                                        <th style={{ ...styles.th, textAlign: 'right', width: '20%', padding: '8px 12px' }}>Cumplimiento</th>
+                                                        <th style={{ ...styles.th, width: '25%', padding: '8px 12px' }}>Gestión</th>
+                                                        <th style={{ ...styles.th, width: '45%', padding: '8px 12px' }}>Estado de Avance</th>
+                                                        <th style={{ ...styles.th, textAlign: 'center', width: '20%', padding: '8px 12px' }}>Cumplimiento</th>
+                                                        <th style={{ ...styles.th, textAlign: 'center', width: '10%', padding: '8px 12px' }}>Acción</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -539,10 +618,32 @@ export default function DashboardPage() {
                                                                         </div>
                                                                     </div>
                                                                 </td>
-                                                                <td style={{ ...styles.td, textAlign: 'right', padding: '10px 12px' }}>
+                                                                <td style={{ ...styles.td, textAlign: 'center', padding: '10px 12px' }}>
                                                                     <span style={styles.badge(pct === 100 ? colors.successBg : pct >= 50 ? '#fef3c7' : colors.dangerBg, pct === 100 ? colors.success : pct >= 50 ? '#b45309' : colors.danger)}>
                                                                         {pct.toFixed(2)}%
                                                                     </span>
+                                                                </td>
+                                                                <td style={{ ...styles.td, textAlign: 'center', padding: '10px 12px' }}>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            let gestionKey = 'ALL';
+                                                                            for (const [key, value] of Object.entries(GESTION_MAP)) {
+                                                                                if (value.kpiMatch.some(match => kpi.gestion.toUpperCase().includes(match))) {
+                                                                                    gestionKey = key;
+                                                                                    break;
+                                                                                }
+                                                                            }
+                                                                            localStorage.setItem('sisgestion_gestion_actual', JSON.stringify([gestionKey]));
+                                                                            window.dispatchEvent(new CustomEvent('sisgestion:gestion_change', { detail: [gestionKey] }));
+                                                                            navigate('/documents');
+                                                                        }}
+                                                                        title="Ver documentos"
+                                                                        style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '6px', padding: '6px 10px', color: '#1D4ED8', cursor: 'pointer', transition: 'all 0.2s' }}
+                                                                        onMouseOver={(e) => e.currentTarget.style.background = '#DBEAFE'}
+                                                                        onMouseOut={(e) => e.currentTarget.style.background = '#EFF6FF'}
+                                                                    >
+                                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         );
@@ -561,34 +662,47 @@ export default function DashboardPage() {
 
                             {/* ── Calificación de Proveedor ─────────────────────────── */}
                             {esProveedor && calificacion && (
-                                <div style={{ ...styles.card, borderLeft: `6px solid ${calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? colors.amber : colors.danger}`, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
-                                        <div>
+                                <div style={{ 
+                                    ...styles.card, 
+                                    border: calificacion.nivel_documental === 'BAJO' ? `2px solid ${colors.danger}` : `1px solid ${colors.border}`,
+                                    borderLeft: `6px solid ${calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? colors.amber : colors.danger}`, 
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    gap: '16px',
+                                    background: calificacion.nivel_documental === 'BAJO' ? '#FEF2F2' : colors.card
+                                }}>
+                                    <div style={{ display: 'flex', flexDirection: calificacion.nivel_documental === 'BAJO' ? 'column' : 'row', justifyContent: 'space-between', alignItems: calificacion.nivel_documental === 'BAJO' ? 'center' : 'flex-start', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px', gap: calificacion.nivel_documental === 'BAJO' ? '12px' : '0' }}>
+                                        <div style={{ textAlign: calificacion.nivel_documental === 'BAJO' ? 'center' : 'left' }}>
                                             <h2 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                MI CALIFICACIÓN
+                                                MI CALIFICACIÓN - <span style={{ color: colors.primary }}>{usuarioLogueado?.username || 'PROVEEDOR'}</span>
                                             </h2>
                                             <p style={{ fontSize: '13px', color: colors.textMuted, margin: '4px 0 0 0' }}>
                                                 Régimen Tributario: <strong>{calificacion.regimen_tributario}</strong>
                                             </p>
                                         </div>
-                                        <div style={{ textAlign: 'right' }}>
+                                        <div style={{ textAlign: 'center' }}>
                                             <span style={{ 
                                                 ...styles.badge(
-                                                    calificacion.nivel_documental === 'ALTO' ? colors.successBg : calificacion.nivel_documental === 'MEDIO' ? '#fef3c7' : colors.dangerBg, 
-                                                    calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? '#b45309' : colors.danger
+                                                    calificacion.nivel_documental === 'ALTO' ? colors.successBg : calificacion.nivel_documental === 'MEDIO' ? '#fef3c7' : colors.danger, 
+                                                    calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? '#b45309' : '#FFFFFF'
                                                 ), 
-                                                fontSize: '14px', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px'
+                                                fontSize: calificacion.nivel_documental === 'BAJO' ? '16px' : '14px', 
+                                                padding: calificacion.nivel_documental === 'BAJO' ? '8px 24px' : '6px 16px', 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                gap: '8px',
+                                                boxShadow: calificacion.nivel_documental === 'BAJO' ? '0 4px 6px -1px rgba(220, 38, 38, 0.2)' : 'none'
                                             }}>
                                                 {calificacion.nivel_documental === 'ALTO' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>}
                                                 {calificacion.nivel_documental === 'MEDIO' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>}
-                                                {calificacion.nivel_documental === 'BAJO' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>}
+                                                {calificacion.nivel_documental === 'BAJO' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>}
                                                 {calificacion.recomendacion}
                                             </span>
                                         </div>
                                     </div>
                                     
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', padding: '20px', borderRadius: '12px', minWidth: '150px' }}>
+                                    <div style={{ display: 'flex', flexDirection: calificacion.nivel_documental === 'BAJO' ? 'column' : 'row', alignItems: 'center', gap: calificacion.nivel_documental === 'BAJO' ? '16px' : '30px', textAlign: calificacion.nivel_documental === 'BAJO' ? 'center' : 'left' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: calificacion.nivel_documental === 'BAJO' ? '#FFFFFF' : '#f8fafc', padding: '20px', borderRadius: '12px', minWidth: '150px', border: calificacion.nivel_documental === 'BAJO' ? `1px solid ${colors.danger}` : 'none' }}>
                                             <span style={{ fontSize: '32px', fontWeight: 900, color: calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? '#b45309' : colors.danger, lineHeight: '1' }}>
                                                 {calificacion.puntaje_formateado.split(' ')[0]}
                                             </span>
@@ -597,7 +711,7 @@ export default function DashboardPage() {
                                             </span>
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: colors.text, margin: '0 0 8px 0' }}>
+                                            <h3 style={{ fontSize: '16px', fontWeight: 700, color: calificacion.nivel_documental === 'BAJO' ? colors.danger : colors.text, margin: '0 0 8px 0' }}>
                                                 Nivel de Gestión Documental: {calificacion.nivel_documental}
                                             </h3>
                                             <p style={{ fontSize: '15px', color: colors.textMuted, margin: 0, lineHeight: '1.5' }}>

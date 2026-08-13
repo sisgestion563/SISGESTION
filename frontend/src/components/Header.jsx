@@ -54,15 +54,22 @@ export default function Header() {
 
     // 4. Estados para catálogo de gestiones y gestión seleccionada
     const [gestiones, setGestiones] = useState([
-        { codigo_valor: 'GSG', descripcion: 'Gestión SST' },
-        { codigo_valor: 'GMA', descripcion: 'Gestión MA' },
+        { codigo_valor: 'GSG,GMA', descripcion: 'Gestión SST-MA' },
         { codigo_valor: 'GCA', descripcion: 'Gestión de Calidad' },
-        { codigo_valor: 'GPA', descripcion: 'Gestión Patrimonial' },
+        { codigo_valor: 'GPA', descripcion: 'Gestión Seg. Patrimonial' },
         { codigo_valor: 'GTR', descripcion: 'Gestión Ética' }
     ]);
     const [gestionSeleccionada, setGestionSeleccionada] = useState(() => {
-        return localStorage.getItem('sisgestion_gestion_actual') || 'ALL';
+        try {
+            const raw = localStorage.getItem('sisgestion_gestion_actual');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed;
+            }
+        } catch { }
+        return ['ALL'];
     });
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     // 5. Estado para Periodo (fijo en 2026)
     const [periodo, setPeriodo] = useState('2026');
@@ -104,11 +111,20 @@ export default function Header() {
             try {
                 const data = await obtenerCatalogo('0099', 'TIPO_GESTION');
                 if (isMounted && Array.isArray(data) && data.length > 0) {
-                    const gestionesFormateadas = data.map(item => ({
-                        codigo_valor: item.codigo_valor,
-                        descripcion: formatearNombreGestion(item.descripcion)
-                    }));
-                    setGestiones(gestionesFormateadas);
+                    const gestionesBase = data
+                        .filter(item => item.codigo_valor !== 'GSG' && item.codigo_valor !== 'GMA')
+                        .map(item => ({
+                            codigo_valor: item.codigo_valor,
+                            descripcion: formatearNombreGestion(item.descripcion)
+                        }));
+                    
+                    const hasSST = data.some(item => item.codigo_valor === 'GSG');
+                    const hasMA = data.some(item => item.codigo_valor === 'GMA');
+                    if (hasSST || hasMA) {
+                        gestionesBase.unshift({ codigo_valor: 'GSG,GMA', descripcion: 'Gestión SST-MA' });
+                    }
+                    
+                    setGestiones(gestionesBase);
                 }
             } catch (error) {
                 console.error('Error al cargar catálogo de gestiones desde backend:', error);
@@ -118,19 +134,50 @@ export default function Header() {
         return () => { isMounted = false; };
     }, []);
 
-    const cambiarGestion = (valor) => {
-        setGestionSeleccionada(valor);
-        localStorage.setItem('sisgestion_gestion_actual', valor);
-        window.dispatchEvent(new CustomEvent('sisgestion:gestion_change', { detail: valor }));
+    const cambiarGestion = (nuevosValores) => {
+        setGestionSeleccionada(nuevosValores);
+        localStorage.setItem('sisgestion_gestion_actual', JSON.stringify(nuevosValores));
+        window.dispatchEvent(new CustomEvent('sisgestion:gestion_change', { detail: nuevosValores }));
     };
 
-    const handleGestionChange = (e) => {
-        cambiarGestion(e.target.value);
+    const toggleGestion = (valor) => {
+        if (valor === 'ALL') {
+            cambiarGestion(['ALL']);
+            setDropdownOpen(false);
+            return;
+        }
+
+        let seleccionActual = gestionSeleccionada.includes('ALL') ? [] : [...gestionSeleccionada];
+
+        if (seleccionActual.includes(valor)) {
+            seleccionActual = seleccionActual.filter(v => v !== valor);
+        } else {
+            seleccionActual.push(valor);
+        }
+
+        if (seleccionActual.length === 0) {
+            seleccionActual = ['ALL'];
+        }
+
+        cambiarGestion(seleccionActual);
     };
 
     const limpiarFiltro = () => {
-        cambiarGestion('ALL');
+        cambiarGestion(['ALL']);
     };
+    
+    // Cerrar dropdown si se hace clic fuera
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (!e.target.closest('.gestion-dropdown-container')) {
+                setDropdownOpen(false);
+            }
+        };
+        if (dropdownOpen) {
+            window.addEventListener('click', handleClickOutside);
+        }
+        return () => window.removeEventListener('click', handleClickOutside);
+    }, [dropdownOpen]);
 
     return (
         <header
@@ -241,6 +288,7 @@ export default function Header() {
                             Gestión:
                         </span>
                         <div
+                            className="gestion-dropdown-container"
                             style={{
                                 position: 'relative',
                                 display: 'inline-flex',
@@ -248,51 +296,80 @@ export default function Header() {
                                 background: '#FFFFFF',
                                 border: '1px solid #CBD5E1',
                                 borderRadius: '8px',
-                                padding: '0 10px',
+                                padding: '6px 10px',
                                 boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                                transition: 'all 0.2s ease'
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                minWidth: '180px',
+                                userSelect: 'none'
                             }}
+                            onClick={() => setDropdownOpen(!dropdownOpen)}
                         >
-                            <Layers size={15} color="#2563EB" style={{ marginRight: '6px', flexShrink: 0 }} />
-                            <select
-                                id="header-select-gestion"
-                                aria-label="Seleccionar Gestión"
-                                value={gestionSeleccionada}
-                                onChange={handleGestionChange}
-                                style={{
-                                    appearance: 'none',
-                                    WebkitAppearance: 'none',
-                                    backgroundColor: 'transparent',
-                                    border: 'none',
-                                    padding: '7px 24px 7px 0',
-                                    fontSize: '13px',
-                                    fontWeight: '600',
-                                    color: '#0F172A',
-                                    cursor: 'pointer',
-                                    outline: 'none'
-                                }}
-                            >
-                                <option value="ALL">Todas las Gestiones</option>
-                                {gestiones.map((item) => (
-                                    <option key={item.codigo_valor} value={item.codigo_valor}>
-                                        {item.descripcion}
-                                    </option>
-                                ))}
-                            </select>
+                            <Layers size={15} color="#2563EB" style={{ marginRight: '8px', flexShrink: 0 }} />
+                            <div style={{ flex: 1, fontSize: '13px', fontWeight: '600', color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {gestionSeleccionada.includes('ALL') 
+                                    ? 'Todas las Gestiones' 
+                                    : gestionSeleccionada.length === 1 
+                                        ? gestiones.find(g => g.codigo_valor === gestionSeleccionada[0])?.descripcion || '1 Selección' 
+                                        : `${gestionSeleccionada.length} Seleccionadas`}
+                            </div>
                             <ChevronDown
                                 size={14}
                                 color="#64748B"
-                                style={{
-                                    position: 'absolute',
-                                    right: '10px',
-                                    pointerEvents: 'none'
-                                }}
+                                style={{ marginLeft: '8px', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}
                             />
+                            
+                            {dropdownOpen && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: 0,
+                                    marginTop: '4px',
+                                    width: '240px',
+                                    background: '#FFFFFF',
+                                    border: '1px solid #E2E8F0',
+                                    borderRadius: '8px',
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                    zIndex: 50,
+                                    padding: '8px 0',
+                                    display: 'flex',
+                                    flexDirection: 'column'
+                                }}>
+                                    <div 
+                                        style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', cursor: 'pointer', background: gestionSeleccionada.includes('ALL') ? '#EFF6FF' : 'transparent' }}
+                                        onClick={(e) => { e.stopPropagation(); toggleGestion('ALL'); }}
+                                    >
+                                        <input 
+                                            type="checkbox" 
+                                            checked={gestionSeleccionada.includes('ALL')}
+                                            readOnly
+                                            style={{ marginRight: '10px', width: '14px', height: '14px', cursor: 'pointer' }}
+                                        />
+                                        <span style={{ fontSize: '13px', fontWeight: '500', color: '#1E293B' }}>Todas las Gestiones</span>
+                                    </div>
+                                    <div style={{ height: '1px', background: '#E2E8F0', margin: '4px 0' }}></div>
+                                    {gestiones.map((item) => (
+                                        <div 
+                                            key={item.codigo_valor}
+                                            style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', cursor: 'pointer', background: gestionSeleccionada.includes(item.codigo_valor) ? '#EFF6FF' : 'transparent' }}
+                                            onClick={(e) => { e.stopPropagation(); toggleGestion(item.codigo_valor); }}
+                                        >
+                                            <input 
+                                                type="checkbox" 
+                                                checked={gestionSeleccionada.includes(item.codigo_valor)}
+                                                readOnly
+                                                style={{ marginRight: '10px', width: '14px', height: '14px', cursor: 'pointer' }}
+                                            />
+                                            <span style={{ fontSize: '13px', fontWeight: '500', color: '#1E293B' }}>{item.descripcion}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Botón para eliminar filtro si está activo */}
-                    {gestionSeleccionada !== 'ALL' && (
+                    {!gestionSeleccionada.includes('ALL') && (
                         <button
                             onClick={limpiarFiltro}
                             title="Eliminar filtro y ver toda la información"
