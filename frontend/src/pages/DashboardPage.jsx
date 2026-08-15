@@ -27,6 +27,7 @@ import {
 
 // Reutilizamos el servicio para listar los expedientes por grupo corporativo
 import { listarPorGrupo } from '../services/documentos.service';
+import { obtenerProveedorPorId } from '../services/providers.service';
 
 const formatearFechaLocal = (fechaString) => {
     if (!fechaString) return '';
@@ -223,6 +224,7 @@ export default function DashboardPage() {
     const [estadoExpediente, setEstadoExpediente] = useState(null);
     const [calificacion, setCalificacion] = useState(null);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
+    const [proveedorInfo, setProveedorInfo] = useState(null);
 
     // Estado para la gestión seleccionada actualmente (por defecto ['ALL'] = Toda la información)
     const [gestionFiltro, setGestionFiltro] = useState(() => {
@@ -270,6 +272,17 @@ export default function DashboardPage() {
             cargarDashboardAdmin();
         }
     }, [esProveedor, miProveedorId]);
+
+    // Cargar información de la razón social del proveedor
+    useEffect(() => {
+        if (miProveedorId) {
+            obtenerProveedorPorId(miProveedorId)
+                .then(data => {
+                    setProveedorInfo(data);
+                })
+                .catch(err => console.error("Error al obtener info de proveedor:", err));
+        }
+    }, [miProveedorId]);
 
     // Reaccionar al cambio de gestión para filtrar los datos en pantalla
     useEffect(() => {
@@ -408,6 +421,76 @@ export default function DashboardPage() {
             total_documentos: docsFiltrados.length
         });
 
+        // ── Recalcular estadoExpediente para "MIS DOCUMENTOS"
+        const regimen = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || 'RG';
+        const LIMITS_PER_ALCANCE = {
+            'RG': { 'GSG': 12, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+            'RP': { 'GSG': 10, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+            'RM': { 'GSG': 7,  'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 }
+        };
+        const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
+
+        const activeAlcances = isAll
+            ? ['GSG', 'GMA', 'GCA', 'GPA', 'GTR']
+            : configs.reduce((acc, config) => [...acc, ...config.alcances], []);
+
+        let totalExigibles = 0;
+        let totalRegistrados = 0;
+        let totalVigentesCapped = 0;
+
+        activeAlcances.forEach(alcance => {
+            const exigibleAlcance = limits[alcance] || 0;
+            totalExigibles += exigibleAlcance;
+
+            const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
+            const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
+            const countUploaded = uniqueTypes.size;
+            totalRegistrados += Math.min(countUploaded, exigibleAlcance);
+
+            const docsVigentesAlcance = docsAlcance.filter(d => {
+                if (!d.fecha_vigencia) return false;
+                const f = new Date(d.fecha_vigencia);
+                f.setHours(0, 0, 0, 0);
+                return f >= hoy;
+            });
+            const uniqueVigentesTypes = new Set(docsVigentesAlcance.map(d => d.tipo_documento_id));
+            const countVigentes = uniqueVigentesTypes.size;
+            totalVigentesCapped += Math.min(countVigentes, exigibleAlcance);
+        });
+
+        const unDiaMs = 86400000;
+        const hoyMas7 = new Date(hoy.getTime() + 7 * unDiaMs);
+
+        const vencidosAbs = docsFiltrados.filter(d => {
+            if (!d.fecha_vigencia) return false;
+            const f = new Date(d.fecha_vigencia);
+            f.setHours(0, 0, 0, 0);
+            return f < hoy;
+        }).length;
+
+        const porVencerAbs = docsFiltrados.filter(d => {
+            if (!d.fecha_vigencia) return false;
+            const f = new Date(d.fecha_vigencia);
+            f.setHours(0, 0, 0, 0);
+            return f >= hoy && f <= hoyMas7;
+        }).length;
+
+        const vigentesAbs = docsFiltrados.filter(d => {
+            if (!d.fecha_vigencia) return false;
+            const f = new Date(d.fecha_vigencia);
+            f.setHours(0, 0, 0, 0);
+            return f >= hoy;
+        }).length;
+
+        setEstadoExpediente({
+            total_exigibles: totalExigibles,
+            total_registrados: totalRegistrados,
+            vigentes_para_porcentaje: totalVigentesCapped,
+            vencidos: vencidosAbs,
+            por_vencer: porVencerAbs,
+            vigentes: vigentesAbs
+        });
+
         // Gráficos de grupo según filtro
         if (!isAll && configs.length > 0) {
             const gruposEstadistica = configs.map(config => {
@@ -459,11 +542,6 @@ export default function DashboardPage() {
             if (isAll) {
                 setCalificacion(rawCalificacion);
             } else {
-                const LIMITS_PER_ALCANCE = {
-                    'RG': { 'GSG': 12, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
-                    'RP': { 'GSG': 10, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
-                    'RM': { 'GSG': 7,  'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 }
-                };
                 const regimen = rawCalificacion.regimen_tributario_codigo || rawCalificacion.regimen_tributario;
                 const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
 
@@ -539,8 +617,8 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                 <div>
                     <h1 style={styles.heading}>
-                        {esProveedor
-                            ? `Panel de Control - ${usuarioLogueado?.username}`
+                        {esProveedor || esConsultor
+                            ? `Panel de Control - ${proveedorInfo?.razon_social || proveedorInfo?.proveedor || usuarioLogueado?.username || ''} - ${esProveedor ? 'Proveedor' : 'Consultor'}`
                             : 'Dashboard SISGESTION'}
                     </h1>
                     <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
@@ -688,7 +766,7 @@ export default function DashboardPage() {
                                     <div style={{ display: 'flex', flexDirection: calificacion.nivel_documental === 'BAJO' ? 'column' : 'row', justifyContent: 'space-between', alignItems: calificacion.nivel_documental === 'BAJO' ? 'center' : 'flex-start', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px', gap: calificacion.nivel_documental === 'BAJO' ? '12px' : '0' }}>
                                         <div style={{ textAlign: calificacion.nivel_documental === 'BAJO' ? 'center' : 'left' }}>
                                             <h2 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                MI CALIFICACIÓN - <span style={{ color: colors.primary }}>{usuarioLogueado?.username || 'PROVEEDOR'}</span>
+                                                MI CALIFICACIÓN - <span style={{ color: colors.primary }}>{proveedorInfo?.razon_social || proveedorInfo?.proveedor || usuarioLogueado?.username || 'PROVEEDOR'}</span>
                                             </h2>
                                             <p style={{ fontSize: '13px', color: colors.textMuted, margin: '4px 0 0 0' }}>
                                                 Régimen Tributario: <strong>{calificacion.regimen_tributario}</strong>
@@ -732,6 +810,20 @@ export default function DashboardPage() {
                                                 {calificacion.descripcion_nivel}
                                             </p>
                                         </div>
+                                    </div>
+                                    <div style={{ 
+                                        borderTop: `1px solid ${colors.border}`, 
+                                        paddingTop: '12px', 
+                                        marginTop: '4px',
+                                        fontSize: '12px', 
+                                        color: colors.textMuted, 
+                                        fontStyle: 'italic',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: colors.primary }}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        <span>Cómo me ven los clientes</span>
                                     </div>
                                 </div>
                             )}

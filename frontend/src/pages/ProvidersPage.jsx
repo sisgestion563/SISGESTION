@@ -1015,6 +1015,24 @@ export default function ProvidersPage() {
                         </div>
                     </div>
 
+                    <div style={{
+                        background: '#eff6ff',
+                        border: '1px solid #bfdbfe',
+                        borderLeft: '4px solid #2563eb',
+                        borderRadius: '8px',
+                        padding: '14px 18px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#1e40af',
+                        marginBottom: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px'
+                    }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <span>Ahora proceda a registrar su información en documentos después de completar el llenado de su ficha.</span>
+                    </div>
+
                     <div style={styles.card}>
                         <h3 style={{ margin: '0 0 25px 0', fontSize: '16px', fontWeight: '700', color: colors.text, borderBottom: `1px solid ${colors.border}`, paddingBottom: '10px' }}>
                             Información del Proveedor
