@@ -302,6 +302,19 @@ export default function ModalDocumento({visible,
 					}
 				}
 
+				// Validation 1.5: Max 2 documents for Gestión MA (GMA)
+				if (form.alcance === 'GMA') {
+					const docsGMA = documentosExistentes.filter(d => 
+						d.alcance === 'GMA' && 
+						d.estado_documento !== 'INACTIVO' &&
+						(modo === 'NUEVO' || d.documento_id !== documento?.documento_id)
+					);
+					if (docsGMA.length >= 2) {
+						setErrorMessage('Solo se permite ingresar un máximo de 2 documentos para la Gestión MA.');
+						return;
+					}
+				}
+
 				// Validation 2: Fecha de vigencia must be > current date
 				const vigenciaStr = form.fecha_vigencia.split('T')[0];
 				const currentDate = new Date();
@@ -495,6 +508,11 @@ export default function ModalDocumento({visible,
 											)
 							}
 						</select>
+						{form.alcance === 'GMA' && (
+							<span style={{ fontSize: '11px', color: colors.textMuted, marginTop: '2px' }}>
+								ℹ️ Máximo 2 documentos permitidos para la Gestión MA.
+							</span>
+						)}
 					</div>
 
                     <div style={styles.field}>

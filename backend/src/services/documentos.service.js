@@ -23,6 +23,14 @@ const crear = async (documento) =>
 				throw new Error('Fecha Vigencia es obligatoria');
 			}
 
+		if (documento.alcance === 'GMA') {
+			const existing = await repository.listarPorProveedor(documento.proveedor_id);
+			const countGMA = existing.filter(d => d.alcance === 'GMA').length;
+			if (countGMA >= 2) {
+				throw new Error('Solo se permite ingresar un máximo de 2 documentos para la Gestión MA.');
+			}
+		}
+
 		switch(documento.grupo_documentos)
 			{        
 				case 'DOC_NOR':
@@ -97,6 +105,16 @@ const actualizar = async (documentoId,documento) =>
 			{
 				throw new Error('Fecha Vigencia es obligatoria');
 			}
+
+		if (documento.alcance === 'GMA') {
+			const existingDoc = await repository.obtenerPorId(documentoId);
+			const proveedorId = documento.proveedor_id || existingDoc.proveedor_id;
+			const existing = await repository.listarPorProveedor(proveedorId);
+			const countGMA = existing.filter(d => d.alcance === 'GMA' && String(d.documento_id) !== String(documentoId)).length;
+			if (countGMA >= 2) {
+				throw new Error('Solo se permite ingresar un máximo de 2 documentos para la Gestión MA.');
+			}
+		}
 
 		switch(documento.grupo_documentos)
 			{        
