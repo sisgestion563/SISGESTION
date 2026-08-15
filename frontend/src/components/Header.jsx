@@ -516,7 +516,11 @@ export default function Header() {
                                     lineHeight: '1.1'
                                 }}
                             >
-                                MI PERFIL
+                                {usuario?.rol_codigo === 'PROVEEDOR'
+                                    ? 'PROVEEDOR'
+                                    : usuario?.rol_codigo === 'CONSULTOR'
+                                        ? 'CONSULTOR'
+                                        : 'MI PERFIL'}
                             </span>
                             <span
                                 style={{

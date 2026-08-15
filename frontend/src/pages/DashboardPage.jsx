@@ -284,6 +284,15 @@ export default function DashboardPage() {
         }
     }, [miProveedorId]);
 
+    const obtenerIdentidadProveedor = () => {
+        if (!proveedorInfo) return usuarioLogueado?.username || '';
+        if (proveedorInfo.tipo_documento === '06' || proveedorInfo.razon_social) {
+            return proveedorInfo.razon_social || proveedorInfo.proveedor || usuarioLogueado?.username || '';
+        }
+        const nombresCompletos = `${proveedorInfo.nombre || ''} ${proveedorInfo.apellido_paterno || ''} ${proveedorInfo.apellido_materno || ''}`.trim();
+        return nombresCompletos || proveedorInfo.proveedor || usuarioLogueado?.username || '';
+    };
+
     // Reaccionar al cambio de gestión para filtrar los datos en pantalla
     useEffect(() => {
         if (esProveedor) {
@@ -618,7 +627,7 @@ export default function DashboardPage() {
                 <div>
                     <h1 style={styles.heading}>
                         {esProveedor || esConsultor
-                            ? `Panel de Control - ${proveedorInfo?.razon_social || proveedorInfo?.proveedor || usuarioLogueado?.username || ''} - ${esProveedor ? 'Proveedor' : 'Consultor'}`
+                            ? `Panel de Control - ${obtenerIdentidadProveedor()}`
                             : 'Dashboard SISGESTION'}
                     </h1>
                     <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
@@ -766,7 +775,7 @@ export default function DashboardPage() {
                                     <div style={{ display: 'flex', flexDirection: calificacion.nivel_documental === 'BAJO' ? 'column' : 'row', justifyContent: 'space-between', alignItems: calificacion.nivel_documental === 'BAJO' ? 'center' : 'flex-start', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px', gap: calificacion.nivel_documental === 'BAJO' ? '12px' : '0' }}>
                                         <div style={{ textAlign: calificacion.nivel_documental === 'BAJO' ? 'center' : 'left' }}>
                                             <h2 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                MI CALIFICACIÓN - <span style={{ color: colors.primary }}>{proveedorInfo?.razon_social || proveedorInfo?.proveedor || usuarioLogueado?.username || 'PROVEEDOR'}</span>
+                                                MI CALIFICACIÓN - <span style={{ color: colors.primary }}>{obtenerIdentidadProveedor()}</span>
                                             </h2>
                                             <p style={{ fontSize: '13px', color: colors.textMuted, margin: '4px 0 0 0' }}>
                                                 Régimen Tributario: <strong>{calificacion.regimen_tributario}</strong>
@@ -813,17 +822,29 @@ export default function DashboardPage() {
                                     </div>
                                     <div style={{ 
                                         borderTop: `1px solid ${colors.border}`, 
-                                        paddingTop: '12px', 
-                                        marginTop: '4px',
-                                        fontSize: '12px', 
-                                        color: colors.textMuted, 
-                                        fontStyle: 'italic',
+                                        paddingTop: '18px', 
+                                        marginTop: '24px',
                                         display: 'flex',
+                                        justifyContent: 'center',
                                         alignItems: 'center',
-                                        gap: '6px'
+                                        gap: '8px'
                                     }}>
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: colors.primary }}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                        <span>Cómo me ven los clientes</span>
+                                        <span style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            background: '#eff6ff',
+                                            border: '1px solid #bfdbfe',
+                                            padding: '6px 16px',
+                                            borderRadius: '999px',
+                                            fontSize: '13px',
+                                            fontWeight: '700',
+                                            color: '#1d4ed8',
+                                            boxShadow: '0 1px 2px rgba(37, 99, 235, 0.05)'
+                                        }}>
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                            Cómo me ven los clientes
+                                        </span>
                                     </div>
                                 </div>
                             )}
