@@ -12,7 +12,8 @@ const {
 
 const {
     listarGrupos,
-    listarValores
+    listarValores,
+    listarPeriodos
 } = require(
     '../controllers/catalogos.controller'
 );
@@ -21,6 +22,12 @@ router.get(
     '/catalogos/grupos',
     authenticateToken,
     listarGrupos
+);
+
+router.get(
+    '/catalogos/periodos',
+    authenticateToken,
+    listarPeriodos
 );
 
 router.get(

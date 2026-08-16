@@ -10,4 +10,9 @@ const obtenerValores = async (codGrupo,tipoGrupo) =>
 		return await repository.obtenerValores(codGrupo,tipoGrupo);
 	};
 
-module.exports = {obtenerGrupos,obtenerValores};
+const obtenerPeriodos = async () =>
+	{
+		return await repository.obtenerPeriodos();
+	};
+
+module.exports = {obtenerGrupos,obtenerValores,obtenerPeriodos};

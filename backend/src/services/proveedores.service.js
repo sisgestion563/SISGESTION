@@ -154,12 +154,14 @@ const obtenerMisDatos = async (
 
 const buscarProveedor = async (
     tipo,
-    valor
+    valor,
+    periodo
 ) => {
 
     return await repository.buscarProveedor(
         tipo,
-        valor
+        valor,
+        periodo
     );
 
 };

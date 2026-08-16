@@ -1245,6 +1245,12 @@ export default function ProvidersPage() {
                                         : (proveedores[0]?.descripcion_regimen_tributario || proveedores[0]?.regimen_tributario || 'No especificado')}
                                 </div>
                             </div>
+                            {proveedores[0]?.periodo && (
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>PERIODO</label>
+                                    <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0].periodo}</div>
+                                </div>
+                            )}
                             <div>
                                 <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NRO. TRABAJADORES</label>
                                 <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>

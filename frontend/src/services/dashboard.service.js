@@ -12,12 +12,15 @@ const getHeaders = () => ({
 });
 
 export const obtenerResumen =
-async () => {
+async (periodo) => {
 
     const response =
         await api.get(
             '/dashboard/resumen',
-            getHeaders()
+            {
+                ...getHeaders(),
+                params: { periodo }
+            }
         );
 
     return response.data.data;
@@ -25,12 +28,15 @@ async () => {
 };
 
 export const obtenerDocumentosPorGrupo =
-async () => {
+async (periodo) => {
 
     const response =
         await api.get(
             '/dashboard/documentos-por-grupo',
-            getHeaders()
+            {
+                ...getHeaders(),
+                params: { periodo }
+            }
         );
 
     return response.data.data;
@@ -38,12 +44,15 @@ async () => {
 };
 
 export const obtenerDocumentosPorEstado =
-async () => {
+async (periodo) => {
 
     const response =
         await api.get(
             '/dashboard/documentos-por-estado',
-            getHeaders()
+            {
+                ...getHeaders(),
+                params: { periodo }
+            }
         );
 
     return response.data.data;
@@ -51,12 +60,15 @@ async () => {
 };
 
 export const obtenerProximosVencer =
-async () => {
+async (periodo) => {
 
     const response =
         await api.get(
             '/dashboard/proximos-vencer',
-            getHeaders()
+            {
+                ...getHeaders(),
+                params: { periodo }
+            }
         );
 
     return response.data.data;

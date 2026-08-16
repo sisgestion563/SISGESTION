@@ -52,6 +52,13 @@ export default function ModalVerProveedor({
                             <td>{proveedor.proveedor_id}</td>
                         </tr>
 
+                        {proveedor.periodo && (
+                            <tr>
+                                <td><b>Periodo</b></td>
+                                <td>{proveedor.periodo}</td>
+                            </tr>
+                        )}
+
                         <tr>
                             <td><b>Tipo Empresa</b></td>
                             <td>

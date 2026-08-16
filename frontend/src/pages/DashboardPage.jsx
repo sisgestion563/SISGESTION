@@ -225,6 +225,9 @@ export default function DashboardPage() {
     const [calificacion, setCalificacion] = useState(null);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
     const [proveedorInfo, setProveedorInfo] = useState(null);
+    const [periodoFiltro, setPeriodoFiltro] = useState(() => {
+        return localStorage.getItem('sisgestion_periodo_actual') || '2026';
+    });
 
     // Estado para la gestión seleccionada actualmente (por defecto ['ALL'] = Toda la información)
     const [gestionFiltro, setGestionFiltro] = useState(() => {
@@ -265,13 +268,24 @@ export default function DashboardPage() {
         return () => window.removeEventListener('sisgestion:gestion_change', handleGestionChange);
     }, []);
 
+    // Escucha de cambios de periodo desde el Header
+    useEffect(() => {
+        const handlePeriodoChange = (e) => {
+            if (e.detail) {
+                setPeriodoFiltro(e.detail);
+            }
+        };
+        window.addEventListener('sisgestion:periodo_change', handlePeriodoChange);
+        return () => window.removeEventListener('sisgestion:periodo_change', handlePeriodoChange);
+    }, []);
+
     useEffect(() => {
         if (esProveedor) {
             cargarDashboardProveedor();
         } else {
-            cargarDashboardAdmin();
+            cargarDashboardAdmin(periodoFiltro);
         }
-    }, [esProveedor, miProveedorId]);
+    }, [esProveedor, miProveedorId, periodoFiltro]);
 
     // Cargar información de la razón social del proveedor
     useEffect(() => {
@@ -303,12 +317,12 @@ export default function DashboardPage() {
     }, [gestionFiltro, rawDocsProveedor, rawKpisProveedor, rawCalificacion, rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, esProveedor]);
 
     // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
-    async function cargarDashboardAdmin() {
+    async function cargarDashboardAdmin(periodo) {
         try {
-            const resumenData = await obtenerResumen();
-            const gruposData = await obtenerDocumentosPorGrupo();
-            const estadosData = await obtenerDocumentosPorEstado();
-            const proximosData = await obtenerProximosVencer();
+            const resumenData = await obtenerResumen(periodo);
+            const gruposData = await obtenerDocumentosPorGrupo(periodo);
+            const estadosData = await obtenerDocumentosPorEstado(periodo);
+            const proximosData = await obtenerProximosVencer(periodo);
 
             setRawAdminResumen(resumenData);
             setRawAdminGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));

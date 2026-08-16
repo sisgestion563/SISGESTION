@@ -2,42 +2,42 @@ const repository =
 require('../repositories/dashboard.repository');
 
 const obtenerResumen =
-async () => {
+async (periodo) => {
 
     return await repository
-        .obtenerResumen();
+        .obtenerResumen(periodo);
 
 };
 
 const obtenerDocumentosPorGrupo =
-async () => {
+async (periodo) => {
 
     return await repository
-        .obtenerDocumentosPorGrupo();
+        .obtenerDocumentosPorGrupo(periodo);
 
 };
 
 const obtenerDocumentosPorEstado =
-async () => {
+async (periodo) => {
 
     return await repository
-        .obtenerDocumentosPorEstado();
+        .obtenerDocumentosPorEstado(periodo);
 
 };
 
 const obtenerProveedoresVencidos =
-async () => {
+async (periodo) => {
 
     return await repository
-        .obtenerProveedoresVencidos();
+        .obtenerProveedoresVencidos(periodo);
 
 };
 
 const obtenerDocumentosProximosVencer =
-async () => {
+async (periodo) => {
 
     return await repository
-        .obtenerDocumentosProximosVencer();
+        .obtenerDocumentosProximosVencer(periodo);
 
 };
 const obtenerCumplimientoPorGestion = async (proveedorId) => {

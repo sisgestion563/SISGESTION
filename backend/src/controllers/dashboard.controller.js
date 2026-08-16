@@ -8,7 +8,7 @@ async (req,res) => {
 
         const data =
             await service
-                .obtenerResumen();
+                .obtenerResumen(req.query.periodo);
 
         return res.status(200).json({
             success:true,
@@ -34,7 +34,7 @@ async (req,res) => {
 
         const data =
             await service
-                .obtenerDocumentosPorGrupo();
+                .obtenerDocumentosPorGrupo(req.query.periodo);
 
         return res.status(200).json({
             success:true,
@@ -60,7 +60,7 @@ async (req,res) => {
 
         const data =
             await service
-                .obtenerDocumentosPorEstado();
+                .obtenerDocumentosPorEstado(req.query.periodo);
 
         return res.status(200).json({
             success:true,
@@ -86,7 +86,7 @@ async (req,res) => {
 
         const data =
             await service
-                .obtenerProveedoresVencidos();
+                .obtenerProveedoresVencidos(req.query.periodo);
 
         return res.status(200).json({
             success:true,
@@ -112,7 +112,7 @@ async (req,res) => {
 
         const data =
             await service
-                .obtenerDocumentosProximosVencer();
+                .obtenerDocumentosProximosVencer(req.query.periodo);
 
         return res.status(200).json({
             success:true,

@@ -303,6 +303,9 @@ export default function DocumentsPage() {
 		// ── Estado ──────────────────────────────────────────────────────────────
 		const [tipoBusqueda,setTipoBusqueda] = useState('RAZON');
 		const [valorBusqueda,setValorBusqueda] = useState('');
+		const [periodoFiltro, setPeriodoFiltro] = useState(() => {
+			return localStorage.getItem('sisgestion_periodo_actual') || '2026';
+		});
 		const [proveedores,setProveedores] = useState([]);
 		const [proveedorSeleccionado,setProveedorSeleccionado] = useState(null);
 		const [grupoSeleccionado,setGrupoSeleccionado] = useState('');
@@ -441,14 +444,18 @@ export default function DocumentsPage() {
 		// ── Búsqueda (solo ADMIN / CONSULTOR) ───────────────────────────────────
 		const buscar = async () => {
 				try {
-						const data = await buscarProveedor(tipoBusqueda,valorBusqueda);
+						const data = await buscarProveedor(tipoBusqueda, valorBusqueda, periodoFiltro);
 						if(tipoBusqueda === 'DOCUMENTO') {
 								setProveedorSeleccionado(data);
 								setProveedores([]);
-								await cargarDocumentos(data.proveedor_id,grupoSeleccionado);
+								if (data) {
+									await cargarDocumentos(data.proveedor_id, grupoSeleccionado);
+								} else {
+									setDocumentos([]);
+								}
 							}
 						else {
-								setProveedores(data);
+								setProveedores(data || []);
 								setProveedorSeleccionado(null);
 							}
 					}
@@ -480,6 +487,20 @@ export default function DocumentsPage() {
 		// ── Efectos iniciales ────────────────────────────────────────────────────
 		useEffect(() => {
 			cargarGrupos();
+		}, []);
+ 
+		useEffect(() => {
+			const handlePeriodoChange = (e) => {
+				if (e.detail) {
+					setPeriodoFiltro(e.detail);
+					// Limpiar la selección de proveedor actual al cambiar el periodo
+					setProveedorSeleccionado(null);
+					setProveedores([]);
+					setDocumentos([]);
+				}
+			};
+			window.addEventListener('sisgestion:periodo_change', handlePeriodoChange);
+			return () => window.removeEventListener('sisgestion:periodo_change', handlePeriodoChange);
 		}, []);
 
 		// Una vez que los grupos están listos, si es PROVEEDOR auto-cargamos sus docs

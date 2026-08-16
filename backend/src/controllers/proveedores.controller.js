@@ -152,7 +152,8 @@ const buscarProveedor = async (
         const data =
             await service.buscarProveedor(
                 req.params.tipo,
-                req.params.valor
+                req.params.valor,
+                req.query.periodo
             );
 
         return res.status(200).json({

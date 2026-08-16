@@ -45,9 +45,21 @@ const obtenerValores = async (
 };
 
 
+const obtenerPeriodos = async () => {
+    const sql = `
+        SELECT DISTINCT periodo
+        FROM "SISGES"."MAE_PERIODO"
+        WHERE status = 'A'
+        ORDER BY periodo DESC
+    `;
+    const result = await pool.query(sql);
+    return result.rows;
+};
+
 module.exports = {
     obtenerGrupos,
-    obtenerValores
+    obtenerValores,
+    obtenerPeriodos
 };
 
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layers, CalendarDays, Calendar, User, ChevronDown, RotateCcw } from 'lucide-react';
-import { obtenerCatalogo } from '../services/catalogos.service';
+import { obtenerCatalogo, obtenerPeriodos } from '../services/catalogos.service';
 import { obtenerProveedorPorId } from '../services/providers.service';
 
 /**
@@ -71,8 +71,45 @@ export default function Header() {
     });
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    // 5. Estado para Periodo (fijo en 2026)
-    const [periodo, setPeriodo] = useState('2026');
+    // 5. Estado para Periodo
+    const [periodo, setPeriodo] = useState(() => {
+        return localStorage.getItem('sisgestion_periodo_actual') || '2026';
+    });
+    const [periodosList, setPeriodosList] = useState([]);
+    
+    const mostrarFiltroPeriodo = window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/documents');
+
+    // Cargar periodos desde base de datos
+    useEffect(() => {
+        let isMounted = true;
+        const cargarPeriodos = async () => {
+            try {
+                const list = await obtenerPeriodos();
+                if (isMounted && Array.isArray(list) && list.length > 0) {
+                    setPeriodosList(list);
+                    const saved = localStorage.getItem('sisgestion_periodo_actual');
+                    const exists = list.some(p => p.periodo === saved);
+                    if (!exists) {
+                        const defaultPeriod = list[0].periodo;
+                        setPeriodo(defaultPeriod);
+                        localStorage.setItem('sisgestion_periodo_actual', defaultPeriod);
+                    }
+                }
+            } catch (error) {
+                console.error('Error al cargar periodos:', error);
+            }
+        };
+        if (mostrarFiltroPeriodo) {
+            cargarPeriodos();
+        }
+        return () => { isMounted = false; };
+    }, [mostrarFiltroPeriodo]);
+
+    const cambiarPeriodo = (nuevoPeriodo) => {
+        setPeriodo(nuevoPeriodo);
+        localStorage.setItem('sisgestion_periodo_actual', nuevoPeriodo);
+        window.dispatchEvent(new CustomEvent('sisgestion:periodo_change', { detail: nuevoPeriodo }));
+    };
 
     // Sincronizar selección si se limpia desde el Dashboard
     useEffect(() => {
@@ -397,61 +434,71 @@ export default function Header() {
                     )}
 
                     {/* Selector de Periodo */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span
-                            style={{
-                                fontSize: '13px',
-                                fontWeight: '700',
-                                color: '#1E293B'
-                            }}
-                        >
-                            Periodo:
-                        </span>
-                        <div
-                            style={{
-                                position: 'relative',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                background: '#FFFFFF',
-                                border: '1px solid #CBD5E1',
-                                borderRadius: '8px',
-                                padding: '0 10px',
-                                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                                transition: 'all 0.2s ease'
-                            }}
-                        >
-                            <CalendarDays size={15} color="#2563EB" style={{ marginRight: '6px', flexShrink: 0 }} />
-                            <select
-                                id="header-select-periodo"
-                                aria-label="Seleccionar Periodo"
-                                value={periodo}
-                                onChange={(e) => setPeriodo(e.target.value)}
+                    {mostrarFiltroPeriodo && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span
                                 style={{
-                                    appearance: 'none',
-                                    WebkitAppearance: 'none',
-                                    backgroundColor: 'transparent',
-                                    border: 'none',
-                                    padding: '7px 22px 7px 0',
                                     fontSize: '13px',
-                                    fontWeight: '600',
-                                    color: '#0F172A',
-                                    cursor: 'pointer',
-                                    outline: 'none'
+                                    fontWeight: '700',
+                                    color: '#1E293B'
                                 }}
                             >
-                                <option value="2026">2026</option>
-                            </select>
-                            <ChevronDown
-                                size={14}
-                                color="#64748B"
+                                Periodo:
+                            </span>
+                            <div
                                 style={{
-                                    position: 'absolute',
-                                    right: '10px',
-                                    pointerEvents: 'none'
+                                    position: 'relative',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    background: '#FFFFFF',
+                                    border: '1px solid #CBD5E1',
+                                    borderRadius: '8px',
+                                    padding: '0 10px',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                    transition: 'all 0.2s ease'
                                 }}
-                            />
+                            >
+                                <CalendarDays size={15} color="#2563EB" style={{ marginRight: '6px', flexShrink: 0 }} />
+                                <select
+                                    id="header-select-periodo"
+                                    aria-label="Seleccionar Periodo"
+                                    value={periodo}
+                                    onChange={(e) => cambiarPeriodo(e.target.value)}
+                                    style={{
+                                        appearance: 'none',
+                                        WebkitAppearance: 'none',
+                                        backgroundColor: 'transparent',
+                                        border: 'none',
+                                        padding: '7px 22px 7px 0',
+                                        fontSize: '13px',
+                                        fontWeight: '600',
+                                        color: '#0F172A',
+                                        cursor: 'pointer',
+                                        outline: 'none'
+                                    }}
+                                >
+                                    {periodosList.length > 0 ? (
+                                        periodosList.map(p => (
+                                            <option key={p.periodo} value={p.periodo}>
+                                                {p.periodo}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option value="2026">2026</option>
+                                    )}
+                                </select>
+                                <ChevronDown
+                                    size={14}
+                                    color="#64748B"
+                                    style={{
+                                        position: 'absolute',
+                                        right: '10px',
+                                        pointerEvents: 'none'
+                                    }}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Lado derecho: Separador vertical + Tarjeta de MI PERFIL */}

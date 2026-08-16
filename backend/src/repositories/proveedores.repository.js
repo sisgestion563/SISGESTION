@@ -186,7 +186,8 @@ const listar = async (campo = 'ALL', valor = '') => {
 
             ${SQL_ESTADO_DOCUMENTOS} AS estado_documentos,
 
-            ${SQL_ESTADO} AS estado
+            ${SQL_ESTADO} AS estado,
+            MPRO.periodo
 
         FROM "SISGES"."MAE_PROVEEDOR" MPRO
 
@@ -269,6 +270,8 @@ const existeProveedor = async (
 
 const crear = async (proveedor) => {
 
+    const periodo = await obtenerPeriodoPara2026();
+
     const sql = `
         INSERT INTO "SISGES"."MAE_PROVEEDOR"
         (
@@ -294,7 +297,8 @@ const crear = async (proveedor) => {
             status,
             nro_trabajadores,
             create_date,
-            create_by
+            create_by,
+            periodo
         )
         VALUES
         (
@@ -304,7 +308,8 @@ const crear = async (proveedor) => {
             $17,$18,$19,
             $20,
             CURRENT_DATE,
-            $21
+            $21,
+            $22
         )
         RETURNING proveedor_id
     `;
@@ -330,7 +335,8 @@ const crear = async (proveedor) => {
         proveedor.representante_legal,
         proveedor.status || 'A',
         proveedor.nro_trabajadores,
-        proveedor.create_by
+        proveedor.create_by,
+        periodo
     ];
 
     // 1. Insertamos el proveedor y recuperamos el ID numérico generado por la secuencia
@@ -431,13 +437,20 @@ const obtenerPorUsuario = async (
 
     return result.rows[0];
 };
-
 const buscarProveedor = async (
     tipo,
-    valor
+    valor,
+    periodo
 ) => {
 
     let sql = '';
+    const params = [valor];
+    let periodWhere = '';
+
+    if (periodo) {
+        params.push(periodo);
+        periodWhere = ' AND p.periodo = $2';
+    }
 
     if(tipo === 'DOCUMENTO'){
 
@@ -456,21 +469,21 @@ const buscarProveedor = async (
                AND c.codigo_valor::varchar = p.ciiu::varchar
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib 
                 ON reg_trib.cod_grupo = '0100' 
-               AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' 
-               AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
+                AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' 
+                AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" tipo_doc 
                 ON tipo_doc.cod_grupo = '0001' 
-               AND tipo_doc.tipo_grupo = 'TIPO_DOC_SUNAT' 
-               AND tipo_doc.codigo_valor::varchar = p.tipo_documento::varchar
+                AND tipo_doc.tipo_grupo = 'TIPO_DOC_SUNAT' 
+                AND tipo_doc.codigo_valor::varchar = p.tipo_documento::varchar
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" status_prov 
                 ON status_prov.cod_grupo = '0000' 
-               AND status_prov.tipo_grupo = 'STATUS_PROVEEDOR' 
-               AND status_prov.codigo_valor::varchar = p.status::varchar
+                AND status_prov.tipo_grupo = 'STATUS_PROVEEDOR' 
+                AND status_prov.codigo_valor::varchar = p.status::varchar
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" nro_trab 
                 ON nro_trab.cod_grupo = '0101' 
-               AND nro_trab.tipo_grupo = 'TIPO_NRO_TRABAJADORES' 
-               AND nro_trab.codigo_valor::varchar = p.nro_trabajadores::varchar
-            WHERE p.nro_documento = $1
+                AND nro_trab.tipo_grupo = 'TIPO_NRO_TRABAJADORES' 
+                AND nro_trab.codigo_valor::varchar = p.nro_trabajadores::varchar
+            WHERE p.nro_documento = $1 ${periodWhere}
         `;
 
     }
@@ -491,52 +504,49 @@ const buscarProveedor = async (
                AND c.codigo_valor::varchar = p.ciiu::varchar
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib 
                 ON reg_trib.cod_grupo = '0100' 
-               AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' 
-               AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
+                AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' 
+                AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" tipo_doc 
                 ON tipo_doc.cod_grupo = '0001' 
-               AND tipo_doc.tipo_grupo = 'TIPO_DOC_SUNAT' 
-               AND tipo_doc.codigo_valor::varchar = p.tipo_documento::varchar
+                AND tipo_doc.tipo_grupo = 'TIPO_DOC_SUNAT' 
+                AND tipo_doc.codigo_valor::varchar = p.tipo_documento::varchar
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" status_prov 
                 ON status_prov.cod_grupo = '0000' 
-               AND status_prov.tipo_grupo = 'STATUS_PROVEEDOR' 
-               AND status_prov.codigo_valor::varchar = p.status::varchar
+                AND status_prov.tipo_grupo = 'STATUS_PROVEEDOR' 
+                AND status_prov.codigo_valor::varchar = p.status::varchar
             LEFT JOIN "SISGES"."MAE_LISTA_VALORES" nro_trab 
                 ON nro_trab.cod_grupo = '0101' 
-               AND nro_trab.tipo_grupo = 'TIPO_NRO_TRABAJADORES' 
-               AND nro_trab.codigo_valor::varchar = p.nro_trabajadores::varchar
+                AND nro_trab.tipo_grupo = 'TIPO_NRO_TRABAJADORES' 
+                AND nro_trab.codigo_valor::varchar = p.nro_trabajadores::varchar
             WHERE
-(
-    COALESCE(p.razon_social,'')
-    || ' ' ||
-    COALESCE(p.nombre,'')
-    || ' ' ||
-    COALESCE(p.apellido_paterno,'')
-    || ' ' ||
-    COALESCE(p.apellido_materno,'')
-)
-ILIKE '%' || $1 || '%'
-ORDER BY
-    p.razon_social,
-    p.nombre,
-    p.apellido_paterno            
+            (
+                COALESCE(p.razon_social,'')
+                || ' ' ||
+                COALESCE(p.nombre,'')
+                || ' ' ||
+                COALESCE(p.apellido_paterno,'')
+                || ' ' ||
+                COALESCE(p.apellido_materno,'')
+            )
+            ILIKE '%' || $1 || '%'
+            ${periodWhere}
+            ORDER BY
+                p.razon_social,
+                p.nombre,
+                p.apellido_paterno            
         `;
 
     }
 
-   const result =
-    await pool.query(
-        sql,
-        [valor]
-    );
+    const result = await pool.query(sql, params);
 
-if(tipo === 'DOCUMENTO'){
+    if(tipo === 'DOCUMENTO'){
 
-    return result.rows[0];
+        return result.rows[0];
 
-}
+    }
 
-return result.rows;
+    return result.rows;
 
 };
 //EROMAN 07062026
@@ -608,6 +618,34 @@ const crearClientes = async (proveedorId, clientes, usuarioId) => {
     }
 };
 
+const obtenerPeriodoPara2026 = async () => {
+    const currentYear = new Date().getFullYear();
+    if (currentYear === 2026) {
+        const sql = `
+            SELECT periodo
+            FROM "SISGES"."MAE_PERIODO"
+            WHERE status = 'A'
+              AND CURRENT_DATE BETWEEN fecha_inicio AND fecha_fin
+            LIMIT 1
+        `;
+        const result = await pool.query(sql);
+        if (result.rows.length > 0) {
+            return result.rows[0].periodo;
+        } else {
+            const sqlFallback = `
+                SELECT periodo
+                FROM "SISGES"."MAE_PERIODO"
+                WHERE status = 'A'
+                  AND (EXTRACT(YEAR FROM fecha_inicio) = 2026 OR EXTRACT(YEAR FROM fecha_fin) = 2026)
+                LIMIT 1
+            `;
+            const resFallback = await pool.query(sqlFallback);
+            return resFallback.rows[0]?.periodo || null;
+        }
+    }
+    return null;
+};
+
 module.exports = {
     listar,
     obtenerPorId,
@@ -618,5 +656,6 @@ module.exports = {
 	buscarProveedor,
     obtenerClientesPorProveedor,
     existeClienteParaProveedor,
-    crearClientes
+    crearClientes,
+    obtenerPeriodoPara2026
 };

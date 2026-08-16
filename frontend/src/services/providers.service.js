@@ -101,7 +101,8 @@ async (
 export const buscarProveedor =
 async (
     tipo,
-    valor
+    valor,
+    periodo
 ) => {
 
     const token =
@@ -111,6 +112,7 @@ async (
         await api.get(
             `/proveedores/busqueda/${tipo}/${valor}`,
             {
+                params: { periodo },
                 headers:{
                     Authorization:
                     `Bearer ${token}`
