@@ -108,6 +108,16 @@ const [
     setErrors
 ] = useState({});
 
+const [tiposDocumentoClie, setTiposDocumentoClie] = useState([]);
+const [clientes, setClientes] = useState([]);
+const [nuevoCliente, setNuevoCliente] = useState({
+    tipo_documento_clie: '',
+    nro_documento_clie: '',
+    razon_social_nombres_apellidos: '',
+    ciuu_cliente: ''
+});
+const [clienteError, setClienteError] = useState('');
+
 useEffect(() => {
     if (visible) {
         setErrors({});
@@ -176,6 +186,7 @@ useEffect(() => {
             });
             setProvincias([]);
             setCiudades([]);
+            setClientes([]);
             return;
         }
 
@@ -261,6 +272,7 @@ useEffect(() => {
         setCiudades(
             ciudadesData
         );
+        setClientes(proveedorEditar.clientes || []);
 
     };
 
@@ -306,6 +318,9 @@ async () => {
             );
         
         setNroTrabajadoresList(nroTrab);
+
+        const docs = await obtenerCatalogo('0001', 'TIPO_DOC_SUNAT');
+        setTiposDocumentoClie(docs);
 
     }
     catch(error){
@@ -434,8 +449,9 @@ async () => {
         proveedorEditar.proveedor_id,
         {
             ...form,
-            create_by:
-                usuario.usuario_id
+            clientes,
+            update_by: usuario.usuario_id,
+            create_by: usuario.usuario_id
         }
     );
 
@@ -444,6 +460,7 @@ else{
 
     await crearProveedor({
         ...form,
+        clientes,
         create_by:
             usuario.usuario_id
     });
@@ -486,6 +503,14 @@ else{
     status:'A'
 
 });
+		
+		setClientes([]);
+		setNuevoCliente({
+			tipo_documento_clie: '',
+			nro_documento_clie: '',
+			razon_social_nombres_apellidos: '',
+			ciuu_cliente: ''
+		});
 		
 		
         alert(
@@ -866,6 +891,169 @@ else{
     </>
 )}
 
+
+{/* --- SECCIÓN: CLIENTES RECOMENDADOS --- */}
+<div style={{ marginTop: '25px', padding: '20px', border: '1px solid #E5E7EB', borderRadius: '8px', background: '#F9FAFB', boxSizing: 'border-box' }}>
+    <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: '#111827' }}>
+        Clientes Recomendados
+    </h3>
+    
+    {clientes.length > 0 ? (
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '15px' }}>
+            <thead>
+                <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
+                    <th style={{ padding: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Tipo Doc.</th>
+                    <th style={{ padding: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Nro. Doc.</th>
+                    <th style={{ padding: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Razón Social / Nombres</th>
+                    <th style={{ padding: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>CIIU</th>
+                    <th style={{ padding: '8px', width: '50px' }}></th>
+                </tr>
+            </thead>
+            <tbody>
+                {clientes.map((c, index) => {
+                    const tipoDesc = tiposDocumentoClie.find(td => td.codigo_valor === c.tipo_documento_clie)?.descripcion || c.tipo_documento_clie || '';
+                    const ciiuDesc = ciius.find(ci => ci.codigo_valor === c.ciuu_cliente)?.descripcion || c.ciuu_cliente || '';
+                    return (
+                        <tr key={index} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                            <td style={{ padding: '8px', fontSize: '13.5px', color: '#4B5563' }}>{tipoDesc}</td>
+                            <td style={{ padding: '8px', fontSize: '13.5px', color: '#4B5563' }}>{c.nro_documento_clie}</td>
+                            <td style={{ padding: '8px', fontSize: '13.5px', color: '#111827', fontWeight: '500' }}>{c.razon_social_nombres_apellidos}</td>
+                            <td style={{ padding: '8px', fontSize: '13.5px', color: '#4B5563' }}>{c.ciuu_cliente ? `${c.ciuu_cliente} - ${ciiuDesc}` : ''}</td>
+                            <td style={{ padding: '8px', textAlign: 'right' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setClientes(clientes.filter((_, idx) => idx !== index));
+                                    }}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#EF4444',
+                                        cursor: 'pointer',
+                                        fontSize: '16px',
+                                        padding: '0 5px'
+                                    }}
+                                    title="Quitar cliente"
+                                >
+                                    ✕
+                                </button>
+                            </td>
+                        </tr>
+                    );
+                })}
+            </tbody>
+        </table>
+    ) : (
+        <p style={{ fontSize: '13.5px', color: '#6B7280', margin: '0 0 15px 0', fontStyle: 'italic' }}>
+            No se han agregado clientes recomendados aún.
+        </p>
+    )}
+    
+    <div style={{ background: '#FFFFFF', padding: '15px', border: '1px dashed #D1D5DB', borderRadius: '6px' }}>
+        <h4 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '600', color: '#374151' }}>
+            Agregar Cliente Recomendado
+        </h4>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '10px' }}>
+            <div>
+                <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Tipo Doc. *</label>
+                <select
+                    style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '13px' }}
+                    value={nuevoCliente.tipo_documento_clie}
+                    onChange={(e) => setNuevoCliente({ ...nuevoCliente, tipo_documento_clie: e.target.value })}
+                >
+                    <option value="">Seleccione...</option>
+                    {tiposDocumentoClie.map(item => (
+                        <option key={item.codigo_valor} value={item.codigo_valor}>
+                            {item.descripcion}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            <div>
+                <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Nro. Documento *</label>
+                <input
+                    style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                    value={nuevoCliente.nro_documento_clie}
+                    onChange={(e) => setNuevoCliente({ ...nuevoCliente, nro_documento_clie: e.target.value })}
+                />
+            </div>
+            <div>
+                <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Razón Social / Nombre *</label>
+                <input
+                    style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
+                    value={nuevoCliente.razon_social_nombres_apellidos}
+                    onChange={(e) => setNuevoCliente({ ...nuevoCliente, razon_social_nombres_apellidos: e.target.value })}
+                />
+            </div>
+            <div>
+                <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>CIIU *</label>
+                <select
+                    style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '13px' }}
+                    value={nuevoCliente.ciuu_cliente}
+                    onChange={(e) => setNuevoCliente({ ...nuevoCliente, ciuu_cliente: e.target.value })}
+                >
+                    <option value="">Seleccione...</option>
+                    {ciius.map(item => (
+                        <option key={item.codigo_valor} value={item.codigo_valor}>
+                            {item.codigo_valor} - {item.descripcion}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        </div>
+        
+        {clienteError && (
+            <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', marginBottom: '10px', fontWeight: '500' }}>
+                {clienteError}
+            </span>
+        )}
+        
+        <button
+            type="button"
+            className="btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '12.5px', cursor: 'pointer' }}
+            onClick={() => {
+                setClienteError('');
+                if (!nuevoCliente.tipo_documento_clie) {
+                    setClienteError('El tipo de documento es obligatorio.');
+                    return;
+                }
+                if (!nuevoCliente.nro_documento_clie || !nuevoCliente.nro_documento_clie.trim()) {
+                    setClienteError('El número de documento es obligatorio.');
+                    return;
+                }
+                if (!/^\d+$/.test(nuevoCliente.nro_documento_clie)) {
+                    setClienteError('El número de documento debe contener solo dígitos.');
+                    return;
+                }
+                if (!nuevoCliente.razon_social_nombres_apellidos || !nuevoCliente.razon_social_nombres_apellidos.trim()) {
+                    setClienteError('La razón social o nombres es obligatorio.');
+                    return;
+                }
+                if (!nuevoCliente.ciuu_cliente) {
+                    setClienteError('La actividad económica (CIIU) es obligatoria.');
+                    return;
+                }
+                
+                const existe = clientes.some(c => c.tipo_documento_clie === nuevoCliente.tipo_documento_clie && c.nro_documento_clie === nuevoCliente.nro_documento_clie);
+                if (existe) {
+                    setClienteError('Este cliente ya se encuentra en la lista.');
+                    return;
+                }
+                
+                setClientes([...clientes, nuevoCliente]);
+                setNuevoCliente({
+                    tipo_documento_clie: '',
+                    nro_documento_clie: '',
+                    razon_social_nombres_apellidos: '',
+                    ciuu_cliente: ''
+                });
+            }}
+        >
+            + Agregar a la Lista
+        </button>
+    </div>
+</div>
 
                <div
     style={{

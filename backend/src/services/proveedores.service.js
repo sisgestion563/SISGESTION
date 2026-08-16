@@ -17,9 +17,13 @@ const obtenerPorId = async (
     proveedorId
 ) => {
 
-    return await repository.obtenerPorId(
+    const prov = await repository.obtenerPorId(
         proveedorId
     );
+    if (prov) {
+        prov.clientes = await repository.obtenerClientesPorProveedor(proveedorId);
+    }
+    return prov;
 
 };
 
@@ -94,9 +98,15 @@ const crear = async (
 
     }
 
-    return await repository.crear(
+    const nuevoProv = await repository.crear(
         proveedor
     );
+
+    if (proveedor.clientes && Array.isArray(proveedor.clientes)) {
+        await repository.crearClientes(nuevoProv.proveedor_id, proveedor.clientes, proveedor.create_by);
+    }
+
+    return nuevoProv;
 
 };
 
@@ -107,10 +117,16 @@ const actualizar = async (
 
     validarProveedor(proveedor);
 
-    return await repository.actualizar(
+    const res = await repository.actualizar(
         proveedorId,
         proveedor
     );
+
+    if (proveedor.clientes && Array.isArray(proveedor.clientes)) {
+        await repository.crearClientes(proveedorId, proveedor.clientes, proveedor.update_by || proveedor.create_by);
+    }
+
+    return res;
 
 };
 
@@ -126,9 +142,13 @@ const obtenerMisDatos = async (
 
     }
 
-    return await repository.obtenerPorUsuario(
+    const prov = await repository.obtenerPorUsuario(
         usuario.proveedor_id
     );
+    if (prov) {
+        prov.clientes = await repository.obtenerClientesPorProveedor(usuario.proveedor_id);
+    }
+    return prov;
 
 };
 

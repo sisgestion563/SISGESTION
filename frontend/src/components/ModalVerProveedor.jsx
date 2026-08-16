@@ -181,6 +181,39 @@ export default function ModalVerProveedor({
 
                 </table>
 
+                {/* --- SECCIÓN: CLIENTES RECOMENDADOS (SÓLO LECTURA) --- */}
+                <div style={{ marginTop: '20px', borderTop: '1px solid #E5E7EB', paddingTop: '15px' }}>
+                    <h3 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
+                        Clientes Recomendados
+                    </h3>
+                    {proveedor.clientes && proveedor.clientes.length > 0 ? (
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
+                                    <th style={{ padding: '6px', fontWeight: '600', color: '#374151' }}>Tipo Doc.</th>
+                                    <th style={{ padding: '6px', fontWeight: '600', color: '#374151' }}>Nro. Doc.</th>
+                                    <th style={{ padding: '6px', fontWeight: '600', color: '#374151' }}>Razón Social / Nombre</th>
+                                    <th style={{ padding: '6px', fontWeight: '600', color: '#374151' }}>CIIU</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {proveedor.clientes.map((c, index) => (
+                                    <tr key={index} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                                        <td style={{ padding: '6px', color: '#4B5563' }}>{c.descripcion_tipo_documento || c.tipo_documento_clie}</td>
+                                        <td style={{ padding: '6px', color: '#4B5563' }}>{c.nro_documento_clie}</td>
+                                        <td style={{ padding: '6px', color: '#111827', fontWeight: '500' }}>{c.razon_social_nombres_apellidos}</td>
+                                        <td style={{ padding: '6px', color: '#4B5563' }}>{c.ciuu_cliente} - {c.descripcion_ciiu || ''}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <p style={{ fontSize: '13px', color: '#6B7280', fontStyle: 'italic', margin: 0 }}>
+                            No hay clientes recomendados registrados.
+                        </p>
+                    )}
+                </div>
+
                 <div
                     style={{
                         marginTop:'20px'

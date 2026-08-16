@@ -541,6 +541,73 @@ return result.rows;
 };
 //EROMAN 07062026
 
+const obtenerClientesPorProveedor = async (proveedorId) => {
+    const sql = `
+        SELECT 
+            cl.proveedor_id,
+            cl.tipo_documento_clie,
+            cl.nro_documento_clie,
+            cl.razon_social_nombres_apellidos,
+            cl.ciuu_cliente,
+            td.descripcion AS descripcion_tipo_documento,
+            ci.descripcion AS descripcion_ciiu
+        FROM "SISGES"."MAE_PROVEEDOR_CLIENTE" cl
+        LEFT JOIN "SISGES"."MAE_LISTA_VALORES" td 
+            ON td.cod_grupo = '0001' 
+           AND td.tipo_grupo = 'TIPO_DOC_SUNAT' 
+           AND td.codigo_valor::varchar = cl.tipo_documento_clie::varchar
+        LEFT JOIN "SISGES"."MAE_LISTA_VALORES" ci 
+            ON ci.cod_grupo = '0002' 
+           AND ci.tipo_grupo = 'CODIGO_CIIU_SUNAT' 
+           AND ci.codigo_valor::varchar = cl.ciuu_cliente::varchar
+        WHERE cl.proveedor_id = $1
+    `;
+    const result = await pool.query(sql, [proveedorId]);
+    return result.rows;
+};
+
+const existeClienteParaProveedor = async (proveedorId, tipoDocumentoClie, nroDocumentoClie) => {
+    const sql = `
+        SELECT 1
+        FROM "SISGES"."MAE_PROVEEDOR_CLIENTE"
+        WHERE proveedor_id = $1
+          AND tipo_documento_clie = $2
+          AND nro_documento_clie = $3
+    `;
+    const result = await pool.query(sql, [proveedorId, tipoDocumentoClie, nroDocumentoClie]);
+    return result.rows.length > 0;
+};
+
+const crearClientes = async (proveedorId, clientes, usuarioId) => {
+    if (!clientes || !Array.isArray(clientes) || clientes.length === 0) return;
+
+    const sql = `
+        INSERT INTO "SISGES"."MAE_PROVEEDOR_CLIENTE" (
+            proveedor_id,
+            tipo_documento_clie,
+            nro_documento_clie,
+            razon_social_nombres_apellidos,
+            ciuu_cliente,
+            create_by,
+            create_date
+        ) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_DATE)
+    `;
+
+    for (const clie of clientes) {
+        const existe = await existeClienteParaProveedor(proveedorId, clie.tipo_documento_clie, clie.nro_documento_clie);
+        if (!existe) {
+            await pool.query(sql, [
+                proveedorId,
+                clie.tipo_documento_clie,
+                clie.nro_documento_clie,
+                clie.razon_social_nombres_apellidos,
+                clie.ciuu_cliente,
+                usuarioId
+            ]);
+        }
+    }
+};
+
 module.exports = {
     listar,
     obtenerPorId,
@@ -548,5 +615,8 @@ module.exports = {
     crear,
     actualizar,
     obtenerPorUsuario,
-	buscarProveedor
+	buscarProveedor,
+    obtenerClientesPorProveedor,
+    existeClienteParaProveedor,
+    crearClientes
 };
