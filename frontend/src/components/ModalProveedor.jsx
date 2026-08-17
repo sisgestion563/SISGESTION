@@ -421,6 +421,62 @@ if(!visible){
     return null;
 }
 
+const agregarClienteDirectamente = async () => {
+    setClienteError('');
+    if (!nuevoCliente.tipo_documento_clie) {
+        setClienteError('El tipo de documento es obligatorio.');
+        return;
+    }
+    if (!nuevoCliente.nro_documento_clie || !nuevoCliente.nro_documento_clie.trim()) {
+        setClienteError('El número de documento es obligatorio.');
+        return;
+    }
+    if (!/^\d+$/.test(nuevoCliente.nro_documento_clie)) {
+        setClienteError('El número de documento debe contener solo dígitos.');
+        return;
+    }
+    if (!nuevoCliente.razon_social_nombres_apellidos || !nuevoCliente.razon_social_nombres_apellidos.trim()) {
+        setClienteError('La razón social o nombres es obligatorio.');
+        return;
+    }
+    if (!nuevoCliente.ciuu_cliente) {
+        setClienteError('La actividad económica (CIIU) es obligatoria.');
+        return;
+    }
+    
+    const existe = clientes.some(c => c.tipo_documento_clie === nuevoCliente.tipo_documento_clie && c.nro_documento_clie === nuevoCliente.nro_documento_clie);
+    if (existe) {
+        setClienteError('Este cliente ya se encuentra en la lista.');
+        return;
+    }
+
+    try {
+        const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+        const nuevosClientes = [...clientes, nuevoCliente];
+        
+        if (proveedorEditar) {
+            // Guardamos inmediatamente en la base de datos
+            await actualizarProveedor(proveedorEditar.proveedor_id, {
+                ...form,
+                clientes: nuevosClientes,
+                update_by: usuario.usuario_id,
+                create_by: usuario.usuario_id
+            });
+            alert('Cliente recomendado agregado y guardado correctamente.');
+        }
+        
+        setClientes(nuevosClientes);
+        setNuevoCliente({
+            tipo_documento_clie: '',
+            nro_documento_clie: '',
+            razon_social_nombres_apellidos: '',
+            ciuu_cliente: ''
+        });
+    } catch (error) {
+        alert('Error al guardar el cliente recomendado: ' + (error.response?.data?.message || error.message));
+    }
+};
+
     const guardar =
 async () => {
 
@@ -893,167 +949,166 @@ else{
 
 
 {/* --- SECCIÓN: CLIENTES RECOMENDADOS --- */}
-<div style={{ marginTop: '25px', padding: '20px', border: '1px solid #E5E7EB', borderRadius: '8px', background: '#F9FAFB', boxSizing: 'border-box' }}>
-    <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: '#111827' }}>
-        Clientes Recomendados
-    </h3>
-    
-    {clientes.length > 0 ? (
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '15px' }}>
-            <thead>
-                <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
-                    <th style={{ padding: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Tipo Doc.</th>
-                    <th style={{ padding: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Nro. Doc.</th>
-                    <th style={{ padding: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>Razón Social / Nombres</th>
-                    <th style={{ padding: '8px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>CIIU</th>
-                    <th style={{ padding: '8px', width: '50px' }}></th>
-                </tr>
-            </thead>
-            <tbody>
-                {clientes.map((c, index) => {
-                    const tipoDesc = tiposDocumentoClie.find(td => td.codigo_valor === c.tipo_documento_clie)?.descripcion || c.tipo_documento_clie || '';
-                    const ciiuDesc = ciius.find(ci => ci.codigo_valor === c.ciuu_cliente)?.descripcion || c.ciuu_cliente || '';
-                    return (
-                        <tr key={index} style={{ borderBottom: '1px solid #E5E7EB' }}>
-                            <td style={{ padding: '8px', fontSize: '13.5px', color: '#4B5563' }}>{tipoDesc}</td>
-                            <td style={{ padding: '8px', fontSize: '13.5px', color: '#4B5563' }}>{c.nro_documento_clie}</td>
-                            <td style={{ padding: '8px', fontSize: '13.5px', color: '#111827', fontWeight: '500' }}>{c.razon_social_nombres_apellidos}</td>
-                            <td style={{ padding: '8px', fontSize: '13.5px', color: '#4B5563' }}>{c.ciuu_cliente ? `${c.ciuu_cliente} - ${ciiuDesc}` : ''}</td>
-                            <td style={{ padding: '8px', textAlign: 'right' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setClientes(clientes.filter((_, idx) => idx !== index));
-                                    }}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#EF4444',
-                                        cursor: 'pointer',
-                                        fontSize: '16px',
-                                        padding: '0 5px'
-                                    }}
-                                    title="Quitar cliente"
-                                >
-                                    ✕
-                                </button>
-                            </td>
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
-    ) : (
-        <p style={{ fontSize: '13.5px', color: '#6B7280', margin: '0 0 15px 0', fontStyle: 'italic' }}>
-            No se han agregado clientes recomendados aún.
-        </p>
-    )}
-    
-    <div style={{ background: '#FFFFFF', padding: '15px', border: '1px dashed #D1D5DB', borderRadius: '6px' }}>
-        <h4 style={{ margin: '0 0 10px 0', fontSize: '13.5px', fontWeight: '600', color: '#374151' }}>
-            Agregar Cliente Recomendado
-        </h4>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '10px' }}>
-            <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Tipo Doc. *</label>
-                <select
-                    style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '13px' }}
-                    value={nuevoCliente.tipo_documento_clie}
-                    onChange={(e) => setNuevoCliente({ ...nuevoCliente, tipo_documento_clie: e.target.value })}
-                >
-                    <option value="">Seleccione...</option>
-                    {tiposDocumentoClie.map(item => (
-                        <option key={item.codigo_valor} value={item.codigo_valor}>
-                            {item.descripcion}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Nro. Documento *</label>
-                <input
-                    style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
-                    value={nuevoCliente.nro_documento_clie}
-                    onChange={(e) => setNuevoCliente({ ...nuevoCliente, nro_documento_clie: e.target.value })}
-                />
-            </div>
-            <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Razón Social / Nombre *</label>
-                <input
-                    style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '13px', boxSizing: 'border-box' }}
-                    value={nuevoCliente.razon_social_nombres_apellidos}
-                    onChange={(e) => setNuevoCliente({ ...nuevoCliente, razon_social_nombres_apellidos: e.target.value })}
-                />
-            </div>
-            <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>CIIU *</label>
-                <select
-                    style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '4px', fontSize: '13px' }}
-                    value={nuevoCliente.ciuu_cliente}
-                    onChange={(e) => setNuevoCliente({ ...nuevoCliente, ciuu_cliente: e.target.value })}
-                >
-                    <option value="">Seleccione...</option>
-                    {ciius.map(item => (
-                        <option key={item.codigo_valor} value={item.codigo_valor}>
-                            {item.codigo_valor} - {item.descripcion}
-                        </option>
-                    ))}
-                </select>
-            </div>
-        </div>
+{proveedorEditar ? (
+    <div style={{ marginTop: '25px', padding: '20px', border: '1px solid #E5E7EB', borderRadius: '12px', background: '#F9FAFB', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'inline-block', width: '4px', height: '18px', background: '#3b82f6', borderRadius: '2px' }}></span>
+            Clientes Recomendados
+        </h3>
         
-        {clienteError && (
-            <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', marginBottom: '10px', fontWeight: '500' }}>
-                {clienteError}
-            </span>
+        {clientes.length > 0 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+                <thead>
+                    <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
+                        <th style={{ padding: '10px 8px', fontSize: '13px', fontWeight: '600', color: '#4B5563' }}>Tipo Doc.</th>
+                        <th style={{ padding: '10px 8px', fontSize: '13px', fontWeight: '600', color: '#4B5563' }}>Nro. Doc.</th>
+                        <th style={{ padding: '10px 8px', fontSize: '13px', fontWeight: '600', color: '#4B5563' }}>Razón Social / Nombres</th>
+                        <th style={{ padding: '10px 8px', fontSize: '13px', fontWeight: '600', color: '#4B5563' }}>CIIU</th>
+                        <th style={{ padding: '10px 8px', width: '50px' }}></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {clientes.map((c, index) => {
+                        const tipoDesc = tiposDocumentoClie.find(td => td.codigo_valor === c.tipo_documento_clie)?.descripcion || c.tipo_documento_clie || '';
+                        const ciiuDesc = ciius.find(ci => ci.codigo_valor === c.ciuu_cliente)?.descripcion || c.ciuu_cliente || '';
+                        return (
+                            <tr key={index} style={{ borderBottom: '1px solid #F3F4F6' }}>
+                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: '#4B5563' }}>{tipoDesc}</td>
+                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: '#4B5563' }}>{c.nro_documento_clie}</td>
+                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: '#111827', fontWeight: '500' }}>{c.razon_social_nombres_apellidos}</td>
+                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: '#4B5563' }}>{c.ciuu_cliente ? `${c.ciuu_cliente} - ${ciiuDesc}` : ''}</td>
+                                <td style={{ padding: '10px 8px', textAlign: 'right' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setClientes(clientes.filter((_, idx) => idx !== index));
+                                        }}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#EF4444',
+                                            cursor: 'pointer',
+                                            fontSize: '16px',
+                                            padding: '0 5px'
+                                        }}
+                                        title="Quitar cliente"
+                                    >
+                                        ✕
+                                    </button>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        ) : (
+            <p style={{ fontSize: '13.5px', color: '#6B7280', margin: '0 0 20px 0', fontStyle: 'italic', background: '#fff', padding: '12px', borderRadius: '6px', border: '1px solid #E5E7EB', textAlign: 'center' }}>
+                No se han agregado clientes recomendados aún.
+            </p>
         )}
         
-        <button
-            type="button"
-            className="btn-secondary"
-            style={{ padding: '6px 12px', fontSize: '12.5px', cursor: 'pointer' }}
-            onClick={() => {
-                setClienteError('');
-                if (!nuevoCliente.tipo_documento_clie) {
-                    setClienteError('El tipo de documento es obligatorio.');
-                    return;
-                }
-                if (!nuevoCliente.nro_documento_clie || !nuevoCliente.nro_documento_clie.trim()) {
-                    setClienteError('El número de documento es obligatorio.');
-                    return;
-                }
-                if (!/^\d+$/.test(nuevoCliente.nro_documento_clie)) {
-                    setClienteError('El número de documento debe contener solo dígitos.');
-                    return;
-                }
-                if (!nuevoCliente.razon_social_nombres_apellidos || !nuevoCliente.razon_social_nombres_apellidos.trim()) {
-                    setClienteError('La razón social o nombres es obligatorio.');
-                    return;
-                }
-                if (!nuevoCliente.ciuu_cliente) {
-                    setClienteError('La actividad económica (CIIU) es obligatoria.');
-                    return;
-                }
-                
-                const existe = clientes.some(c => c.tipo_documento_clie === nuevoCliente.tipo_documento_clie && c.nro_documento_clie === nuevoCliente.nro_documento_clie);
-                if (existe) {
-                    setClienteError('Este cliente ya se encuentra en la lista.');
-                    return;
-                }
-                
-                setClientes([...clientes, nuevoCliente]);
-                setNuevoCliente({
-                    tipo_documento_clie: '',
-                    nro_documento_clie: '',
-                    razon_social_nombres_apellidos: '',
-                    ciuu_cliente: ''
-                });
-            }}
-        >
-            + Agregar a la Lista
-        </button>
+        <div style={{ background: '#FFFFFF', padding: '20px', border: '1px dashed #D1D5DB', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                Agregar Cliente Recomendado (Uno por Uno)
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '12px' }}>
+                <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Tipo Doc. *</label>
+                    <select
+                        style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', background: '#fff' }}
+                        value={nuevoCliente.tipo_documento_clie}
+                        onChange={(e) => setNuevoCliente({ ...nuevoCliente, tipo_documento_clie: e.target.value })}
+                    >
+                        <option value="">Seleccione...</option>
+                        {tiposDocumentoClie.map(item => (
+                            <option key={item.codigo_valor} value={item.codigo_valor}>
+                                {item.descripcion}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Nro. Documento *</label>
+                    <input
+                        style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }}
+                        value={nuevoCliente.nro_documento_clie}
+                        onChange={(e) => setNuevoCliente({ ...nuevoCliente, nro_documento_clie: e.target.value })}
+                    />
+                </div>
+                <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Razón Social / Nombre *</label>
+                    <input
+                        style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }}
+                        value={nuevoCliente.razon_social_nombres_apellidos}
+                        onChange={(e) => setNuevoCliente({ ...nuevoCliente, razon_social_nombres_apellidos: e.target.value })}
+                    />
+                </div>
+                <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>CIIU *</label>
+                    <select
+                        style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', background: '#fff' }}
+                        value={nuevoCliente.ciuu_cliente}
+                        onChange={(e) => setNuevoCliente({ ...nuevoCliente, ciuu_cliente: e.target.value })}
+                    >
+                        <option value="">Seleccione...</option>
+                        {ciius.map(item => (
+                            <option key={item.codigo_valor} value={item.codigo_valor}>
+                                {item.codigo_valor} - {item.descripcion}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+            
+            {clienteError && (
+                <span style={{ color: '#dc2626', fontSize: '12.5px', display: 'block', marginBottom: '12px', fontWeight: '500' }}>
+                    {clienteError}
+                </span>
+            )}
+            
+            <button
+                type="button"
+                className="btn-secondary"
+                style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    background: '#2563eb',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: '600',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                    transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.background = '#1d4ed8'}
+                onMouseOut={(e) => e.target.style.background = '#2563eb'}
+                onClick={agregarClienteDirectamente}
+            >
+                + Guardar Cliente
+            </button>
+        </div>
     </div>
-</div>
+) : (
+    <div style={{
+        marginTop: '25px',
+        padding: '20px',
+        border: '1px dashed #3b82f6',
+        borderRadius: '8px',
+        background: '#eff6ff',
+        color: '#1e40af',
+        textAlign: 'center',
+        fontWeight: '500',
+        fontSize: '14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px'
+    }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <span>Para registrar clientes recomendados, primero debe crear y guardar la ficha del proveedor.</span>
+    </div>
+)}
 
                <div
     style={{

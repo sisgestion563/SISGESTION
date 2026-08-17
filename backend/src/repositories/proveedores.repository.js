@@ -620,30 +620,56 @@ const crearClientes = async (proveedorId, clientes, usuarioId) => {
 
 const obtenerPeriodoPara2026 = async () => {
     const currentYear = new Date().getFullYear();
-    if (currentYear === 2026) {
-        const sql = `
-            SELECT periodo
-            FROM "SISGES"."MAE_PERIODO"
-            WHERE status = 'A'
-              AND CURRENT_DATE BETWEEN fecha_inicio AND fecha_fin
-            LIMIT 1
-        `;
-        const result = await pool.query(sql);
-        if (result.rows.length > 0) {
-            return result.rows[0].periodo;
-        } else {
-            const sqlFallback = `
-                SELECT periodo
-                FROM "SISGES"."MAE_PERIODO"
-                WHERE status = 'A'
-                  AND (EXTRACT(YEAR FROM fecha_inicio) = 2026 OR EXTRACT(YEAR FROM fecha_fin) = 2026)
-                LIMIT 1
-            `;
-            const resFallback = await pool.query(sqlFallback);
-            return resFallback.rows[0]?.periodo || null;
-        }
+    
+    // 1. Intentar obtener el periodo activo según la fecha actual del servidor
+    const sql = `
+        SELECT periodo
+        FROM "SISGES"."MAE_PERIODO"
+        WHERE status = 'A'
+          AND CURRENT_DATE BETWEEN fecha_inicio AND fecha_fin
+        LIMIT 1
+    `;
+    const result = await pool.query(sql);
+    if (result.rows.length > 0) {
+        return result.rows[0].periodo;
     }
-    return null;
+    
+    // 2. Fallback 1: Buscar periodo activo del año actual (dinámico)
+    const sqlFallbackYear = `
+        SELECT periodo
+        FROM "SISGES"."MAE_PERIODO"
+        WHERE status = 'A'
+          AND (EXTRACT(YEAR FROM fecha_inicio) = $1 OR EXTRACT(YEAR FROM fecha_fin) = $1)
+        LIMIT 1
+    `;
+    const resFallbackYear = await pool.query(sqlFallbackYear, [currentYear]);
+    if (resFallbackYear.rows.length > 0) {
+        return resFallbackYear.rows[0].periodo;
+    }
+
+    // 3. Fallback 2: Buscar periodo activo para el año 2026 (por compatibilidad)
+    const sqlFallback2026 = `
+        SELECT periodo
+        FROM "SISGES"."MAE_PERIODO"
+        WHERE status = 'A'
+          AND (EXTRACT(YEAR FROM fecha_inicio) = 2026 OR EXTRACT(YEAR FROM fecha_fin) = 2026)
+        LIMIT 1
+    `;
+    const resFallback2026 = await pool.query(sqlFallback2026);
+    if (resFallback2026.rows.length > 0) {
+        return resFallback2026.rows[0].periodo;
+    }
+
+    // 4. Fallback 3: Retornar el último periodo activo disponible
+    const sqlFallbackLatest = `
+        SELECT periodo
+        FROM "SISGES"."MAE_PERIODO"
+        WHERE status = 'A'
+        ORDER BY periodo DESC
+        LIMIT 1
+    `;
+    const resFallbackLatest = await pool.query(sqlFallbackLatest);
+    return resFallbackLatest.rows[0]?.periodo || null;
 };
 
 module.exports = {
