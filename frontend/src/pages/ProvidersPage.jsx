@@ -1280,9 +1280,10 @@ export default function ProvidersPage() {
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* --- SECCIÓN: CLIENTES RECOMENDADOS --- */}
-                        <div style={{ marginTop: '25px', padding: '20px', border: `1px solid ${colors.border}`, borderRadius: '12px', background: '#F9FAFB', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                    {/* --- SECCIÓN: CLIENTES RECOMENDADOS --- */}
+                    <div style={{ ...styles.card, marginTop: '20px' }}>
                             <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: colors.text, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ display: 'inline-block', width: '4px', height: '18px', background: '#2563eb', borderRadius: '2px' }}></span>
                                 Clientes Recomendados

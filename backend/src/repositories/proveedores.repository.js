@@ -362,6 +362,8 @@ const actualizar = async (
     proveedor
 ) => {
 
+    const periodo = await obtenerPeriodoPara2026();
+
     const sql = `
         UPDATE "SISGES"."MAE_PROVEEDOR"
         SET
@@ -386,7 +388,8 @@ const actualizar = async (
             status=$19,
             nro_trabajadores=$20,
             last_update=CURRENT_DATE,
-            update_by=$21
+            update_by=$21,
+            periodo=COALESCE(periodo, $23)
         WHERE proveedor_id=$22
     `;
 
@@ -414,7 +417,8 @@ const actualizar = async (
             proveedor.status,
             proveedor.nro_trabajadores,
             proveedor.update_by,
-            proveedorId
+            proveedorId,
+            periodo
         ]
     );
 };

@@ -1,5 +1,59 @@
 const pool = require('../config/db');
 
+const obtenerPeriodoActivo = async () => {
+    const currentYear = new Date().getFullYear();
+    
+    // 1. Intentar obtener el periodo activo según la fecha actual del servidor
+    const sql = `
+        SELECT periodo
+        FROM "SISGES"."MAE_PERIODO"
+        WHERE status = 'A'
+          AND CURRENT_DATE BETWEEN fecha_inicio AND fecha_fin
+        LIMIT 1
+    `;
+    const result = await pool.query(sql);
+    if (result.rows.length > 0) {
+        return result.rows[0].periodo;
+    }
+    
+    // 2. Fallback 1: Buscar periodo activo del año actual (dinámico)
+    const sqlFallbackYear = `
+        SELECT periodo
+        FROM "SISGES"."MAE_PERIODO"
+        WHERE status = 'A'
+          AND (EXTRACT(YEAR FROM fecha_inicio) = $1 OR EXTRACT(YEAR FROM fecha_fin) = $1)
+        LIMIT 1
+    `;
+    const resFallbackYear = await pool.query(sqlFallbackYear, [currentYear]);
+    if (resFallbackYear.rows.length > 0) {
+        return resFallbackYear.rows[0].periodo;
+    }
+
+    // 3. Fallback 2: Buscar periodo activo para el año 2026
+    const sqlFallback2026 = `
+        SELECT periodo
+        FROM "SISGES"."MAE_PERIODO"
+        WHERE status = 'A'
+          AND (EXTRACT(YEAR FROM fecha_inicio) = 2026 OR EXTRACT(YEAR FROM fecha_fin) = 2026)
+        LIMIT 1
+    `;
+    const resFallback2026 = await pool.query(sqlFallback2026);
+    if (resFallback2026.rows.length > 0) {
+        return resFallback2026.rows[0].periodo;
+    }
+
+    // 4. Fallback 3: Retornar el último periodo activo disponible
+    const sqlFallbackLatest = `
+        SELECT periodo
+        FROM "SISGES"."MAE_PERIODO"
+        WHERE status = 'A'
+        ORDER BY periodo DESC
+        LIMIT 1
+    `;
+    const resFallbackLatest = await pool.query(sqlFallbackLatest);
+    return resFallbackLatest.rows[0]?.periodo || null;
+};
+
 const listarPorProveedor = async (proveedorId) => {
 
     const sql = `
@@ -21,7 +75,8 @@ const listarPorProveedor = async (proveedorId) => {
     d.estado_documento,
     d.status,
     d.alcance,
-    d.observaciones
+    d.observaciones,
+    d.periodo
 FROM "SISGES"."MOV_DOCUMENTOS" d
 
 WHERE d.proveedor_id = $1
@@ -53,6 +108,7 @@ const obtenerPorId = async (documentoId) => {
 const crear = async (documento) => 
 	{	
 		documento.tipo_documento = null;
+		const periodo = await obtenerPeriodoActivo();
 
     const sql = `
         INSERT INTO "SISGES"."MOV_DOCUMENTOS"
@@ -71,7 +127,8 @@ const crear = async (documento) =>
             alcance,
             observaciones,
             create_date,
-            create_by
+            create_by,
+            periodo
         )
         VALUES
         (
@@ -80,7 +137,8 @@ const crear = async (documento) =>
             'A',
             $10,$11,
             CURRENT_DATE,
-            $12
+            $12,
+            $13
         )
         RETURNING documento_id
     `;
@@ -98,7 +156,8 @@ const crear = async (documento) =>
             documento.estado_documento,
             documento.alcance,
             documento.observaciones,
-            documento.create_by
+            documento.create_by,
+            periodo
         ]);
 
     return result.rows[0];
@@ -172,7 +231,8 @@ const listarPorGrupo = async (
         d.estado_documento,
         d.status,
         d.alcance,
-        d.observaciones
+        d.observaciones,
+        d.periodo
 FROM	"SISGES"."MOV_DOCUMENTOS" d
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" lv_alcance ON lv_alcance.codigo_valor = D.alcance AND lv_alcance.cod_grupo='0099' AND lv_alcance.tipo_grupo='TIPO_GESTION'
 LEFT JOIN "SISGES"."MAE_LISTA_VALORES" lv_estado_doc ON lv_estado_doc.codigo_valor = D.estado_documento AND lv_estado_doc.cod_grupo='0000' AND lv_estado_doc.tipo_grupo='STATUS_DOCUMENTO'
