@@ -629,7 +629,7 @@ const obtenerPeriodoPara2026 = async () => {
     const sql = `
         SELECT periodo
         FROM "SISGES"."MAE_PERIODO"
-        WHERE status = 'A'
+        WHERE status = 'OPEN'
           AND CURRENT_DATE BETWEEN fecha_inicio AND fecha_fin
         LIMIT 1
     `;
@@ -642,7 +642,7 @@ const obtenerPeriodoPara2026 = async () => {
     const sqlFallbackYear = `
         SELECT periodo
         FROM "SISGES"."MAE_PERIODO"
-        WHERE status = 'A'
+        WHERE status = 'OPEN'
           AND (EXTRACT(YEAR FROM fecha_inicio) = $1 OR EXTRACT(YEAR FROM fecha_fin) = $1)
         LIMIT 1
     `;
@@ -655,7 +655,7 @@ const obtenerPeriodoPara2026 = async () => {
     const sqlFallback2026 = `
         SELECT periodo
         FROM "SISGES"."MAE_PERIODO"
-        WHERE status = 'A'
+        WHERE status = 'OPEN'
           AND (EXTRACT(YEAR FROM fecha_inicio) = 2026 OR EXTRACT(YEAR FROM fecha_fin) = 2026)
         LIMIT 1
     `;
@@ -668,7 +668,7 @@ const obtenerPeriodoPara2026 = async () => {
     const sqlFallbackLatest = `
         SELECT periodo
         FROM "SISGES"."MAE_PERIODO"
-        WHERE status = 'A'
+        WHERE status = 'OPEN'
         ORDER BY periodo DESC
         LIMIT 1
     `;

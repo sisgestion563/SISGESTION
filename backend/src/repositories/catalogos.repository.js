@@ -49,7 +49,7 @@ const obtenerPeriodos = async () => {
     const sql = `
         SELECT DISTINCT periodo
         FROM "SISGES"."MAE_PERIODO"
-        WHERE status = 'A'
+        WHERE status = 'OPEN'
         ORDER BY periodo DESC
     `;
     const result = await pool.query(sql);
