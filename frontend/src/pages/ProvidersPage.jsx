@@ -1398,7 +1398,7 @@ export default function ProvidersPage() {
                                 </button>
                             </div>
                         </div>
-                    </>
+                    </div>
 
             ) : (
                 /* ════════════════════════════════════════════════════════════
