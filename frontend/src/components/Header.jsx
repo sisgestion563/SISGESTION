@@ -265,57 +265,128 @@ export default function Header() {
                     </p>
                 </div>
 
-                {/* Fecha institucional moderna sin emojis */}
                 <div
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        fontSize: '12px',
-                        color: '#334155',
-                        backgroundColor: '#F8FAFC',
-                        padding: '6px 14px',
-                        borderRadius: '8px',
-                        border: '1px solid #E2E8F0',
-                        fontWeight: '600',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                        gap: '12px',
+                        flexWrap: 'wrap'
                     }}
                 >
-                    <Calendar size={15} color="#2563EB" />
-                    <span>{fecha}</span>
+                    {/* Fecha institucional moderna sin emojis */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '12px',
+                            color: '#334155',
+                            backgroundColor: '#F8FAFC',
+                            padding: '6px 14px',
+                            borderRadius: '8px',
+                            border: '1px solid #E2E8F0',
+                            fontWeight: '600',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                        }}
+                    >
+                        <Calendar size={15} color="#2563EB" />
+                        <span>{fecha}</span>
+                    </div>
+
+                    {/* Tarjeta de MI PERFIL */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            background: '#F8FAFC',
+                            border: '1px solid #E2E8F0',
+                            padding: '6px 14px',
+                            borderRadius: '10px',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '8px',
+                                background: '#EFF6FF',
+                                border: '1px solid #DBEAFE',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                            }}
+                        >
+                            <User size={16} color="#2563EB" />
+                        </div>
+
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                textAlign: 'left'
+                            }}
+                        >
+                            <span
+                                style={{
+                                    fontSize: '10px',
+                                    fontWeight: '700',
+                                    color: '#64748B',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.06em',
+                                    lineHeight: '1.1'
+                                }}
+                            >
+                                MI PERFIL
+                            </span>
+                            <span
+                                style={{
+                                    fontSize: '13px',
+                                    fontWeight: '700',
+                                    color: '#0F172A',
+                                    letterSpacing: '0.02em',
+                                    lineHeight: '1.3'
+                                }}
+                            >
+                                {usuario?.rol_codigo || 'ROL'}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* ── Separador sutil ─────────────────────────────────────────── */}
-            <div
-                style={{
-                    height: '1px',
-                    backgroundColor: '#F1F5F9',
-                    width: '100%'
-                }}
-            />
+            {/* ── Separador sutil y Barra de Contexto (Gestión y Periodo) sólo si mostrarFiltros es true ── */}
+            {mostrarFiltros && (
+                <>
+                    <div
+                        style={{
+                            height: '1px',
+                            backgroundColor: '#F1F5F9',
+                            width: '100%'
+                        }}
+                    />
 
-            {/* ── Nivel 3: Barra de Contexto (Gestión, Periodo y Mi Perfil) ── */}
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '16px'
-                }}
-            >
-                {/* Lado izquierdo: Selectores modernos de Gestión y Periodo */}
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: '14px'
-                    }}
-                >
-                    {mostrarFiltros && (
-                        <>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: '16px'
+                        }}
+                    >
+                        {/* Lado izquierdo: Selectores modernos de Gestión y Periodo */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                gap: '14px'
+                            }}
+                        >
                             {/* Selector de Gestión */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span
@@ -435,156 +506,75 @@ export default function Header() {
                                     <span>Ver todo</span>
                                 </button>
                             )}
-                        </>
-                    )}
 
-                    {/* Selector de Periodo */}
-                    {mostrarFiltroPeriodo && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span
-                                style={{
-                                    fontSize: '13px',
-                                    fontWeight: '700',
-                                    color: '#1E293B'
-                                }}
-                            >
-                                Periodo:
-                            </span>
-                            <div
-                                style={{
-                                    position: 'relative',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    background: '#FFFFFF',
-                                    border: '1px solid #CBD5E1',
-                                    borderRadius: '8px',
-                                    padding: '0 10px',
-                                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                <CalendarDays size={15} color="#2563EB" style={{ marginRight: '6px', flexShrink: 0 }} />
-                                <select
-                                    id="header-select-periodo"
-                                    aria-label="Seleccionar Periodo"
-                                    value={periodo}
-                                    onChange={(e) => cambiarPeriodo(e.target.value)}
+                            {/* Selector de Periodo */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span
                                     style={{
-                                        appearance: 'none',
-                                        WebkitAppearance: 'none',
-                                        backgroundColor: 'transparent',
-                                        border: 'none',
-                                        padding: '7px 22px 7px 0',
                                         fontSize: '13px',
-                                        fontWeight: '600',
-                                        color: '#0F172A',
-                                        cursor: 'pointer',
-                                        outline: 'none'
+                                        fontWeight: '700',
+                                        color: '#1E293B'
                                     }}
                                 >
-                                    {periodosList.length > 0 ? (
-                                        periodosList.map(p => (
-                                            <option key={p.periodo} value={p.periodo}>
-                                                {p.periodo}
-                                            </option>
-                                        ))
-                                    ) : (
-                                        <option value="2026">2026</option>
-                                    )}
-                                </select>
-                                <ChevronDown
-                                    size={14}
-                                    color="#64748B"
+                                    Periodo:
+                                </span>
+                                <div
                                     style={{
-                                        position: 'absolute',
-                                        right: '10px',
-                                        pointerEvents: 'none'
+                                        position: 'relative',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        background: '#FFFFFF',
+                                        border: '1px solid #CBD5E1',
+                                        borderRadius: '8px',
+                                        padding: '0 10px',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                        transition: 'all 0.2s ease'
                                     }}
-                                />
+                                >
+                                    <CalendarDays size={15} color="#2563EB" style={{ marginRight: '6px', flexShrink: 0 }} />
+                                    <select
+                                        id="header-select-periodo"
+                                        aria-label="Seleccionar Periodo"
+                                        value={periodo}
+                                        onChange={(e) => cambiarPeriodo(e.target.value)}
+                                        style={{
+                                            appearance: 'none',
+                                            WebkitAppearance: 'none',
+                                            backgroundColor: 'transparent',
+                                            border: 'none',
+                                            padding: '7px 22px 7px 0',
+                                            fontSize: '13px',
+                                            fontWeight: '600',
+                                            color: '#0F172A',
+                                            cursor: 'pointer',
+                                            outline: 'none'
+                                        }}
+                                    >
+                                        {periodosList.length > 0 ? (
+                                            periodosList.map(p => (
+                                                <option key={p.periodo} value={p.periodo}>
+                                                    {p.periodo}
+                                                </option>
+                                            ))
+                                        ) : (
+                                            <option value="2026">2026</option>
+                                        )}
+                                    </select>
+                                    <ChevronDown
+                                        size={14}
+                                        color="#64748B"
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            pointerEvents: 'none'
+                                        }}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    )}
-                </div>
-
-                {/* Lado derecho: Separador vertical + Tarjeta de MI PERFIL */}
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px'
-                    }}
-                >
-                    <div
-                        style={{
-                            width: '1px',
-                            height: '32px',
-                            backgroundColor: '#E2E8F0'
-                        }}
-                    />
-
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            background: '#F8FAFC',
-                            border: '1px solid #E2E8F0',
-                            padding: '6px 14px',
-                            borderRadius: '10px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '8px',
-                                background: '#EFF6FF',
-                                border: '1px solid #DBEAFE',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0
-                            }}
-                        >
-                            <User size={16} color="#2563EB" />
-                        </div>
-
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'flex-start',
-                                textAlign: 'left'
-                            }}
-                        >
-                            <span
-                                style={{
-                                    fontSize: '10px',
-                                    fontWeight: '700',
-                                    color: '#64748B',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.06em',
-                                    lineHeight: '1.1'
-                                }}
-                            >
-                                MI PERFIL
-                            </span>
-                            <span
-                                style={{
-                                    fontSize: '13px',
-                                    fontWeight: '700',
-                                    color: '#0F172A',
-                                    letterSpacing: '0.02em',
-                                    lineHeight: '1.3'
-                                }}
-                            >
-                                {usuario?.rol_codigo || 'ROL'}
-                            </span>
-                        </div>
                     </div>
-                </div>
-            </div>
+                </>
+            )}
         </header>
     );
 }
