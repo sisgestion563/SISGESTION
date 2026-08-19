@@ -77,7 +77,8 @@ export default function Header() {
     });
     const [periodosList, setPeriodosList] = useState([]);
     
-    const mostrarFiltroPeriodo = window.location.pathname.startsWith('/dashboard') || window.location.pathname.startsWith('/documents');
+    const mostrarFiltros = window.location.pathname.startsWith('/dashboard');
+    const mostrarFiltroPeriodo = mostrarFiltros;
 
     // Cargar periodos desde base de datos
     useEffect(() => {
@@ -313,124 +314,128 @@ export default function Header() {
                         gap: '14px'
                     }}
                 >
-                    {/* Selector de Gestión */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span
-                            style={{
-                                fontSize: '13px',
-                                fontWeight: '700',
-                                color: '#1E293B'
-                            }}
-                        >
-                            Gestión:
-                        </span>
-                        <div
-                            className="gestion-dropdown-container"
-                            style={{
-                                position: 'relative',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                background: '#FFFFFF',
-                                border: '1px solid #CBD5E1',
-                                borderRadius: '8px',
-                                padding: '6px 10px',
-                                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                minWidth: '180px',
-                                userSelect: 'none'
-                            }}
-                            onClick={() => setDropdownOpen(!dropdownOpen)}
-                        >
-                            <Layers size={15} color="#2563EB" style={{ marginRight: '8px', flexShrink: 0 }} />
-                            <div style={{ flex: 1, fontSize: '13px', fontWeight: '600', color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {gestionSeleccionada.includes('ALL') 
-                                    ? 'Todas las Gestiones' 
-                                    : gestionSeleccionada.length === 1 
-                                        ? gestiones.find(g => g.codigo_valor === gestionSeleccionada[0])?.descripcion || '1 Selección' 
-                                        : `${gestionSeleccionada.length} Seleccionadas`}
-                            </div>
-                            <ChevronDown
-                                size={14}
-                                color="#64748B"
-                                style={{ marginLeft: '8px', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}
-                            />
-                            
-                            {dropdownOpen && (
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '100%',
-                                    left: 0,
-                                    marginTop: '4px',
-                                    width: '240px',
-                                    background: '#FFFFFF',
-                                    border: '1px solid #E2E8F0',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                                    zIndex: 50,
-                                    padding: '8px 0',
-                                    display: 'flex',
-                                    flexDirection: 'column'
-                                }}>
-                                    <div 
-                                        style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', cursor: 'pointer', background: gestionSeleccionada.includes('ALL') ? '#EFF6FF' : 'transparent' }}
-                                        onClick={(e) => { e.stopPropagation(); toggleGestion('ALL'); }}
-                                    >
-                                        <input 
-                                            type="checkbox" 
-                                            checked={gestionSeleccionada.includes('ALL')}
-                                            readOnly
-                                            style={{ marginRight: '10px', width: '14px', height: '14px', cursor: 'pointer' }}
-                                        />
-                                        <span style={{ fontSize: '13px', fontWeight: '500', color: '#1E293B' }}>Todas las Gestiones</span>
+                    {mostrarFiltros && (
+                        <>
+                            {/* Selector de Gestión */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span
+                                    style={{
+                                        fontSize: '13px',
+                                        fontWeight: '700',
+                                        color: '#1E293B'
+                                    }}
+                                >
+                                    Gestión:
+                                </span>
+                                <div
+                                    className="gestion-dropdown-container"
+                                    style={{
+                                        position: 'relative',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        background: '#FFFFFF',
+                                        border: '1px solid #CBD5E1',
+                                        borderRadius: '8px',
+                                        padding: '6px 10px',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        minWidth: '180px',
+                                        userSelect: 'none'
+                                    }}
+                                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                                >
+                                    <Layers size={15} color="#2563EB" style={{ marginRight: '8px', flexShrink: 0 }} />
+                                    <div style={{ flex: 1, fontSize: '13px', fontWeight: '600', color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {gestionSeleccionada.includes('ALL') 
+                                            ? 'Todas las Gestiones' 
+                                            : gestionSeleccionada.length === 1 
+                                                ? gestiones.find(g => g.codigo_valor === gestionSeleccionada[0])?.descripcion || '1 Selección' 
+                                                : `${gestionSeleccionada.length} Seleccionadas`}
                                     </div>
-                                    <div style={{ height: '1px', background: '#E2E8F0', margin: '4px 0' }}></div>
-                                    {gestiones.map((item) => (
-                                        <div 
-                                            key={item.codigo_valor}
-                                            style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', cursor: 'pointer', background: gestionSeleccionada.includes(item.codigo_valor) ? '#EFF6FF' : 'transparent' }}
-                                            onClick={(e) => { e.stopPropagation(); toggleGestion(item.codigo_valor); }}
-                                        >
-                                            <input 
-                                                type="checkbox" 
-                                                checked={gestionSeleccionada.includes(item.codigo_valor)}
-                                                readOnly
-                                                style={{ marginRight: '10px', width: '14px', height: '14px', cursor: 'pointer' }}
-                                            />
-                                            <span style={{ fontSize: '13px', fontWeight: '500', color: '#1E293B' }}>{item.descripcion}</span>
+                                    <ChevronDown
+                                        size={14}
+                                        color="#64748B"
+                                        style={{ marginLeft: '8px', transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}
+                                    />
+                                    
+                                    {dropdownOpen && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '100%',
+                                            left: 0,
+                                            marginTop: '4px',
+                                            width: '240px',
+                                            background: '#FFFFFF',
+                                            border: '1px solid #E2E8F0',
+                                            borderRadius: '8px',
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                            zIndex: 50,
+                                            padding: '8px 0',
+                                            display: 'flex',
+                                            flexDirection: 'column'
+                                        }}>
+                                            <div 
+                                                style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', cursor: 'pointer', background: gestionSeleccionada.includes('ALL') ? '#EFF6FF' : 'transparent' }}
+                                                onClick={(e) => { e.stopPropagation(); toggleGestion('ALL'); }}
+                                            >
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={gestionSeleccionada.includes('ALL')}
+                                                    readOnly
+                                                    style={{ marginRight: '10px', width: '14px', height: '14px', cursor: 'pointer' }}
+                                                />
+                                                <span style={{ fontSize: '13px', fontWeight: '500', color: '#1E293B' }}>Todas las Gestiones</span>
+                                            </div>
+                                            <div style={{ height: '1px', background: '#E2E8F0', margin: '4px 0' }}></div>
+                                            {gestiones.map((item) => (
+                                                <div 
+                                                    key={item.codigo_valor}
+                                                    style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', cursor: 'pointer', background: gestionSeleccionada.includes(item.codigo_valor) ? '#EFF6FF' : 'transparent' }}
+                                                    onClick={(e) => { e.stopPropagation(); toggleGestion(item.codigo_valor); }}
+                                                >
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={gestionSeleccionada.includes(item.codigo_valor)}
+                                                        readOnly
+                                                        style={{ marginRight: '10px', width: '14px', height: '14px', cursor: 'pointer' }}
+                                                    />
+                                                    <span style={{ fontSize: '13px', fontWeight: '500', color: '#1E293B' }}>{item.descripcion}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                    </div>
+                            </div>
 
-                    {/* Botón para eliminar filtro si está activo */}
-                    {!gestionSeleccionada.includes('ALL') && (
-                        <button
-                            onClick={limpiarFiltro}
-                            title="Eliminar filtro y ver toda la información"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: '#EFF6FF',
-                                border: '1px solid #BFDBFE',
-                                color: '#1D4ED8',
-                                padding: '6px 12px',
-                                borderRadius: '8px',
-                                fontSize: '12px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.background = '#DBEAFE'}
-                            onMouseOut={(e) => e.currentTarget.style.background = '#EFF6FF'}
-                        >
-                            <RotateCcw size={13} />
-                            <span>Ver todo</span>
-                        </button>
+                            {/* Botón para eliminar filtro si está activo */}
+                            {!gestionSeleccionada.includes('ALL') && (
+                                <button
+                                    onClick={limpiarFiltro}
+                                    title="Eliminar filtro y ver toda la información"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        background: '#EFF6FF',
+                                        border: '1px solid #BFDBFE',
+                                        color: '#1D4ED8',
+                                        padding: '6px 12px',
+                                        borderRadius: '8px',
+                                        fontSize: '12px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.background = '#DBEAFE'}
+                                    onMouseOut={(e) => e.currentTarget.style.background = '#EFF6FF'}
+                                >
+                                    <RotateCcw size={13} />
+                                    <span>Ver todo</span>
+                                </button>
+                            )}
+                        </>
                     )}
 
                     {/* Selector de Periodo */}
@@ -563,11 +568,7 @@ export default function Header() {
                                     lineHeight: '1.1'
                                 }}
                             >
-                                {usuario?.rol_codigo === 'PROVEEDOR'
-                                    ? 'PROVEEDOR'
-                                    : usuario?.rol_codigo === 'CONSULTOR'
-                                        ? 'CONSULTOR'
-                                        : 'MI PERFIL'}
+                                MI PERFIL
                             </span>
                             <span
                                 style={{
@@ -578,7 +579,7 @@ export default function Header() {
                                     lineHeight: '1.3'
                                 }}
                             >
-                                {documentoPerfil || '20123456789'}
+                                {usuario?.rol_codigo || 'ROL'}
                             </span>
                         </div>
                     </div>

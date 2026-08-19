@@ -960,9 +960,8 @@ else{
             <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
                 <thead>
                     <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
-                        <th style={{ padding: '10px 8px', fontSize: '13px', fontWeight: '600', color: '#4B5563' }}>Tipo Doc.</th>
-                        <th style={{ padding: '10px 8px', fontSize: '13px', fontWeight: '600', color: '#4B5563' }}>Nro. Doc.</th>
                         <th style={{ padding: '10px 8px', fontSize: '13px', fontWeight: '600', color: '#4B5563' }}>Razón Social / Nombres</th>
+                        <th style={{ padding: '10px 8px', fontSize: '13px', fontWeight: '600', color: '#4B5563' }}>Número RUC</th>
                         <th style={{ padding: '10px 8px', fontSize: '13px', fontWeight: '600', color: '#4B5563' }}>CIIU</th>
                         <th style={{ padding: '10px 8px', width: '50px' }}></th>
                     </tr>
@@ -973,9 +972,8 @@ else{
                         const ciiuDesc = ciius.find(ci => ci.codigo_valor === c.ciuu_cliente)?.descripcion || c.ciuu_cliente || '';
                         return (
                             <tr key={index} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: '#4B5563' }}>{tipoDesc}</td>
-                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: '#4B5563' }}>{c.nro_documento_clie}</td>
                                 <td style={{ padding: '10px 8px', fontSize: '13.5px', color: '#111827', fontWeight: '500' }}>{c.razon_social_nombres_apellidos}</td>
+                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: '#4B5563' }}>{c.nro_documento_clie}</td>
                                 <td style={{ padding: '10px 8px', fontSize: '13.5px', color: '#4B5563' }}>{c.ciuu_cliente ? `${c.ciuu_cliente} - ${ciiuDesc}` : ''}</td>
                                 <td style={{ padding: '10px 8px', textAlign: 'right' }}>
                                     <button
@@ -1003,44 +1001,29 @@ else{
             </table>
         ) : (
             <p style={{ fontSize: '13.5px', color: '#6B7280', margin: '0 0 20px 0', fontStyle: 'italic', background: '#fff', padding: '12px', borderRadius: '6px', border: '1px solid #E5E7EB', textAlign: 'center' }}>
-                No se han agregado clientes recomendados aún.
+                Proceda a registrar sus clientes referidos.
             </p>
         )}
         
         <div style={{ background: '#FFFFFF', padding: '20px', border: '1px dashed #D1D5DB', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
-            <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                Agregar Cliente Recomendado (Uno por Uno)
+            <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151', textTransform: 'uppercase' }}>
+                REFERENCIA DE CLIENTES:
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '12px' }}>
-                <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Tipo Doc. *</label>
-                    <select
-                        style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', background: '#fff' }}
-                        value={nuevoCliente.tipo_documento_clie}
-                        onChange={(e) => setNuevoCliente({ ...nuevoCliente, tipo_documento_clie: e.target.value })}
-                    >
-                        <option value="">Seleccione...</option>
-                        {tiposDocumentoClie.map(item => (
-                            <option key={item.codigo_valor} value={item.codigo_valor}>
-                                {item.descripcion}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Nro. Documento *</label>
-                    <input
-                        style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }}
-                        value={nuevoCliente.nro_documento_clie}
-                        onChange={(e) => setNuevoCliente({ ...nuevoCliente, nro_documento_clie: e.target.value })}
-                    />
-                </div>
                 <div>
                     <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Razón Social / Nombre *</label>
                     <input
                         style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }}
                         value={nuevoCliente.razon_social_nombres_apellidos}
                         onChange={(e) => setNuevoCliente({ ...nuevoCliente, razon_social_nombres_apellidos: e.target.value })}
+                    />
+                </div>
+                <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Número RUC *</label>
+                    <input
+                        style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }}
+                        value={nuevoCliente.nro_documento_clie}
+                        onChange={(e) => setNuevoCliente({ ...nuevoCliente, nro_documento_clie: e.target.value })}
                     />
                 </div>
                 <div>
@@ -1058,6 +1041,16 @@ else{
                         ))}
                     </select>
                 </div>
+                <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Tipo Doc. *</label>
+                    <select
+                        disabled
+                        style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', background: '#f3f4f6', color: '#9ca3af' }}
+                        value="06"
+                        onChange={() => {}}
+                    >
+                        <option value="06">RUC</option>
+                    </select>
             </div>
             
             {clienteError && (

@@ -1150,7 +1150,7 @@ export default function ProvidersPage() {
                         gap: '10px'
                     }}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        <span>Ahora proceda a registrar su información en documentos después de completar el llenado de su ficha.</span>
+                        <span>Proceda a registrar su información en "documentos" después de completar el llenado de su ficha.</span>
                     </div>
 
                     <div style={styles.card}>
@@ -1286,25 +1286,23 @@ export default function ProvidersPage() {
                     <div style={{ ...styles.card, marginTop: '20px' }}>
                             <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: colors.text, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ display: 'inline-block', width: '4px', height: '18px', background: '#2563eb', borderRadius: '2px' }}></span>
-                                Clientes Recomendados
+                                REFERENCIA DE CLIENTES
                             </h3>
                             
                             {proveedores[0]?.clientes && proveedores[0]?.clientes.length > 0 ? (
                                 <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
                                     <thead>
                                         <tr style={{ borderBottom: `2px solid ${colors.border}`, textAlign: 'left' }}>
-                                            <th style={{ padding: '10px 8px', fontSize: '12px', fontWeight: '700', color: colors.textMuted }}>TIPO DOC.</th>
-                                            <th style={{ padding: '10px 8px', fontSize: '12px', fontWeight: '700', color: colors.textMuted }}>NRO. DOC.</th>
                                             <th style={{ padding: '10px 8px', fontSize: '12px', fontWeight: '700', color: colors.textMuted }}>RAZÓN SOCIAL / NOMBRE</th>
+                                            <th style={{ padding: '10px 8px', fontSize: '12px', fontWeight: '700', color: colors.textMuted }}>NÚMERO RUC</th>
                                             <th style={{ padding: '10px 8px', fontSize: '12px', fontWeight: '700', color: colors.textMuted }}>ACTIVIDAD ECONÓMICA (CIIU)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {proveedores[0]?.clientes.map((c, index) => (
                                             <tr key={index} style={{ borderBottom: `1px solid ${colors.border}` }}>
-                                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: colors.text }}>{c.descripcion_tipo_documento || c.tipo_documento_clie}</td>
-                                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: colors.text }}>{c.nro_documento_clie}</td>
                                                 <td style={{ padding: '10px 8px', fontSize: '13.5px', color: colors.text, fontWeight: '500' }}>{c.razon_social_nombres_apellidos}</td>
+                                                <td style={{ padding: '10px 8px', fontSize: '13.5px', color: colors.text }}>{c.nro_documento_clie}</td>
                                                 <td style={{ padding: '10px 8px', fontSize: '13.5px', color: colors.text }}>{c.ciuu_cliente} - {c.descripcion_ciiu || ''}</td>
                                             </tr>
                                         ))}
@@ -1312,44 +1310,29 @@ export default function ProvidersPage() {
                                 </table>
                             ) : (
                                 <p style={{ fontSize: '13.5px', color: colors.textMuted, margin: '0 0 20px 0', fontStyle: 'italic', background: '#fff', padding: '12px', borderRadius: '6px', border: `1px solid ${colors.border}`, textAlign: 'center' }}>
-                                    No se han agregado clientes recomendados aún.
+                                    Proceda a registrar sus clientes referidos.
                                 </p>
                             )}
                             
                             <div style={{ background: '#FFFFFF', padding: '20px', border: '1px dashed #D1D5DB', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
-                                <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                                    Agregar Cliente Recomendado (Uno por Uno)
+                                <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151', textTransform: 'uppercase' }}>
+                                    REFERENCIA DE CLIENTES:
                                 </h4>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '12px' }}>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Tipo Doc. *</label>
-                                        <select
-                                            style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', background: '#fff' }}
-                                            value={nuevoCliente.tipo_documento_clie}
-                                            onChange={(e) => setNuevoCliente({ ...nuevoCliente, tipo_documento_clie: e.target.value })}
-                                        >
-                                            <option value="">Seleccione...</option>
-                                            {tiposDocumentoClie.map(item => (
-                                                <option key={item.codigo_valor} value={item.codigo_valor}>
-                                                    {item.descripcion}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Nro. Documento *</label>
-                                        <input
-                                            style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }}
-                                            value={nuevoCliente.nro_documento_clie}
-                                            onChange={(e) => setNuevoCliente({ ...nuevoCliente, nro_documento_clie: e.target.value })}
-                                        />
-                                    </div>
                                     <div>
                                         <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Razón Social / Nombre *</label>
                                         <input
                                             style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }}
                                             value={nuevoCliente.razon_social_nombres_apellidos}
                                             onChange={(e) => setNuevoCliente({ ...nuevoCliente, razon_social_nombres_apellidos: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Número RUC *</label>
+                                        <input
+                                            style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box' }}
+                                            value={nuevoCliente.nro_documento_clie}
+                                            onChange={(e) => setNuevoCliente({ ...nuevoCliente, nro_documento_clie: e.target.value })}
                                         />
                                     </div>
                                     <div>
@@ -1365,6 +1348,17 @@ export default function ProvidersPage() {
                                                     {item.codigo_valor} - {item.descripcion}
                                                 </option>
                                             ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '12px', color: '#4B5563', marginBottom: '4px', fontWeight: '500' }}>Tipo Doc. *</label>
+                                        <select
+                                            disabled
+                                            style={{ width: '100%', padding: '8px', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '13px', background: '#f3f4f6', color: '#9ca3af' }}
+                                            value="06"
+                                            onChange={() => {}}
+                                        >
+                                            <option value="06">RUC</option>
                                         </select>
                                     </div>
                                 </div>
