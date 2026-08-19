@@ -1051,6 +1051,7 @@ else{
                     >
                         <option value="06">RUC</option>
                     </select>
+                </div>
             </div>
             
             {clienteError && (
