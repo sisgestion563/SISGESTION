@@ -509,8 +509,9 @@ export default function ModalDocumento({visible,
 							}
 						</select>
 						{form.alcance === 'GMA' && (
-							<span style={{ fontSize: '11px', color: colors.textMuted, marginTop: '2px' }}>
-								ℹ️ Máximo 2 documentos permitidos para la Gestión MA.
+							<span style={{ fontSize: '11px', color: colors.textMuted, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+								<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+								<span>Máximo 2 documentos permitidos para la Gestión MA.</span>
 							</span>
 						)}
 					</div>
