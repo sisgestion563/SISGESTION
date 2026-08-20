@@ -1411,20 +1411,38 @@ export default function ProvidersPage() {
                                     type="button"
                                     onClick={() => setMostrarConstruccion(true)}
                                     style={{
-                                        background: '#eff6ff',
-                                        border: '1px solid #bfdbfe',
-                                        color: '#1d4ed8',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        background: colors.primary,
+                                        color: '#ffffff',
+                                        border: 'none',
                                         borderRadius: '6px',
-                                        padding: '5px 14px',
+                                        padding: '6px 14px',
                                         fontSize: '13px',
                                         fontWeight: '600',
                                         cursor: 'pointer',
-                                        transition: 'all 0.2s'
+                                        boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)',
+                                        transition: 'all 0.2s ease-in-out'
                                     }}
-                                    onMouseOver={(e) => e.target.style.background = '#dbeafe'}
-                                    onMouseOut={(e) => e.target.style.background = '#eff6ff'}
+                                    onMouseOver={(e) => {
+                                        e.currentTarget.style.background = '#1d4ed8';
+                                        e.currentTarget.style.boxShadow = '0 4px 6px rgba(37, 99, 235, 0.3)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.currentTarget.style.background = colors.primary;
+                                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(37, 99, 235, 0.2)';
+                                    }}
                                 >
-                                    [ Listar ]
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                    </svg>
+                                    Listar
                                 </button>
                             </div>
 
