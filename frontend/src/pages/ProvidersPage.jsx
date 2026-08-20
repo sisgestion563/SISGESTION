@@ -1403,23 +1403,29 @@ export default function ProvidersPage() {
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             {/* Bloque 1: Mis Clientes */}
-                            <div style={{ borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
-                                <p style={{ fontSize: '13px', fontWeight: '700', color: colors.textMuted, margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                            <div style={{ borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <p style={{ fontSize: '13px', fontWeight: '700', color: colors.textMuted, margin: 0, textTransform: 'uppercase' }}>
                                     MIS CLIENTES
                                 </p>
-                                {proveedores[0]?.clientes && proveedores[0]?.clientes.length > 0 ? (
-                                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13.5px', color: colors.text, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        {proveedores[0].clientes.map((c, index) => (
-                                            <li key={index}>
-                                                <strong>{c.razon_social_nombres_apellidos}</strong> (RUC: {c.nro_documento_clie}) - CIIU: {c.ciuu_cliente}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p style={{ fontSize: '13.5px', color: colors.textMuted, margin: 0, fontStyle: 'italic' }}>
-                                        No se han registrado clientes referidos.
-                                    </p>
-                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setMostrarConstruccion(true)}
+                                    style={{
+                                        background: '#eff6ff',
+                                        border: '1px solid #bfdbfe',
+                                        color: '#1d4ed8',
+                                        borderRadius: '6px',
+                                        padding: '5px 14px',
+                                        fontSize: '13px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onMouseOver={(e) => e.target.style.background = '#dbeafe'}
+                                    onMouseOut={(e) => e.target.style.background = '#eff6ff'}
+                                >
+                                    [ Listar ]
+                                </button>
                             </div>
 
                             {/* Bloque 2: Clientes Potenciales */}
