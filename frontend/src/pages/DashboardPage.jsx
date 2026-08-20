@@ -448,7 +448,7 @@ export default function DashboardPage() {
         const regimen = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || 'RG';
         const LIMITS_PER_ALCANCE = {
             'RG': { 'GSG': 12, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
-            'RP': { 'GSG': 10, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+            'RP': { 'GSG': 9,  'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
             'RM': { 'GSG': 7,  'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 }
         };
         const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
@@ -725,9 +725,6 @@ export default function DashboardPage() {
                                                                 <td style={{ ...styles.td, padding: '10px 12px' }}><strong>{obtenerNombreMostrado(kpi.gestion)}</strong></td>
                                                                 <td style={{ ...styles.td, padding: '10px 12px' }}>
                                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'center' }}>
-                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: colors.textMuted }}>
-                                                                            <span>{kpi.documentos_registrados} de {kpi.documentos_exigibles} documentos</span>
-                                                                        </div>
                                                                         <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '6px' }}>
                                                                             <div style={{ width: `${pct}%`, background: progressColor, height: '100%', transition: 'width 1s ease-in-out', borderRadius: '4px' }}></div>
                                                                         </div>

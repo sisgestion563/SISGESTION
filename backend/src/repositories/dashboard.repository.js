@@ -203,14 +203,14 @@ WITH proveedor_info AS (
         regimen_tributario,
         CASE 
             WHEN regimen_tributario = 'RG' THEN 12
-            WHEN regimen_tributario = 'RP' THEN 10
+            WHEN regimen_tributario = 'RP' THEN 9
             WHEN regimen_tributario = 'RM' THEN 7
             ELSE 12
         END as exigible_sst,
         1 as exigible_ma,
         CASE 
             WHEN regimen_tributario = 'RG' THEN 13
-            WHEN regimen_tributario = 'RP' THEN 11
+            WHEN regimen_tributario = 'RP' THEN 10
             WHEN regimen_tributario = 'RM' THEN 8
             ELSE NULL
         END as exigible_sst_ma,
@@ -268,7 +268,7 @@ WITH proveedor_info AS (
         proveedor_id, 
         CASE 
             WHEN regimen_tributario = 'RG' THEN 12
-            WHEN regimen_tributario = 'RP' THEN 10
+            WHEN regimen_tributario = 'RP' THEN 9
             WHEN regimen_tributario = 'RM' THEN 7
             ELSE 12
         END as exigible_sst,
@@ -278,7 +278,7 @@ WITH proveedor_info AS (
         1 as exigible_etica,
         CASE 
             WHEN regimen_tributario = 'RG' THEN 16
-            WHEN regimen_tributario = 'RP' THEN 14
+            WHEN regimen_tributario = 'RP' THEN 13
             WHEN regimen_tributario = 'RM' THEN 11
             ELSE 16
         END as total_exigibles
@@ -362,7 +362,7 @@ WITH proveedor_info AS (
         COALESCE(reg_trib.descripcion, p.regimen_tributario::varchar) AS regimen_tributario,
         CASE 
             WHEN p.regimen_tributario = 'RG' THEN 12
-            WHEN p.regimen_tributario = 'RP' THEN 10
+            WHEN p.regimen_tributario = 'RP' THEN 9
             WHEN p.regimen_tributario = 'RM' THEN 7
             ELSE 12
         END as exigible_sst,
@@ -372,7 +372,7 @@ WITH proveedor_info AS (
         1 as exigible_etica,
         CASE 
             WHEN p.regimen_tributario = 'RG' THEN 16
-            WHEN p.regimen_tributario = 'RP' THEN 14
+            WHEN p.regimen_tributario = 'RP' THEN 13
             WHEN p.regimen_tributario = 'RM' THEN 11
             ELSE 16
         END as total_exigibles

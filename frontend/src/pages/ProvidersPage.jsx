@@ -256,6 +256,7 @@ export default function ProvidersPage() {
     const [modalConsultaVisible, setModalConsultaVisible] = useState(false);
     const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
     const [proveedorEditar, setProveedorEditar] = useState(null);
+    const [mostrarConstruccion, setMostrarConstruccion] = useState(false);
 
     // ── Estado formulario autoregistro (PROVEEDOR sin ficha) ──────────────────
     const [form, setForm] = useState({
@@ -291,7 +292,7 @@ export default function ProvidersPage() {
     const [tiposDocumentoClie, setTiposDocumentoClie] = useState([]);
     const [clientes, setClientes] = useState([]);
     const [nuevoCliente, setNuevoCliente] = useState({
-        tipo_documento_clie: '',
+        tipo_documento_clie: '06',
         nro_documento_clie: '',
         razon_social_nombres_apellidos: '',
         ciuu_cliente: ''
@@ -474,7 +475,7 @@ export default function ProvidersPage() {
                 newErrors.razon_social = 'La razón social es obligatoria.';
             }
             if (!form.representante_legal || !form.representante_legal.trim()) {
-                newErrors.representante_legal = 'El representante legal es obligatorio.';
+                newErrors.representante_legal = 'El nombre del contacto es obligatorio.';
             }
         } else {
             if (!form.nombre || !form.nombre.trim()) {
@@ -633,7 +634,7 @@ export default function ProvidersPage() {
             
             // Limpiamos los campos
             setNuevoCliente({
-                tipo_documento_clie: '',
+                tipo_documento_clie: '06',
                 nro_documento_clie: '',
                 razon_social_nombres_apellidos: '',
                 ciuu_cliente: ''
@@ -961,7 +962,7 @@ export default function ProvidersPage() {
                         {/* --- GRUPO 3: LEGAL --- */}
                         {esEmpresa && (
                             <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
-                                <label style={styles.labelForm}>Representante Legal *</label>
+                                <label style={styles.labelForm}>Nombre del Contacto *</label>
                                 <input 
                                     required 
                                     type="text" 
@@ -1237,7 +1238,7 @@ export default function ProvidersPage() {
                         {proveedores[0]?.tipo_documento === '06' && (
                             <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>REPRESENTANTE LEGAL</label>
+                                    <label style={{ display: 'block', fontSize: '11px', color: colors.textMuted, fontWeight: '700' }}>NOMBRE DEL CONTACTO</label>
                                     <div style={{ padding: '8px 0', fontSize: '14px', fontWeight: '500', color: colors.text }}>{proveedores[0]?.representante_legal || 'No registrado'}</div>
                                 </div>
                             </div>
@@ -1394,6 +1395,111 @@ export default function ProvidersPage() {
                         </div>
                     </div>
 
+                    {/* --- NUEVA TARJETA: DIRECTORIO DE CLIENTES POTENCIALES --- */}
+                    <div style={{ ...styles.card, marginTop: '20px' }}>
+                        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: colors.text, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ display: 'inline-block', width: '4px', height: '18px', background: '#2563eb', borderRadius: '2px' }}></span>
+                            DIRECTORIO DE CLIENTES POTENCIALES
+                        </h3>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {/* Bloque 1: Mis Clientes */}
+                            <div style={{ borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
+                                <p style={{ fontSize: '13px', fontWeight: '700', color: colors.textMuted, margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                                    MIS CLIENTES
+                                </p>
+                                {proveedores[0]?.clientes && proveedores[0]?.clientes.length > 0 ? (
+                                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13.5px', color: colors.text, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        {proveedores[0].clientes.map((c, index) => (
+                                            <li key={index}>
+                                                <strong>{c.razon_social_nombres_apellidos}</strong> (RUC: {c.nro_documento_clie}) - CIIU: {c.ciuu_cliente}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p style={{ fontSize: '13.5px', color: colors.textMuted, margin: 0, fontStyle: 'italic' }}>
+                                        No se han registrado clientes referidos.
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Bloque 2: Clientes Potenciales */}
+                            <div style={{ borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
+                                <p style={{ fontSize: '13px', fontWeight: '700', color: colors.textMuted, margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                                    CLIENTES POTENCIALES
+                                </p>
+                                <p style={{ fontSize: '14px', margin: 0, color: colors.text }}>
+                                    Total disponible: <strong>{Math.max(0, 100 - (proveedores[0]?.clientes?.length || 0))}</strong>
+                                </p>
+                            </div>
+
+                            {/* Breve descripción explicativa */}
+                            <p style={{ fontSize: '13.5px', color: colors.textMuted, margin: 0, lineHeight: '1.4' }}>
+                                Esta sección le permite visualizar las oportunidades comerciales disponibles. Acceda al directorio para conectar con nuevos clientes que buscan proveedores con sus mismas calificaciones y estándares de gestión.
+                            </p>
+
+                            {/* Recuadro destacado centrado */}
+                            <div style={{
+                                background: '#f8fafc',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '8px',
+                                padding: '24px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '12px',
+                                textAlign: 'center',
+                                marginTop: '8px'
+                            }}>
+                                {/* Ícono de candado */}
+                                <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '50%',
+                                    background: '#fee2e2',
+                                    color: '#dc2626',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '20px'
+                                }}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </div>
+                                
+                                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: colors.text }}>
+                                    DIRECTORIO DE CLIENTES POTENCIALES
+                                </h4>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setMostrarConstruccion(true)}
+                                    style={{
+                                        background: colors.primary,
+                                        color: '#fff',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '10px 20px',
+                                        fontSize: '13.5px',
+                                        fontWeight: '700',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.2s',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                                        textTransform: 'uppercase'
+                                    }}
+                                    onMouseOver={(e) => e.target.style.background = '#1d4ed8'}
+                                    onMouseOut={(e) => e.target.style.background = colors.primary}
+                                >
+                                    ACCEDER AL DIRECTORIO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             ) : (
                 /* ════════════════════════════════════════════════════════════
                    CASO C: ADMIN y CONSULTOR → Panel general de proveedores
@@ -1539,6 +1645,70 @@ export default function ProvidersPage() {
                 proveedor={proveedorSeleccionado}
                 onClose={() => setModalConsultaVisible(false)}
             />
+
+            {mostrarConstruccion && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999
+                }}>
+                    <div style={{
+                        background: '#fff',
+                        borderRadius: '12px',
+                        padding: '30px',
+                        maxWidth: '400px',
+                        width: '90%',
+                        textAlign: 'center',
+                        boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)'
+                    }}>
+                        <div style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '50%',
+                            background: '#fef3c7',
+                            color: '#d97706',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 16px auto',
+                            fontSize: '28px'
+                        }}>
+                            🚧
+                        </div>
+                        <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '700', color: colors.text }}>
+                            Página en Construcción
+                        </h3>
+                        <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: colors.textMuted, lineHeight: '1.5' }}>
+                            Esta página se encuentra en construcción. Estamos trabajando para brindarle una mejor experiencia comercial.
+                        </p>
+                        <button
+                            onClick={() => setMostrarConstruccion(false)}
+                            style={{
+                                background: colors.primary,
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '8px 24px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'background 0.2s'
+                            }}
+                            onMouseOver={(e) => e.target.style.background = '#1d4ed8'}
+                            onMouseOut={(e) => e.target.style.background = colors.primary}
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            )}
         </MainLayout>
     );
 }

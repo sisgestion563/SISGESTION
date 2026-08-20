@@ -140,7 +140,7 @@ export default function ModalVerProveedor({
 
                         {esEmpresa && (
                             <tr>
-                                <td><b>Representante Legal</b></td>
+                                <td><b>Nombre del Contacto</b></td>
                                 <td>{proveedor.representante_legal}</td>
                             </tr>
                         )}

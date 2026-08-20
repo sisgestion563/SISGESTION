@@ -373,7 +373,7 @@ const validarForm = () => {
             newErrors.razon_social = 'La razón social es obligatoria.';
         }
         if (!form.representante_legal || !form.representante_legal.trim()) {
-            newErrors.representante_legal = 'El representante legal es obligatorio.';
+            newErrors.representante_legal = 'El nombre del contacto es obligatorio.';
         }
     } else {
         if (!form.nombre || !form.nombre.trim()) {
@@ -798,7 +798,7 @@ else{
 {/* --- GRUPO 3: LEGAL --- */}
 {esEmpresa && (
     <div style={{ marginBottom: '25px', paddingBottom: '20px', borderBottom: '1px solid #E5E7EB' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Representante Legal *</label>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Nombre del Contacto *</label>
         <input
             required
             style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '6px', marginBottom: errors.representante_legal ? '5px' : '0' }}
