@@ -1393,7 +1393,6 @@ export default function ProvidersPage() {
                                 </button>
                             </div>
                         </div>
-                    </div>
 
                     {/* --- NUEVA TARJETA: DIRECTORIO DE CLIENTES POTENCIALES --- */}
                     <div style={{ ...styles.card, marginTop: '20px' }}>
