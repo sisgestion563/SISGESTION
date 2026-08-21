@@ -364,6 +364,7 @@ export default function DocumentsPage() {
 					? `${item.tipo_documento_id} - ${item.descripcion_tipo_documento || item.tipo_documento || (item.tipo_documento_id === '01' ? 'Carta de Presentación' : item.tipo_documento_id === '02' ? 'Otros' : '')}`
 					: (item.descripcion_tipo_documento || item.tipo_documento || ''),
 				"Fecha Vigencia": formatearFechaLocal(item.fecha_vigencia),
+				"Última Modificación": (item.last_update || item.fecha_modificacion) ? formatearFechaLocal(item.last_update || item.fecha_modificacion) : 'Este documento no ha sido editado',
 				"Estado": item.estado_documento === 'V' ? 'VIGENTE' : 'VENCIDO'
 			}));
 
@@ -404,6 +405,7 @@ export default function DocumentsPage() {
 							"Columna": "Alcance",
 							"Tipo": "Tipo Documento",
 							"Vigencia": "Fecha Vigencia",
+							"UltimaModificacion": "Última Modificación",
 							"Estado": "Estado",
 							"Ruta": "Ruta Documento",
 							"Observaciones": "Observaciones"
@@ -421,6 +423,7 @@ export default function DocumentsPage() {
 									? `${doc.tipo_documento_id} - ${doc.descripcion_tipo_documento || doc.tipo_documento || (doc.tipo_documento_id === '01' ? 'Carta de Presentación' : doc.tipo_documento_id === '02' ? 'Otros' : '')}`
 									: (doc.descripcion_tipo_documento || doc.tipo_documento || ''),
 								"Vigencia": formatearFechaLocal(doc.fecha_vigencia),
+								"UltimaModificacion": (doc.last_update || doc.fecha_modificacion) ? formatearFechaLocal(doc.last_update || doc.fecha_modificacion) : 'Este documento no ha sido editado',
 								"Estado": doc.estado_documento === 'V' ? 'VIGENTE' : 'VENCIDO',
 								"Ruta": doc.ruta_documento || '',
 								"Observaciones": doc.observaciones || ''
@@ -787,6 +790,7 @@ export default function DocumentsPage() {
 										<th style={styles.th}>Alcance</th>
 										<th style={styles.th}>Tipo Documento</th>											
 										<th style={styles.th}>Fecha Vigencia</th>
+										<th style={styles.th}>Última Modificación</th>
 										<th style={styles.th}>Estado</th>
 										<th style={styles.th}>Acciones</th>
 									</tr>
@@ -797,8 +801,8 @@ export default function DocumentsPage() {
 									{(() => {
                                         const hoy = new Date();
                                         hoy.setHours(0,0,0,0);
-                                        const en7Dias = new Date(hoy);
-                                        en7Dias.setDate(en7Dias.getDate() + 7);
+                                        const en15Dias = new Date(hoy);
+                                        en15Dias.setDate(en15Dias.getDate() + 15);
                                         
                                         const documentosFiltrados = documentos.filter(item => {
                                             if (!estadoFiltroUrl) return true;
@@ -808,7 +812,7 @@ export default function DocumentsPage() {
                                                 return item.estado_documento === 'C' || fVigencia < hoy;
                                             }
                                             if (estadoFiltroUrl === 'POR_VENCER') {
-                                                return item.estado_documento === 'V' && fVigencia >= hoy && fVigencia <= en7Dias;
+                                                return item.estado_documento === 'V' && fVigencia >= hoy && fVigencia <= en15Dias;
                                             }
                                             if (estadoFiltroUrl === 'VIGENTES') {
                                                 return item.estado_documento === 'V' && fVigencia >= hoy;
@@ -819,7 +823,7 @@ export default function DocumentsPage() {
                                         if (documentosFiltrados.length === 0) {
                                             return (
                                                 <tr>
-                                                    <td colSpan={5} style={{...styles.td, textAlign:'center', color: colors.textMuted}}>
+                                                    <td colSpan={6} style={{...styles.td, textAlign:'center', color: colors.textMuted}}>
                                                         No hay documentos registrados en este grupo con el filtro seleccionado.
                                                     </td>
                                                 </tr>
@@ -842,6 +846,13 @@ export default function DocumentsPage() {
 
 											<td style={styles.td}>
 												{formatearFechaLocal(item.fecha_vigencia)}
+											</td>
+
+											<td style={styles.td}>
+												{(item.last_update || item.fecha_modificacion) 
+													? formatearFechaLocal(item.last_update || item.fecha_modificacion) 
+													: <span style={{ color: colors.textMuted, fontStyle: 'italic', fontSize: '13px' }}>Este documento no ha sido editado</span>
+												}
 											</td>
 
 											<td style={styles.td}>

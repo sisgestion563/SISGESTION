@@ -423,7 +423,7 @@ doc_counts AS (
 
         -- Absolutos para botones
         COUNT(d.documento_id) FILTER (WHERE d.fecha_vigencia < CURRENT_DATE) AS vencidos_abs,
-        COUNT(d.documento_id) FILTER (WHERE d.fecha_vigencia >= CURRENT_DATE AND d.fecha_vigencia <= CURRENT_DATE + INTERVAL '7 days') AS por_vencer_abs,
+        COUNT(d.documento_id) FILTER (WHERE d.fecha_vigencia >= CURRENT_DATE AND d.fecha_vigencia <= CURRENT_DATE + INTERVAL '15 days') AS por_vencer_abs,
         COUNT(d.documento_id) FILTER (WHERE d.fecha_vigencia >= CURRENT_DATE) AS vigentes_abs
     FROM proveedor_info p
     LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 

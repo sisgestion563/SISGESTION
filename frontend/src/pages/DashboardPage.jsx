@@ -139,9 +139,9 @@ const esVigente = (item) => {
     return ref.includes('VIG');
 };
 
-// Urgencia para "Próximos a Vencer": rojo <=7 días, ámbar <=30 días, verde el resto.
+// Urgencia para "Próximos a Vencer": rojo <=15 días, ámbar <=30 días, verde el resto.
 const urgencia = (dias) => {
-    if (dias <= 7) return { label: `${dias} día${dias === 1 ? '' : 's'}`, bg: colors.dangerBg, fg: colors.danger };
+    if (dias <= 15) return { label: `${dias} día${dias === 1 ? '' : 's'}`, bg: colors.dangerBg, fg: colors.danger };
     if (dias <= 30) return { label: `${dias} días`, bg: '#fef3c7', fg: '#b45309' };
     return { label: `${dias} días`, bg: colors.successBg, fg: colors.success };
 };
@@ -599,7 +599,7 @@ export default function DashboardPage() {
         });
 
         const unDiaMs = 86400000;
-        const hoyMas7 = new Date(hoy.getTime() + 7 * unDiaMs);
+        const hoyMas15 = new Date(hoy.getTime() + 15 * unDiaMs);
 
         const vencidosAbs = docsFiltrados.filter(d => {
             if (!d.fecha_vigencia) return false;
@@ -612,7 +612,7 @@ export default function DashboardPage() {
             if (!d.fecha_vigencia) return false;
             const f = new Date(d.fecha_vigencia);
             f.setHours(0, 0, 0, 0);
-            return f >= hoy && f <= hoyMas7;
+            return f >= hoy && f <= hoyMas15;
         }).length;
 
         const vigentesAbs = docsFiltrados.filter(d => {
@@ -622,13 +622,16 @@ export default function DashboardPage() {
             return f >= hoy;
         }).length;
 
+        const pendientesCount = todosPendientes.length;
+
         setEstadoExpediente({
             total_exigibles: totalExigibles,
             total_registrados: totalRegistrados,
             vigentes_para_porcentaje: totalVigentesCapped,
             vencidos: vencidosAbs,
             por_vencer: porVencerAbs,
-            vigentes: vigentesAbs
+            vigentes: vigentesAbs,
+            pendientes: pendientesCount
         });
 
         // Gráficos de grupo según filtro
@@ -1102,6 +1105,23 @@ export default function DashboardPage() {
                                             >
                                                 <span style={{ fontSize: '14px', fontWeight: 600, color: colors.danger }}>Vencidos</span>
                                                 <span style={{ fontSize: '18px', fontWeight: 800, color: colors.danger }}>{estadoExpediente.vencidos}</span>
+                                            </button>
+
+                                            <button
+                                                onClick={() => navigate('/documents?estado=PENDIENTES')}
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#f3f4f6', border: `1px solid #e5e7eb`, borderRadius: '10px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>Pendientes</span>
+                                                    {(estadoExpediente.pendientes > 0) && (
+                                                        <span style={{ background: '#6b7280', width: 8, height: 8, borderRadius: '50%' }}></span>
+                                                    )}
+                                                </div>
+                                                <span style={{ fontSize: '18px', fontWeight: 800, color: '#111827' }}>
+                                                    {estadoExpediente.pendientes ?? 0}
+                                                </span>
                                             </button>
                                         </div>
                                     </div>
