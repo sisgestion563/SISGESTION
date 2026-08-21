@@ -204,6 +204,121 @@ const GESTION_MAP = {
     'GTR': { nombre: 'Código Ética', grupo: 'DOC_OTROS', alcances: ['GTR'], kpiMatch: ['ETICA'] }
 };
 
+const DOC_DESCRIPCIONES_DASHBOARD = {
+    GSG: {
+        '01': 'Accidentes de Trabajo, Enfermedades Ocupacionales e Incidentes',
+        '02': 'Exámenes Médicos Ocupacionales',
+        '03': 'Monitoreo de Agentes',
+        '04': 'Inspecciones Internas',
+        '05': 'Estadísticas',
+        '06': 'Equipos de Seguridad o Emergencia',
+        '07': 'Capacitación y Simulacros',
+        '08': 'Auditorías',
+        '09': 'Reglamento Interno de Seguridad y Salud en el Trabajo.',
+        '10': 'Identificación de peligros, evaluación de riesgos y sus medidas de control(IPERC)',
+        '11': 'Comité SST',
+        '12': 'Plan y Programa Anual de Seguridad y Salud en el Trabajo.',
+        '13': 'Supervisor SST (Elegido si tiene menos de 20 trabajadores).',
+        '15': 'Comité SST (Obligatorio si supera los 20 trabajadores)'
+    },
+    GMA: {
+        '01': 'Matriz PAMA',
+        '02': 'Otros(Certificaciones, declaraciones, manifiestos, informes)'
+    },
+    GCA: {
+        '01': 'Certificaciones ISO 9001',
+        '02': 'Certificaciones diversas(Homologaciones)'
+    },
+    GPA: {
+        '01': 'Plán de Contigencia',
+        '02': 'Otros'
+    },
+    GTR: {
+        '01': 'Carta de Presentación',
+        '02': 'Otros'
+    }
+};
+
+const REQUERIDOS_SST_DASHBOARD = {
+    RM: ['01', '02', '04', '07', '09', '12', '13'],
+    RP: ['01', '02', '03', '04', '05', '07', '09', '10', '12'],
+    RG: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+};
+
+const calcularPendientesProveedor = (regimenInput, nroTrabajadores, uploadedDocs, nombreProveedor) => {
+    const reg = (regimenInput || 'RG').toUpperCase();
+    const isRM = reg === 'RM' || reg.includes('MICRO');
+    const isRP = reg === 'RP' || reg.includes('PEQUEÑA') || reg.includes('PEQUENA');
+    const regCode = isRM ? 'RM' : (isRP ? 'RP' : 'RG');
+
+    const listaPendientes = [];
+    const docs = uploadedDocs || [];
+    const uploadedSet = new Set(docs.map(d => `${d.alcance}_${String(d.tipo_documento_id).padStart(2, '0')}`));
+    const uploadedByAlcance = {
+        GSG: docs.filter(d => d.alcance === 'GSG'),
+        GMA: docs.filter(d => d.alcance === 'GMA'),
+        GCA: docs.filter(d => d.alcance === 'GCA'),
+        GPA: docs.filter(d => d.alcance === 'GPA'),
+        GTR: docs.filter(d => d.alcance === 'GTR')
+    };
+
+    // 1. SST (GSG)
+    let reqSST = [...(REQUERIDOS_SST_DASHBOARD[regCode] || REQUERIDOS_SST_DASHBOARD.RG)];
+    if (regCode === 'RP') {
+        const trabStr = String(nroTrabajadores || '');
+        const esMas20 = trabStr.includes('MT') || trabStr.includes('>20') || trabStr.includes('MAS DE 20') || parseInt(trabStr, 10) > 20;
+        if (esMas20 && !reqSST.includes('15')) {
+            reqSST.push('15');
+        }
+    }
+
+    reqSST.forEach(docId => {
+        const idPad = String(docId).padStart(2, '0');
+        if (!uploadedSet.has(`GSG_${idPad}`)) {
+            const desc = DOC_DESCRIPCIONES_DASHBOARD.GSG[idPad] || `Documento ${idPad}`;
+            listaPendientes.push({
+                proveedor: nombreProveedor,
+                grupo_documentos: 'DOC_NOR',
+                alcance: 'GSG',
+                alcance_nombre: 'SST',
+                gestion: 'GESTIÓN SST',
+                tipo_documento_id: idPad,
+                tipo_documento: `${idPad} - ${desc}`,
+                descripcion_tipo_documento: desc,
+                estado: 'Pendiente de ingresar'
+            });
+        }
+    });
+
+    // 2. MA (GMA), CALIDAD (GCA), PATRIMONIAL (GPA), ETICA (GTR)
+    const sencillas = [
+        { alcance: 'GMA', alcanceNombre: 'MA', gestion: 'GESTIÓN MA', grupo: 'DOC_NOR', defaultId: '01' },
+        { alcance: 'GCA', alcanceNombre: 'CALIDAD', gestion: 'GESTIÓN DE CALIDAD', grupo: 'DOC_EXT_NOR', defaultId: '01' },
+        { alcance: 'GPA', alcanceNombre: 'PATRIMONIAL', gestion: 'GESTIÓN PATRIMONIAL', grupo: 'DOC_REQ_ESTATAL', defaultId: '01' },
+        { alcance: 'GTR', alcanceNombre: 'ETICA', gestion: 'CÓDIGO ÉTICA', grupo: 'DOC_OTROS', defaultId: '01' }
+    ];
+
+    sencillas.forEach(item => {
+        if ((uploadedByAlcance[item.alcance] || []).length === 0) {
+            const idPad = item.defaultId;
+            const desc = DOC_DESCRIPCIONES_DASHBOARD[item.alcance][idPad] || `Documento ${idPad}`;
+            listaPendientes.push({
+                proveedor: nombreProveedor,
+                grupo_documentos: item.grupo,
+                alcance: item.alcance,
+                alcance_nombre: item.alcanceNombre,
+                gestion: item.gestion,
+                tipo_documento_id: idPad,
+                tipo_documento: `${idPad} - ${desc}`,
+                descripcion_tipo_documento: desc,
+                estado: 'Pendiente de ingresar'
+            });
+        }
+    });
+
+    return listaPendientes;
+};
+
 const obtenerNombreMostrado = (gestionRaw) => {
     const rawUpper = (gestionRaw || '').toUpperCase();
     if (rawUpper.includes('SST') || rawUpper.includes('MA')) return 'Gestión SST-MA';
@@ -341,15 +456,17 @@ export default function DashboardPage() {
             setResumen(rawRes);
             setGrupos(rawGrupos);
             setEstados(rawEstadosList);
-            setProximos(rawProximosList);
+            setProximos(rawProximosList || []);
             return;
         }
 
         const configs = gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
         const gruposPermitidos = configs.map(c => c.grupo);
+        const alcancesPermitidos = configs.reduce((acc, c) => [...acc, ...c.alcances], []);
 
-        // Filtrar próximos a vencer por grupo asociado a la gestión
+        // Filtrar pendientes de ingresar por alcance o grupo asociado a la gestión
         const proximosFiltrados = (rawProximosList || []).filter(item => {
+            if (item.alcance) return alcancesPermitidos.includes(item.alcance);
             return !item.grupo_documentos || gruposPermitidos.includes(item.grupo_documentos);
         });
         setProximos(proximosFiltrados);
@@ -537,17 +654,17 @@ export default function DashboardPage() {
             { descripcion: 'VENCIDO', cantidad: vencidosCount }
         ]);
 
-        // Filtrado de alertas: documentos vigentes próximos a vencer en los siguientes 90 días
-        const alertasVencimiento = docsFiltrados.filter(d => {
-            if (d.estado_documento !== 'V') return false;
-            const diasRestantes = Math.ceil((new Date(d.fecha_vigencia) - new Date()) / 86400000);
-            return diasRestantes > 0 && diasRestantes <= 90;
-        }).map(d => ({
-            proveedor: d.descripcion_tipo_documento || d.tipo_documento || 'Documento',
-            fecha_vigencia: d.fecha_vigencia
-        }));
+        // Documentos pendientes de ingresar para el proveedor logueado
+        const regimenProv = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || proveedorInfo?.codigo_regimen_tributario || proveedorInfo?.regimen_tributario || 'RG';
+        const nroTrabProv = proveedorInfo?.nro_trabajadores || '';
+        const todosPendientes = calcularPendientesProveedor(regimenProv, nroTrabProv, acumuladoDocs, obtenerIdentidadProveedor());
 
-        setProximos(alertasVencimiento);
+        const alcancesPermitidos = isAll ? null : configs.reduce((acc, c) => [...acc, ...c.alcances], []);
+        const pendientesFiltrados = isAll
+            ? todosPendientes
+            : todosPendientes.filter(item => alcancesPermitidos.includes(item.alcance));
+
+        setProximos(pendientesFiltrados);
 
         // Filtrar o resaltar KPIs de gestión
         if (!isAll && configs.length > 0 && dataKpis && dataKpis.length > 0) {
@@ -621,10 +738,12 @@ export default function DashboardPage() {
         }
     };
 
-    // Próximos a vencer, ordenados por fecha más cercana primero
-    const proximosOrdenados = [...proximos].sort(
-        (a, b) => new Date(a.fecha_vigencia) - new Date(b.fecha_vigencia)
-    );
+    // Documentos pendientes ordenados por proveedor, alcance y tipo de documento
+    const proximosOrdenados = [...proximos].sort((a, b) => {
+        if (a.proveedor !== b.proveedor) return String(a.proveedor || '').localeCompare(String(b.proveedor || ''));
+        if (a.alcance !== b.alcance) return String(a.alcance || '').localeCompare(String(b.alcance || ''));
+        return String(a.tipo_documento_id || '').localeCompare(String(b.tipo_documento_id || ''));
+    });
 
     const limpiarFiltroGestion = () => {
         setGestionFiltro('ALL');
@@ -1031,49 +1150,55 @@ export default function DashboardPage() {
                         </div>
                     )}
 
-                    {/* ── Tabla de próximos a vencer ───────────────────────── */}
+                    {/* ── Tabla de pendientes de ingresar ───────────────────────── */}
                     <div style={{ ...styles.card, marginTop: '30px' }}>
                         <h2 style={styles.sectionTitle}>
                             {esProveedor
-                                ? 'Mis Documentos próximos a vencer'
-                                : 'Proveedores con documentos próximos a vencer'}
+                                ? 'Mis Documentos Pendientes de Ingresar'
+                                : 'Documentos Pendientes de Ingresar por Proveedor'}
                         </h2>
 
                         {proximosOrdenados.length === 0 ? (
                             <div style={styles.emptyState}>
-                                No existen documentos próximos a vencer.
+                                No existen documentos pendientes de ingresar.
                             </div>
                         ) : (
                             <div className="table-scroll">
                                 <table style={styles.table}>
                                     <thead>
                                         <tr>
-                                            <th style={styles.th}>{esProveedor ? 'Tipo Documento' : 'Proveedor'}</th>
-                                            <th style={styles.th}>Fecha Vencimiento</th>
-                                            <th style={styles.th}>Días Restantes</th>
+                                            {!esProveedor && <th style={styles.th}>Proveedor</th>}
+                                            <th style={styles.th}>Alcance</th>
+                                            <th style={styles.th}>Gestión</th>
+                                            <th style={styles.th}>Tipo Documento / Descripción</th>
+                                            <th style={styles.th}>Estado</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {proximosOrdenados.map((item, index) => {
-                                            const dias = Math.ceil(
-                                                (new Date(item.fecha_vigencia) - new Date()) / 86400000
-                                            );
-                                            const u = urgencia(dias);
-
-                                            return (
-                                                <tr key={index}>
-                                                    <td style={styles.td}>{item.proveedor}</td>
-                                                    <td style={styles.td}>
-                                                        {formatearFechaLocal(item.fecha_vigencia)}
-                                                    </td>
-                                                    <td style={styles.td}>
-                                                        <span style={styles.badge(u.bg, u.fg)}>
-                                                            {u.label}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
+                                        {proximosOrdenados.map((item, index) => (
+                                            <tr key={index}>
+                                                {!esProveedor && <td style={styles.td}>{item.proveedor}</td>}
+                                                <td style={styles.td}>
+                                                    <span style={{
+                                                        fontWeight: '600',
+                                                        color: colors.primary,
+                                                        background: '#e0e7ff',
+                                                        padding: '3px 8px',
+                                                        borderRadius: '4px',
+                                                        fontSize: '12px'
+                                                    }}>
+                                                        {item.alcance_nombre || item.alcance}
+                                                    </span>
+                                                </td>
+                                                <td style={styles.td}>{item.gestion}</td>
+                                                <td style={styles.td}>{item.tipo_documento}</td>
+                                                <td style={styles.td}>
+                                                    <span style={styles.badge('#fee2e2', '#dc2626')}>
+                                                        {item.estado || 'Pendiente de ingresar'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             </div>

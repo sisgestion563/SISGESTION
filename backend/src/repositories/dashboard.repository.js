@@ -150,47 +150,164 @@ const obtenerProveedoresVencidos = async (periodo) => {
 
 
 
-const obtenerDocumentosProximosVencer = async (periodo) => {
-    let where = "WHERE d.status = 'A' AND d.fecha_vigencia > CURRENT_DATE AND d.fecha_vigencia <= CURRENT_DATE + 30";
-    const params = [];
-    if (periodo) {
-        // params.push(periodo);
-        // where += " AND p.periodo = $1";
+const DOC_DESCRIPCIONES = {
+    GSG: {
+        '01': 'Accidentes de Trabajo, Enfermedades Ocupacionales e Incidentes',
+        '02': 'Exámenes Médicos Ocupacionales',
+        '03': 'Monitoreo de Agentes',
+        '04': 'Inspecciones Internas',
+        '05': 'Estadísticas',
+        '06': 'Equipos de Seguridad o Emergencia',
+        '07': 'Capacitación y Simulacros',
+        '08': 'Auditorías',
+        '09': 'Reglamento Interno de Seguridad y Salud en el Trabajo.',
+        '10': 'Identificación de peligros, evaluación de riesgos y sus medidas de control(IPERC)',
+        '11': 'Comité SST',
+        '12': 'Plan y Programa Anual de Seguridad y Salud en el Trabajo.',
+        '13': 'Supervisor SST (Elegido si tiene menos de 20 trabajadores).',
+        '15': 'Comité SST (Obligatorio si supera los 20 trabajadores)'
+    },
+    GMA: {
+        '01': 'Matriz PAMA',
+        '02': 'Otros(Certificaciones, declaraciones, manifiestos, informes)'
+    },
+    GCA: {
+        '01': 'Certificaciones ISO 9001',
+        '02': 'Certificaciones diversas(Homologaciones)'
+    },
+    GPA: {
+        '01': 'Plán de Contigencia',
+        '02': 'Otros'
+    },
+    GTR: {
+        '01': 'Carta de Presentación',
+        '02': 'Otros'
     }
+};
 
-    const sql = `
-        SELECT
-            d.documento_id,
+const REQUERIDOS_SST = {
+    RM: ['01', '02', '04', '07', '09', '12', '13'],
+    RP: ['01', '02', '03', '04', '05', '07', '09', '10', '12'],
+    RG: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+};
+
+const obtenerDocumentosProximosVencer = async (periodo) => {
+    let sqlProveedores = `
+        SELECT 
+            p.proveedor_id,
             CASE
-                WHEN p.razon_social IS NOT NULL
-                 AND TRIM(p.razon_social) <> ''
-                THEN p.razon_social
-                ELSE
-                    TRIM(
-                        COALESCE(p.nombre,'') || ' ' ||
-                        COALESCE(p.apellido_paterno,'') || ' ' ||
-                        COALESCE(p.apellido_materno,'')
-                    )
-            END proveedor,
-            d.grupo_documentos,
-            COALESCE(
-                d.tipo_documento,
-                d.tipo_documento_id
-            ) tipo_documento,
-            d.fecha_vigencia,
-            (
-                d.fecha_vigencia - CURRENT_DATE
-            ) dias_restantes
-        FROM "SISGES"."MOV_DOCUMENTOS" d
-        INNER JOIN "SISGES"."MAE_PROVEEDOR" p
-            ON p.proveedor_id = d.proveedor_id
-        ${where}
-        ORDER BY
-            d.fecha_vigencia
+                WHEN p.razon_social IS NOT NULL AND TRIM(p.razon_social) <> '' THEN p.razon_social
+                ELSE TRIM(COALESCE(p.nombre,'') || ' ' || COALESCE(p.apellido_paterno,'') || ' ' || COALESCE(p.apellido_materno,''))
+            END AS proveedor,
+            p.regimen_tributario,
+            p.nro_trabajadores
+        FROM "SISGES"."MAE_PROVEEDOR" p
+        WHERE p.status = 'A'
     `;
+    const paramsProv = [];
+    if (periodo) {
+        // sqlProveedores += " AND p.periodo = $1";
+        // paramsProv.push(periodo);
+    }
+    sqlProveedores += " ORDER BY proveedor";
 
-    const result = await pool.query(sql, params);
-    return result.rows;
+    const resProv = await pool.query(sqlProveedores, paramsProv);
+    const proveedores = resProv.rows;
+
+    if (proveedores.length === 0) return [];
+
+    const sqlDocs = `
+        SELECT proveedor_id, alcance, tipo_documento_id
+        FROM "SISGES"."MOV_DOCUMENTOS"
+        WHERE status = 'A'
+    `;
+    const resDocs = await pool.query(sqlDocs);
+    const docs = resDocs.rows;
+
+    const docsByProveedor = {};
+    docs.forEach(d => {
+        if (!docsByProveedor[d.proveedor_id]) {
+            docsByProveedor[d.proveedor_id] = [];
+        }
+        docsByProveedor[d.proveedor_id].push(d);
+    });
+
+    const listaPendientes = [];
+
+    proveedores.forEach(p => {
+        const provDocs = docsByProveedor[p.proveedor_id] || [];
+        const reg = (p.regimen_tributario || 'RG').toUpperCase();
+        const isRM = reg === 'RM' || reg.includes('MICRO');
+        const isRP = reg === 'RP' || reg.includes('PEQUEÑA') || reg.includes('PEQUENA');
+        const regCode = isRM ? 'RM' : (isRP ? 'RP' : 'RG');
+
+        const uploadedSet = new Set(provDocs.map(d => `${d.alcance}_${String(d.tipo_documento_id).padStart(2, '0')}`));
+        const uploadedByAlcance = {
+            GSG: provDocs.filter(d => d.alcance === 'GSG'),
+            GMA: provDocs.filter(d => d.alcance === 'GMA'),
+            GCA: provDocs.filter(d => d.alcance === 'GCA'),
+            GPA: provDocs.filter(d => d.alcance === 'GPA'),
+            GTR: provDocs.filter(d => d.alcance === 'GTR')
+        };
+
+        // 1. SST (GSG)
+        let reqSST = [...(REQUERIDOS_SST[regCode] || REQUERIDOS_SST.RG)];
+        if (regCode === 'RP') {
+            const trabStr = String(p.nro_trabajadores || '');
+            const esMas20 = trabStr.includes('MT') || trabStr.includes('>20') || trabStr.includes('MAS DE 20') || parseInt(trabStr, 10) > 20;
+            if (esMas20 && !reqSST.includes('15')) {
+                reqSST.push('15');
+            }
+        }
+
+        reqSST.forEach(docId => {
+            const idPad = String(docId).padStart(2, '0');
+            if (!uploadedSet.has(`GSG_${idPad}`)) {
+                const desc = DOC_DESCRIPCIONES.GSG[idPad] || `Documento ${idPad}`;
+                listaPendientes.push({
+                    proveedor_id: p.proveedor_id,
+                    proveedor: p.proveedor,
+                    grupo_documentos: 'DOC_NOR',
+                    alcance: 'GSG',
+                    alcance_nombre: 'SST',
+                    gestion: 'GESTIÓN SST',
+                    tipo_documento_id: idPad,
+                    tipo_documento: `${idPad} - ${desc}`,
+                    descripcion_tipo_documento: desc,
+                    estado: 'Pendiente de ingresar'
+                });
+            }
+        });
+
+        // 2. MA (GMA), CALIDAD (GCA), PATRIMONIAL (GPA), ETICA (GTR)
+        const sencillas = [
+            { alcance: 'GMA', alcanceNombre: 'MA', gestion: 'GESTIÓN MA', grupo: 'DOC_NOR', defaultId: '01' },
+            { alcance: 'GCA', alcanceNombre: 'CALIDAD', gestion: 'GESTIÓN DE CALIDAD', grupo: 'DOC_EXT_NOR', defaultId: '01' },
+            { alcance: 'GPA', alcanceNombre: 'PATRIMONIAL', gestion: 'GESTIÓN PATRIMONIAL', grupo: 'DOC_REQ_ESTATAL', defaultId: '01' },
+            { alcance: 'GTR', alcanceNombre: 'ETICA', gestion: 'CÓDIGO ÉTICA', grupo: 'DOC_OTROS', defaultId: '01' }
+        ];
+
+        sencillas.forEach(item => {
+            if ((uploadedByAlcance[item.alcance] || []).length === 0) {
+                const idPad = item.defaultId;
+                const desc = DOC_DESCRIPCIONES[item.alcance][idPad] || `Documento ${idPad}`;
+                listaPendientes.push({
+                    proveedor_id: p.proveedor_id,
+                    proveedor: p.proveedor,
+                    grupo_documentos: item.grupo,
+                    alcance: item.alcance,
+                    alcance_nombre: item.alcanceNombre,
+                    gestion: item.gestion,
+                    tipo_documento_id: idPad,
+                    tipo_documento: `${idPad} - ${desc}`,
+                    descripcion_tipo_documento: desc,
+                    estado: 'Pendiente de ingresar'
+                });
+            }
+        });
+    });
+
+    return listaPendientes;
 };
 
 
