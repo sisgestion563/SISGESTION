@@ -1,7 +1,8 @@
 
 import {
     useEffect,
-    useState
+    useState,
+    useRef
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -330,6 +331,7 @@ const obtenerNombreMostrado = (gestionRaw) => {
 
 export default function DashboardPage() {
     const navigate = useNavigate();
+    const pendientesRef = useRef(null);
 
     const [resumen, setResumen] = useState(null);
     const [grupos, setGrupos] = useState([]);
@@ -1108,7 +1110,11 @@ export default function DashboardPage() {
                                             </button>
 
                                             <button
-                                                onClick={() => navigate('/documents?estado=PENDIENTES')}
+                                                onClick={() => {
+                                                    if (pendientesRef.current) {
+                                                        pendientesRef.current.scrollIntoView({ behavior: 'smooth' });
+                                                    }
+                                                }}
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#f3f4f6', border: `1px solid #e5e7eb`, borderRadius: '10px', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
                                                 onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                                                 onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -1171,7 +1177,7 @@ export default function DashboardPage() {
                     )}
 
                     {/* ── Tabla de pendientes de ingresar ───────────────────────── */}
-                    <div style={{ ...styles.card, marginTop: '30px' }}>
+                    <div ref={pendientesRef} style={{ ...styles.card, marginTop: '30px' }}>
                         <h2 style={styles.sectionTitle}>
                             {esProveedor
                                 ? 'Mis Documentos Pendientes de Ingresar'
