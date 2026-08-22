@@ -252,14 +252,14 @@ const calcularPendientesProveedor = (regimenInput, nroTrabajadores, uploadedDocs
     const regCode = isRM ? 'RM' : (isRP ? 'RP' : 'RG');
 
     const listaPendientes = [];
-    const docs = uploadedDocs || [];
-    const uploadedSet = new Set(docs.map(d => `${d.alcance}_${String(d.tipo_documento_id).padStart(2, '0')}`));
+    const docs = (uploadedDocs || []).filter(Boolean);
+    const uploadedSet = new Set(docs.map(d => `${d.alcance || ''}_${String(d.tipo_documento_id || '').padStart(2, '0')}`));
     const uploadedByAlcance = {
-        GSG: docs.filter(d => d.alcance === 'GSG'),
-        GMA: docs.filter(d => d.alcance === 'GMA'),
-        GCA: docs.filter(d => d.alcance === 'GCA'),
-        GPA: docs.filter(d => d.alcance === 'GPA'),
-        GTR: docs.filter(d => d.alcance === 'GTR')
+        GSG: docs.filter(d => d && d.alcance === 'GSG'),
+        GMA: docs.filter(d => d && d.alcance === 'GMA'),
+        GCA: docs.filter(d => d && d.alcance === 'GCA'),
+        GPA: docs.filter(d => d && d.alcance === 'GPA'),
+        GTR: docs.filter(d => d && d.alcance === 'GTR')
     };
 
     // 1. SST (GSG)
@@ -598,25 +598,37 @@ export default function DashboardPage() {
             totalVigentesCapped += Math.min(countVigentes, exigibleAlcance);
         });
 
+        // Documentos pendientes de ingresar para el proveedor logueado
+        const regimenProv = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || proveedorInfo?.codigo_regimen_tributario || proveedorInfo?.regimen_tributario || 'RG';
+        const nroTrabProv = proveedorInfo?.nro_trabajadores || '';
+        const todosPendientes = calcularPendientesProveedor(regimenProv, nroTrabProv, acumuladoDocs, obtenerIdentidadProveedor());
+
+        const alcancesPermitidos = isAll ? null : configs.reduce((acc, c) => [...acc, ...c.alcances], []);
+        const pendientesFiltrados = isAll
+            ? todosPendientes
+            : todosPendientes.filter(item => alcancesPermitidos.includes(item.alcance));
+
+        setProximos(pendientesFiltrados);
+
         const unDiaMs = 86400000;
         const hoyMas15 = new Date(hoy.getTime() + 15 * unDiaMs);
 
         const vencidosAbs = docsFiltrados.filter(d => {
-            if (!d.fecha_vigencia) return false;
+            if (!d || !d.fecha_vigencia) return false;
             const f = new Date(d.fecha_vigencia);
             f.setHours(0, 0, 0, 0);
             return f < hoy;
         }).length;
 
         const porVencerAbs = docsFiltrados.filter(d => {
-            if (!d.fecha_vigencia) return false;
+            if (!d || !d.fecha_vigencia) return false;
             const f = new Date(d.fecha_vigencia);
             f.setHours(0, 0, 0, 0);
             return f >= hoy && f <= hoyMas15;
         }).length;
 
         const vigentesAbs = docsFiltrados.filter(d => {
-            if (!d.fecha_vigencia) return false;
+            if (!d || !d.fecha_vigencia) return false;
             const f = new Date(d.fecha_vigencia);
             f.setHours(0, 0, 0, 0);
             return f >= hoy;
@@ -638,15 +650,15 @@ export default function DashboardPage() {
         if (!isAll && configs.length > 0) {
             const gruposEstadistica = configs.map(config => {
                 const count = docsFiltrados.filter(d => {
-                    if (d.alcance) return config.alcances.includes(d.alcance);
-                    return d.grupo_documentos === config.grupo;
+                    if (d && d.alcance) return config.alcances.includes(d.alcance);
+                    return d && d.grupo_documentos === config.grupo;
                 }).length;
                 return { descripcion: config.nombre, cantidad: count };
             });
             setGrupos(gruposEstadistica);
         } else {
             const estadisticaGrupos = CODIGOS_GRUPOS.map(grupoCode => {
-                const count = acumuladoDocs.filter(d => d.grupo_documentos === grupoCode).length;
+                const count = (acumuladoDocs || []).filter(d => d && d.grupo_documentos === grupoCode).length;
                 return { descripcion: NOMBRES_GRUPOS[grupoCode], cantidad: count };
             });
             setGrupos(estadisticaGrupos);
@@ -656,18 +668,6 @@ export default function DashboardPage() {
             { descripcion: 'VIGENTE', cantidad: vigentesCount },
             { descripcion: 'VENCIDO', cantidad: vencidosCount }
         ]);
-
-        // Documentos pendientes de ingresar para el proveedor logueado
-        const regimenProv = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || proveedorInfo?.codigo_regimen_tributario || proveedorInfo?.regimen_tributario || 'RG';
-        const nroTrabProv = proveedorInfo?.nro_trabajadores || '';
-        const todosPendientes = calcularPendientesProveedor(regimenProv, nroTrabProv, acumuladoDocs, obtenerIdentidadProveedor());
-
-        const alcancesPermitidos = isAll ? null : configs.reduce((acc, c) => [...acc, ...c.alcances], []);
-        const pendientesFiltrados = isAll
-            ? todosPendientes
-            : todosPendientes.filter(item => alcancesPermitidos.includes(item.alcance));
-
-        setProximos(pendientesFiltrados);
 
         // Filtrar o resaltar KPIs de gestión
         if (!isAll && configs.length > 0 && dataKpis && dataKpis.length > 0) {
