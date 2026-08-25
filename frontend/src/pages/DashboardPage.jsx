@@ -342,6 +342,7 @@ export default function DashboardPage() {
     const [calificacion, setCalificacion] = useState(null);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
     const [proveedorInfo, setProveedorInfo] = useState(null);
+    const [mostrarConstruccion, setMostrarConstruccion] = useState(false);
     const [periodoFiltro, setPeriodoFiltro] = useState(() => {
         return localStorage.getItem('sisgestion_periodo_actual') || '2026';
     });
@@ -1235,7 +1236,200 @@ export default function DashboardPage() {
                             </div>
                         )}
                     </div>
+
+                    {/* ── TARJETA: DIRECTORIO DE CLIENTES POTENCIALES ────────────── */}
+                    <div style={{ ...styles.card, marginTop: '30px' }}>
+                        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: colors.text, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ display: 'inline-block', width: '4px', height: '18px', background: '#2563eb', borderRadius: '2px' }}></span>
+                            DIRECTORIO DE CLIENTES POTENCIALES
+                        </h3>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {/* Bloque 1: Mis Clientes */}
+                            <div style={{ borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <p style={{ fontSize: '13px', fontWeight: '700', color: colors.textMuted, margin: 0, textTransform: 'uppercase' }}>
+                                    MIS CLIENTES
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setMostrarConstruccion(true)}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        background: colors.primary,
+                                        color: '#ffffff',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '6px 14px',
+                                        fontSize: '13px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)',
+                                        transition: 'all 0.2s ease-in-out'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        e.currentTarget.style.background = '#1d4ed8';
+                                        e.currentTarget.style.boxShadow = '0 4px 6px rgba(37, 99, 235, 0.3)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.currentTarget.style.background = colors.primary;
+                                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(37, 99, 235, 0.2)';
+                                    }}
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                    </svg>
+                                    Listar
+                                </button>
+                            </div>
+
+                            {/* Bloque 2: Clientes Potenciales */}
+                            <div style={{ borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
+                                <p style={{ fontSize: '13px', fontWeight: '700', color: colors.textMuted, margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                                    CLIENTES POTENCIALES
+                                </p>
+                                <p style={{ fontSize: '14px', margin: 0, color: colors.text }}>
+                                    Total disponible: <strong>{Math.max(0, 100 - (proveedorInfo?.clientes?.length || 0))}</strong>
+                                </p>
+                            </div>
+
+                            {/* Breve descripción explicativa */}
+                            <p style={{ fontSize: '13.5px', color: colors.textMuted, margin: 0, lineHeight: '1.4' }}>
+                                Esta sección le permite visualizar las oportunidades comerciales disponibles. Acceda al directorio para conectar con nuevos clientes que buscan proveedores con sus mismas calificaciones y estándares de gestión.
+                            </p>
+
+                            {/* Recuadro destacado centrado */}
+                            <div style={{
+                                background: '#f8fafc',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '8px',
+                                padding: '24px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '12px',
+                                textAlign: 'center',
+                                marginTop: '8px'
+                            }}>
+                                {/* Ícono de candado */}
+                                <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '50%',
+                                    background: '#fee2e2',
+                                    color: '#dc2626',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '20px'
+                                }}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </div>
+                                
+                                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: colors.text }}>
+                                    DIRECTORIO DE CLIENTES POTENCIALES
+                                </h4>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setMostrarConstruccion(true)}
+                                    style={{
+                                        background: colors.primary,
+                                        color: '#fff',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        padding: '10px 20px',
+                                        fontSize: '13.5px',
+                                        fontWeight: '700',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.2s',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                                        textTransform: 'uppercase'
+                                    }}
+                                    onMouseOver={(e) => e.target.style.background = '#1d4ed8'}
+                                    onMouseOut={(e) => e.target.style.background = colors.primary}
+                                >
+                                    ACCEDER AL DIRECTORIO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </>
+            )}
+
+            {mostrarConstruccion && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999
+                }}>
+                    <div style={{
+                        background: '#fff',
+                        borderRadius: '12px',
+                        padding: '30px',
+                        maxWidth: '400px',
+                        width: '90%',
+                        textAlign: 'center',
+                        boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)'
+                    }}>
+                        <div style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '50%',
+                            background: '#fef3c7',
+                            color: '#d97706',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 16px auto'
+                        }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                            </svg>
+                        </div>
+                        <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: '700', color: colors.text }}>
+                            Página en Construcción
+                        </h3>
+                        <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: colors.textMuted, lineHeight: '1.5' }}>
+                            Esta página se encuentra en construcción. Estamos trabajando para brindarle una mejor experiencia comercial.
+                        </p>
+                        <button
+                            onClick={() => setMostrarConstruccion(false)}
+                            style={{
+                                background: colors.primary,
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '8px 24px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'background 0.2s'
+                            }}
+                            onMouseOver={(e) => e.target.style.background = '#1d4ed8'}
+                            onMouseOut={(e) => e.target.style.background = colors.primary}
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
             )}
         </MainLayout>
     );
