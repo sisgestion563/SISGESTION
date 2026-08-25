@@ -852,7 +852,7 @@ export default function DashboardPage() {
                                                                         <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '6px' }}>
                                                                             <div style={{ width: `${pct}%`, background: progressColor, height: '100%', transition: 'width 1s ease-in-out', borderRadius: '4px' }}></div>
                                                                         </div>
-                                                                        {(kpi.documentos_registrados !== undefined && kpi.documentos_exigibles !== undefined) && (
+                                                                        {((kpi.gestion || '').toUpperCase().includes('SST') || (kpi.gestion || '').toUpperCase().includes('MA')) && kpi.documentos_registrados !== undefined && kpi.documentos_exigibles !== undefined && (
                                                                             <span style={{ fontSize: '11.5px', color: colors.textMuted, fontWeight: '600' }}>
                                                                                 {kpi.documentos_registrados} de {kpi.documentos_exigibles} documentos
                                                                             </span>
