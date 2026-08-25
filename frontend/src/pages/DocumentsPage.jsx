@@ -523,7 +523,7 @@ export default function DocumentsPage() {
 				<div className="documentos-card" style={styles.card}>
 
 					<h2 style={styles.title}>
-						Documentos
+						{esProveedor ? 'Registrar Documentos' : 'Documentos'}
 						<span style={styles.roleBadge(rolColor)}>{rolLabel}</span>
 					</h2>
 
@@ -547,7 +547,7 @@ export default function DocumentsPage() {
 					{/* ── Aviso sin ficha para PROVEEDOR ───────────────────────── */}
 					{esProveedor && !miProveedorId && (
 						<div style={styles.emptyState}>
-							Por favor, complete su registro de Ficha Informativa en la sección de Proveedores para gestionar sus documentos.
+							Por favor, complete su registro de Ficha Informativa en la sección de Mi Ficha para gestionar sus documentos.
 						</div>
 					)}
 

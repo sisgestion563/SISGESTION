@@ -636,7 +636,7 @@ export default function DashboardPage() {
             return f >= hoy;
         }).length;
 
-        const pendientesCount = todosPendientes.length;
+        const pendientesCount = pendientesFiltrados.length;
 
         setEstadoExpediente({
             total_exigibles: totalExigibles,
@@ -766,7 +766,7 @@ export default function DashboardPage() {
                     <h1 style={styles.heading}>
                         {esProveedor || esConsultor
                             ? `Panel de Control - ${obtenerIdentidadProveedor()}`
-                            : 'Dashboard SISGESTION'}
+                            : 'Dashboard ProvGestion'}
                     </h1>
                     <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
                         {esProveedor
@@ -809,7 +809,7 @@ export default function DashboardPage() {
             {esProveedor && !miProveedorId && !loadingProveedor ? (
                 <div style={{ ...styles.card, marginTop: '30px' }}>
                     <div style={styles.emptyState}>
-                        Por favor, complete su registro de Ficha Informativa en la sección de Proveedores para activar sus indicadores.
+                        Por favor, complete su registro de Ficha Informativa en la sección de Mi Ficha para activar sus indicadores.
                     </div>
                 </div>
             ) : (
@@ -852,6 +852,11 @@ export default function DashboardPage() {
                                                                         <div style={{ width: '100%', background: colors.border, borderRadius: '4px', overflow: 'hidden', height: '6px' }}>
                                                                             <div style={{ width: `${pct}%`, background: progressColor, height: '100%', transition: 'width 1s ease-in-out', borderRadius: '4px' }}></div>
                                                                         </div>
+                                                                        {(kpi.documentos_registrados !== undefined && kpi.documentos_exigibles !== undefined) && (
+                                                                            <span style={{ fontSize: '11.5px', color: colors.textMuted, fontWeight: '600' }}>
+                                                                                {kpi.documentos_registrados} de {kpi.documentos_exigibles} documentos
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                 </td>
                                                                 <td style={{ ...styles.td, textAlign: 'center', padding: '10px 12px' }}>

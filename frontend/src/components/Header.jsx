@@ -250,7 +250,7 @@ export default function Header() {
                             lineHeight: '1.2'
                         }}
                     >
-                        SISGESTION
+                        ProvGestion
                     </h1>
                     <p
                         style={{
@@ -261,7 +261,7 @@ export default function Header() {
                             lineHeight: '1.4'
                         }}
                     >
-                        Sistema de Gestión Documental y Homologación de Proveedores
+                        Sistema de Gestión Documental e Inteligencia y Gestión de Proveedores
                     </p>
                 </div>
 

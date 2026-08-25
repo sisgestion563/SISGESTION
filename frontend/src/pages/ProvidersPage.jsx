@@ -675,7 +675,7 @@ export default function ProvidersPage() {
         exportarExcel({
             nombreArchivo: 'PROVEEDORES',
             nombreHoja: 'PROVEEDORES',
-            titulo: 'SISGESTION',
+            titulo: 'ProvGestion',
             subtitulo: 'Listado de Proveedores',
             columnas: [
                 { titulo: 'Tipo Empresa', campo: 'regimen_tributario', ancho: 30 },
@@ -1115,7 +1115,7 @@ export default function ProvidersPage() {
                 <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '10px 0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '20px' }}>
                         <div>
-                            <h1 style={styles.heading}>Bienvenido</h1>
+                            <h1 style={styles.heading}>Mi Ficha</h1>
                             <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
                                 Panel corporativo exclusivo para el seguimiento de la ficha informativa.
                             </p>
@@ -1151,7 +1151,7 @@ export default function ProvidersPage() {
                         gap: '10px'
                     }}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        <span>Proceda a registrar su información en "documentos" después de completar el llenado de su ficha.</span>
+                        <span>Proceda a registrar su información en "Registrar Documentos" después de completar el llenado de su ficha.</span>
                     </div>
 
                     <div style={styles.card}>

@@ -22,6 +22,7 @@ export default function Sidebar() {
     
     // 2. Evaluamos los roles (Tu servicio de backend mapea r.codigo como 'rol_codigo')
     const esAdmin = usuarioLogueado?.rol_codigo === 'ADMIN';
+    const esProveedor = usuarioLogueado?.rol_codigo === 'PROVEEDOR';
 
     const logout = () => {
         localStorage.removeItem('token');
@@ -55,7 +56,7 @@ export default function Sidebar() {
                 flexDirection: 'column'
             }}
         >
-            <h1 style={{ marginBottom: '30px', fontSize: '24px', fontWeight: 'bold' }}>SISGESTION</h1>
+            <h1 style={{ marginBottom: '30px', fontSize: '24px', fontWeight: 'bold' }}>ProvGestion</h1>
 
             {/* ✔ Visible para todos (Admin, Proveedor, Consultor) */}
             <NavLink to="/dashboard" style={menuStyle}>
@@ -74,13 +75,13 @@ export default function Sidebar() {
             {/* ✔ Visible para todos */}
             <NavLink to="/providers" style={menuStyle}>
                 <Building2 size={20}/>
-                Proveedores
+                {esProveedor ? 'Mi Ficha' : 'Proveedores'}
             </NavLink>
 
             {/* ✔ Visible para todos */}
             <NavLink to="/documents" style={menuStyle}>
                 <FileText size={20}/>
-                Documentos
+                {esProveedor ? 'Registrar Documentos' : 'Documentos'}
             </NavLink>
 
             {/* ================================================================= */}

@@ -166,10 +166,10 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 style={{ margin: 0, color: '#0f172a', fontSize: '22px', fontWeight: '800', letterSpacing: '-0.3px' }}>
-            SISGESTION
+            ProvGestion
           </h1>
           <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '13px', fontWeight: '500' }}>
-            Homologación de Proveedores
+            Inteligencia y Gestión de Proveedores
           </p>
         </div>
 

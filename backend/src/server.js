@@ -12,7 +12,7 @@ app.listen(PORT, () => {
 });
   app.get('/', (req, res) => {
     res.json({
-      sistema: 'SISGESTION',
+      sistema: 'ProvGestion',
       estado: 'OK',
       version: '1.0'
     });
