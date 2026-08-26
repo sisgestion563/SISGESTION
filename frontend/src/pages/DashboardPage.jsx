@@ -568,8 +568,8 @@ export default function DashboardPage() {
         const regimen = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || 'RG';
         const LIMITS_PER_ALCANCE = {
             'RG': { 'GSG': 12, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
-            'RP': { 'GSG': 9,  'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
-            'RM': { 'GSG': 7,  'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 }
+            'RP': { 'GSG': 9, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+            'RM': { 'GSG': 7, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 }
         };
         const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
 
@@ -715,11 +715,11 @@ export default function DashboardPage() {
                 } else {
                     let puntajeRaw = (totalCappedIngresados / totalExigible) * 100;
                     if (puntajeRaw > 100) puntajeRaw = 100;
-                    
+
                     let recomendacion = 'NO RECOMENDADO';
                     let nivel = 'BAJO';
                     let desc = 'Presentas un bajo nivel de registro y vigencia documental';
-                    
+
                     if (puntajeRaw > 90) {
                         recomendacion = 'RECOMENDADO';
                         nivel = 'ALTO';
@@ -904,12 +904,12 @@ export default function DashboardPage() {
 
                             {/* ── Calificación de Proveedor ─────────────────────────── */}
                             {esProveedor && calificacion && (
-                                <div style={{ 
-                                    ...styles.card, 
+                                <div style={{
+                                    ...styles.card,
                                     border: calificacion.nivel_documental === 'BAJO' ? `2px solid ${colors.danger}` : `1px solid ${colors.border}`,
-                                    borderLeft: `6px solid ${calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? colors.amber : colors.danger}`, 
-                                    display: 'flex', 
-                                    flexDirection: 'column', 
+                                    borderLeft: `6px solid ${calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? colors.amber : colors.danger}`,
+                                    display: 'flex',
+                                    flexDirection: 'column',
                                     gap: '16px',
                                     background: calificacion.nivel_documental === 'BAJO' ? '#FEF2F2' : colors.card
                                 }}>
@@ -923,15 +923,15 @@ export default function DashboardPage() {
                                             </p>
                                         </div>
                                         <div style={{ textAlign: 'center' }}>
-                                            <span style={{ 
+                                            <span style={{
                                                 ...styles.badge(
-                                                    calificacion.nivel_documental === 'ALTO' ? colors.successBg : calificacion.nivel_documental === 'MEDIO' ? '#fef3c7' : colors.danger, 
+                                                    calificacion.nivel_documental === 'ALTO' ? colors.successBg : calificacion.nivel_documental === 'MEDIO' ? '#fef3c7' : colors.danger,
                                                     calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? '#b45309' : '#FFFFFF'
-                                                ), 
-                                                fontSize: calificacion.nivel_documental === 'BAJO' ? '16px' : '14px', 
-                                                padding: calificacion.nivel_documental === 'BAJO' ? '8px 24px' : '6px 16px', 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
+                                                ),
+                                                fontSize: calificacion.nivel_documental === 'BAJO' ? '16px' : '14px',
+                                                padding: calificacion.nivel_documental === 'BAJO' ? '8px 24px' : '6px 16px',
+                                                display: 'flex',
+                                                alignItems: 'center',
                                                 gap: '8px',
                                                 boxShadow: calificacion.nivel_documental === 'BAJO' ? '0 4px 6px -1px rgba(220, 38, 38, 0.2)' : 'none'
                                             }}>
@@ -942,7 +942,7 @@ export default function DashboardPage() {
                                             </span>
                                         </div>
                                     </div>
-                                    
+
                                     <div style={{ display: 'flex', flexDirection: calificacion.nivel_documental === 'BAJO' ? 'column' : 'row', alignItems: 'center', gap: calificacion.nivel_documental === 'BAJO' ? '16px' : '30px', textAlign: calificacion.nivel_documental === 'BAJO' ? 'center' : 'left' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: calificacion.nivel_documental === 'BAJO' ? '#FFFFFF' : '#f8fafc', padding: '20px', borderRadius: '12px', minWidth: '150px', border: calificacion.nivel_documental === 'BAJO' ? `1px solid ${colors.danger}` : 'none' }}>
                                             <span style={{ fontSize: '32px', fontWeight: 900, color: calificacion.nivel_documental === 'ALTO' ? colors.success : calificacion.nivel_documental === 'MEDIO' ? '#b45309' : colors.danger, lineHeight: '1' }}>
@@ -961,9 +961,9 @@ export default function DashboardPage() {
                                             </p>
                                         </div>
                                     </div>
-                                    <div style={{ 
-                                        borderTop: `1px solid ${colors.border}`, 
-                                        paddingTop: '18px', 
+                                    <div style={{
+                                        borderTop: `1px solid ${colors.border}`,
+                                        paddingTop: '18px',
                                         marginTop: '24px',
                                         display: 'flex',
                                         justifyContent: 'center',
@@ -1097,7 +1097,7 @@ export default function DashboardPage() {
                                                 onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                                             >
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#b45309' }}>Por vencer</span>
+                                                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#b45309' }}>Por vencer(menos de 15 dias)</span>
                                                     {estadoExpediente.por_vencer > 0 && (
                                                         <span style={{ background: colors.danger, width: 8, height: 8, borderRadius: '50%', boxShadow: `0 0 4px ${colors.danger}` }}></span>
                                                     )}
@@ -1335,7 +1335,7 @@ export default function DashboardPage() {
                                         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                                     </svg>
                                 </div>
-                                
+
                                 <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: colors.text }}>
                                     DIRECTORIO DE CLIENTES POTENCIALES
                                 </h4>

@@ -261,7 +261,7 @@ export default function Header() {
                             lineHeight: '1.4'
                         }}
                     >
-                        Sistema de Gestión Documental e Inteligencia y Gestión de Proveedores
+                        Inteligencia y Gestión de Proveedores
                     </p>
                 </div>
 
@@ -578,4 +578,4 @@ export default function Header() {
         </header>
     );
 }
-
+
