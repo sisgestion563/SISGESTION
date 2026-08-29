@@ -2,9 +2,9 @@ const pool = require('../config/db');
 
 const obtenerResumen = async (periodo) => {
     let whereProv = "WHERE status = 'A'";
-    let whereDoc = "WHERE status = 'A'";
-    let whereDocVig = "WHERE status = 'A' AND fecha_vigencia >= CURRENT_DATE";
-    let whereDocVen = "WHERE status = 'A' AND fecha_vigencia < CURRENT_DATE";
+    let whereDoc = "WHERE estado_documento = 'V'";
+    let whereDocVig = "WHERE estado_documento = 'V' AND fecha_vigencia >= CURRENT_DATE";
+    let whereDocVen = "WHERE estado_documento = 'C' AND fecha_vigencia < CURRENT_DATE";
     const params = [];
 
     if (periodo) {
@@ -47,7 +47,7 @@ const obtenerResumen = async (periodo) => {
 };
 
 const obtenerDocumentosPorGrupo = async (periodo) => {
-    let where = "WHERE d.status = 'A'";
+    let where = "WHERE d.estado_documento = 'V'";
     const params = [];
     if (periodo) {
         // params.push(periodo);
@@ -76,7 +76,7 @@ ORDER BY lv.descripcion
 };
 
 const obtenerDocumentosPorEstado = async (periodo) => {
-    let where = "WHERE d.status = 'A'";
+    let where = "WHERE ( d.estado_documento = 'V' or d.estado_documento = 'C' ) ";
     const params = [];
     if (periodo) {
         // params.push(periodo);
@@ -219,7 +219,7 @@ const obtenerDocumentosProximosVencer = async (periodo) => {
     const sqlDocs = `
         SELECT proveedor_id, alcance, tipo_documento_id
         FROM "SISGES"."MOV_DOCUMENTOS"
-        WHERE status = 'A'
+        WHERE estado_documento = 'V'
     `;
     const resDocs = await pool.query(sqlDocs);
     const docs = resDocs.rows;
@@ -347,7 +347,7 @@ doc_counts AS (
         COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' THEN d.tipo_documento_id END) as docs_etica
     FROM proveedor_info p
     LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
-      ON p.proveedor_id = d.proveedor_id AND d.status = 'A'
+      ON p.proveedor_id = d.proveedor_id AND d.estado_documento = 'V'
     GROUP BY p.proveedor_id
 )
 SELECT 
@@ -370,7 +370,7 @@ UNION ALL
 SELECT 
     'ETICA', COALESCE(c.docs_etica, 0), p.exigible_etica,
     ROUND(LEAST((COALESCE(c.docs_etica, 0)::numeric / NULLIF(p.exigible_etica, 0)) * 100, 100), 2)
-FROM proveedor_info p LEFT JOIN doc_counts c ON p.proveedor_id = c.proveedor_id;
+FROM proveedor_info p LEFT JOIN doc_counts c ON p.proveedor_id = c.proveedor_id
     `;
     const result = await pool.query(sql, [proveedorId]);
     return result.rows;
@@ -427,7 +427,7 @@ doc_counts AS (
         COUNT(d.documento_id) FILTER (WHERE d.fecha_vigencia >= CURRENT_DATE) AS vigentes_abs
     FROM proveedor_info p
     LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
-        ON p.proveedor_id = d.proveedor_id AND d.status = 'A'
+        ON p.proveedor_id = d.proveedor_id AND ( d.estado_documento = 'V' or d.estado_documento = 'C' )
     GROUP BY p.proveedor_id, p.total_exigibles
 ),
 capped_counts AS (
@@ -510,7 +510,7 @@ doc_counts AS (
         COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' THEN d.tipo_documento_id END) as reg_etica
     FROM proveedor_info p
     LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
-        ON p.proveedor_id = d.proveedor_id AND d.status = 'A'
+        ON p.proveedor_id = d.proveedor_id AND d.estado_documento = 'V'
     GROUP BY p.proveedor_id
 ),
 capped_counts AS (

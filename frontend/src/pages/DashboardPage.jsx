@@ -1,4 +1,3 @@
-
 import {
     useEffect,
     useState,
@@ -505,7 +504,13 @@ export default function DashboardPage() {
 
             setRawDocsProveedor(acumuladoDocs);
 
+            console.log('>>> proveedorId Dashboard:', miProveedorId);
+
             const dataKpis = await obtenerCumplimientoGestion(miProveedorId);
+            
+            console.log('>>> dataKpis Dashboard:', dataKpis);            
+            
+
             setRawKpisProveedor(dataKpis || []);
 
             const dataEstado = await obtenerEstadoExpediente(miProveedorId);
@@ -585,7 +590,10 @@ export default function DashboardPage() {
             const exigibleAlcance = limits[alcance] || 0;
             totalExigibles += exigibleAlcance;
 
-            const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
+            //const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
+            const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance && d.estado_documento === 'V');
+
+
             const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
             const countUploaded = uniqueTypes.size;
             totalRegistrados += Math.min(countUploaded, exigibleAlcance);
@@ -701,11 +709,18 @@ export default function DashboardPage() {
                             const exigibleAlcance = limits[alcance] || 0;
                             totalExigible += exigibleAlcance;
 
-                            const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
-                            const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
-                            const countUploaded = uniqueTypes.size;
+                            //const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
+                            //const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
+                            //const countUploaded = uniqueTypes.size;
 
-                            totalCappedIngresados += Math.min(countUploaded, exigibleAlcance);
+                            //totalCappedIngresados += Math.min(countUploaded, exigibleAlcance);
+                            
+                            const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance && d.estado_documento === 'V');
+                            const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
+                            const countVigentes = uniqueTypes.size;
+
+                            totalCappedIngresados += Math.min(countVigentes,exigibleAlcance);
+
                         });
                     }
                 });
@@ -999,7 +1014,7 @@ export default function DashboardPage() {
                                         {(() => {
                                             const exigibles = estadoExpediente.total_exigibles || 0;
                                             const registrados = estadoExpediente.total_registrados || 0;
-                                            const pctRegistro = exigibles > 0 ? Math.min((registrados / exigibles) * 100, 100).toFixed(0) : 0;
+                                            const pctRegistro = registrados > 0 ? Math.min((registrados / exigibles) * 100, 100).toFixed(0) : 0;
                                             return (
                                                 <div style={{ background: '#eff6ff', padding: '16px 8px', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid #bfdbfe', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.5)' }}>
                                                     <p style={{ ...styles.statLabel, color: '#1e40af', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
