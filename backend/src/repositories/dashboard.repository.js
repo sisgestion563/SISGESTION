@@ -706,6 +706,105 @@ FROM evaluacion;
     };
 };
 
+const obtenerCumplimientoGlobalPorGestion = async (periodo) => {
+    const sql = `
+WITH usuarios_proveedores AS (
+    SELECT 
+        u.usuario_id,
+        u.proveedor_id,
+        CASE 
+            WHEN p.regimen_tributario = 'RG' THEN 12
+            WHEN p.regimen_tributario = 'RP' THEN 9
+            WHEN p.regimen_tributario = 'RM' THEN 7
+            ELSE 12
+        END as exigible_sst,
+        1 as exigible_ma,
+        CASE 
+            WHEN p.regimen_tributario = 'RG' THEN 13
+            WHEN p.regimen_tributario = 'RP' THEN 10
+            WHEN p.regimen_tributario = 'RM' THEN 8
+            ELSE 13
+        END as exigible_sst_ma,
+        1 as exigible_calidad,
+        1 as exigible_patrimonial,
+        1 as exigible_etica
+    FROM "SISGES"."SEG_USUARIO" u
+    JOIN "SISGES"."SEG_ROL" r ON u.rol_id = r.rol_id
+    LEFT JOIN "SISGES"."MAE_PROVEEDOR" p ON u.proveedor_id = p.proveedor_id
+    WHERE (r.codigo = 'PROVEEDOR' OR u.rol_id = 2)
+      AND u.estado_usuario = 'A'
+),
+doc_counts AS (
+    SELECT
+        up.usuario_id,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GSG' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_sst,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GMA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_etica
+    FROM usuarios_proveedores up
+    LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
+        ON up.proveedor_id = d.proveedor_id AND d.estado_documento = 'V'
+    GROUP BY up.usuario_id
+),
+capped_counts AS (
+    SELECT
+        up.usuario_id,
+        up.exigible_sst_ma,
+        up.exigible_calidad,
+        up.exigible_patrimonial,
+        up.exigible_etica,
+        (LEAST(COALESCE(c.reg_sst, 0), up.exigible_sst) + LEAST(COALESCE(c.reg_ma, 0), up.exigible_ma)) AS reg_sst_ma,
+        LEAST(COALESCE(c.reg_calidad, 0), up.exigible_calidad) AS reg_calidad,
+        LEAST(COALESCE(c.reg_patrimonial, 0), up.exigible_patrimonial) AS reg_patrimonial,
+        LEAST(COALESCE(c.reg_etica, 0), up.exigible_etica) AS reg_etica
+    FROM usuarios_proveedores up
+    LEFT JOIN doc_counts c ON up.usuario_id = c.usuario_id
+)
+SELECT 
+    'SST_MA' AS codigo,
+    'SST-MA' AS nombre,
+    COALESCE(SUM(reg_sst_ma), 0)::int AS documentos_registrados,
+    COALESCE(SUM(exigible_sst_ma), 0)::int AS documentos_exigibles,
+    COUNT(CASE WHEN reg_sst_ma >= exigible_sst_ma AND exigible_sst_ma > 0 THEN 1 END)::int AS proveedores_cumplidos,
+    COUNT(*)::int AS total_proveedores,
+    ROUND(COALESCE((SUM(reg_sst_ma)::numeric / NULLIF(SUM(exigible_sst_ma), 0)) * 100, 0), 2) AS porcentaje
+FROM capped_counts
+UNION ALL
+SELECT 
+    'CALIDAD' AS codigo,
+    'CALIDAD' AS nombre,
+    COALESCE(SUM(reg_calidad), 0)::int AS documentos_registrados,
+    COALESCE(SUM(exigible_calidad), 0)::int AS documentos_exigibles,
+    COUNT(CASE WHEN reg_calidad >= exigible_calidad AND exigible_calidad > 0 THEN 1 END)::int AS proveedores_cumplidos,
+    COUNT(*)::int AS total_proveedores,
+    ROUND(COALESCE((SUM(reg_calidad)::numeric / NULLIF(SUM(exigible_calidad), 0)) * 100, 0), 2) AS porcentaje
+FROM capped_counts
+UNION ALL
+SELECT 
+    'PATRIMONIAL' AS codigo,
+    'SEG. PATRIMONIAL' AS nombre,
+    COALESCE(SUM(reg_patrimonial), 0)::int AS documentos_registrados,
+    COALESCE(SUM(exigible_patrimonial), 0)::int AS documentos_exigibles,
+    COUNT(CASE WHEN reg_patrimonial >= exigible_patrimonial AND exigible_patrimonial > 0 THEN 1 END)::int AS proveedores_cumplidos,
+    COUNT(*)::int AS total_proveedores,
+    ROUND(COALESCE((SUM(reg_patrimonial)::numeric / NULLIF(SUM(exigible_patrimonial), 0)) * 100, 0), 2) AS porcentaje
+FROM capped_counts
+UNION ALL
+SELECT 
+    'ETICA' AS codigo,
+    'ETICA' AS nombre,
+    COALESCE(SUM(reg_etica), 0)::int AS documentos_registrados,
+    COALESCE(SUM(exigible_etica), 0)::int AS documentos_exigibles,
+    COUNT(CASE WHEN reg_etica >= exigible_etica AND exigible_etica > 0 THEN 1 END)::int AS proveedores_cumplidos,
+    COUNT(*)::int AS total_proveedores,
+    ROUND(COALESCE((SUM(reg_etica)::numeric / NULLIF(SUM(exigible_etica), 0)) * 100, 0), 2) AS porcentaje
+FROM capped_counts;
+    `;
+    const result = await pool.query(sql);
+    return result.rows;
+};
+
 module.exports = {
     obtenerResumen,
     obtenerDocumentosPorGrupo,
@@ -715,5 +814,6 @@ module.exports = {
     obtenerCumplimientoPorGestion,
     obtenerEstadoExpediente,
     obtenerCalificacionProveedor,
-    obtenerResumenProveedoresCumplimiento
+    obtenerResumenProveedoresCumplimiento,
+    obtenerCumplimientoGlobalPorGestion
 };

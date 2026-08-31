@@ -103,4 +103,14 @@ router.get(
     controller.proveedoresCumplimiento
 );
 
+/*******************************************
+ CUMPLIMIENTO GLOBAL POR GESTIÓN (CONSULTOR)
+********************************************/
+
+router.get(
+    '/dashboard/cumplimiento-global-gestion',
+    authenticateToken,
+    controller.cumplimientoGlobalGestion
+);
+
 module.exports = router;

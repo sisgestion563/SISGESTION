@@ -113,3 +113,15 @@ export const obtenerResumenProveedoresCumplimiento =
         );
         return response.data.data;
     };
+
+export const obtenerCumplimientoGlobalPorGestion =
+    async (periodo) => {
+        const response = await api.get(
+            '/dashboard/cumplimiento-global-gestion',
+            {
+                ...getHeaders(),
+                params: { periodo }
+            }
+        );
+        return response.data.data;
+    };

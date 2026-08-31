@@ -23,7 +23,8 @@ import {
     obtenerCumplimientoGestion,
     obtenerEstadoExpediente,
     obtenerCalificacionProveedor,
-    obtenerResumenProveedoresCumplimiento
+    obtenerResumenProveedoresCumplimiento,
+    obtenerCumplimientoGlobalPorGestion
 } from '../services/dashboard.service';
 
 // Reutilizamos el servicio para listar los expedientes por grupo corporativo
@@ -341,6 +342,7 @@ export default function DashboardPage() {
     const [estadoExpediente, setEstadoExpediente] = useState(null);
     const [calificacion, setCalificacion] = useState(null);
     const [cumplimientoProveedores, setCumplimientoProveedores] = useState(null);
+    const [cumplimientoGlobal, setCumplimientoGlobal] = useState([]);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
     const [proveedorInfo, setProveedorInfo] = useState(null);
     const [mostrarConstruccion, setMostrarConstruccion] = useState(false);
@@ -444,12 +446,14 @@ export default function DashboardPage() {
             const estadosData = await obtenerDocumentosPorEstado(periodo);
             const proximosData = await obtenerProximosVencer(periodo);
             const cumplimientoData = await obtenerResumenProveedoresCumplimiento(periodo);
+            const globalGestionData = await obtenerCumplimientoGlobalPorGestion(periodo);
 
             setRawAdminResumen(resumenData);
             setRawAdminGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
             setRawAdminEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
             setRawAdminProximos(proximosData);
             setCumplimientoProveedores(cumplimientoData);
+            setCumplimientoGlobal(globalGestionData || []);
         } catch (error) {
             console.error(error);
         }
@@ -1265,41 +1269,137 @@ export default function DashboardPage() {
                         </div>
                     )}
 
-                    {/* ── Gráfico de torta: estado de documentos ───────────── */}
-                    {estados.length > 0 && (
-                        <div style={{ ...styles.card, marginTop: '30px' }}>
-                            <h2 style={styles.sectionTitle}>Estado de Documentos</h2>
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                <div className="pie-chart-wrap">
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <PieChart>
-                                            <Pie
-                                                data={estados}
-                                                cx="50%"
-                                                cy="50%"
-                                                dataKey="cantidad"
-                                                nameKey="descripcion"
-                                                outerRadius={120}
-                                                label={({ name, percent }) =>
-                                                    `${name} ${(percent * 100).toFixed(0)}%`
-                                                }
-                                            >
-                                                {estados.map((item, index) => (
-                                                    <Cell
-                                                        key={index}
-                                                        fill={esVigente(item) ? colors.success : colors.danger}
-                                                    />
-                                                ))}
-                                            </Pie>
-                                            <Tooltip />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </div>
+                {/* ── Gráfico de torta: estado de documentos ───────────── */}
+                {estados.length > 0 && (
+                    <div style={{ ...styles.card, marginTop: '30px' }}>
+                        <h2 style={styles.sectionTitle}>Estado de Documentos</h2>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <div className="pie-chart-wrap">
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <PieChart>
+                                        <Pie
+                                            data={estados}
+                                            cx="50%"
+                                            cy="50%"
+                                            dataKey="cantidad"
+                                            nameKey="descripcion"
+                                            outerRadius={120}
+                                            label={({ name, percent }) =>
+                                                `${name} ${(percent * 100).toFixed(0)}%`
+                                            }
+                                        >
+                                            {estados.map((item, index) => (
+                                                <Cell
+                                                    key={index}
+                                                    fill={esVigente(item) ? colors.success : colors.danger}
+                                                />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip />
+                                    </PieChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    {/* ── Tabla de pendientes de ingresar ───────────────────────── */}
+                {/* ── TARJETA: CUMPLIMIENTO POR GESTIÓN (Solo Consultor) ────────────── */}
+                {esConsultor && (
+                    <div style={{ ...styles.card, marginTop: '30px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: colors.text, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ display: 'inline-block', width: '4px', height: '18px', background: colors.primary, borderRadius: '2px' }}></span>
+                                    CUMPLIMIENTO POR GESTIÓN
+                                </h3>
+                                <p style={{ color: colors.textMuted, fontSize: '13px', margin: '4px 0 0 12px' }}>
+                                    Indicadores globales de cumplimiento documental de los proveedores por cada área de gestión.
+                                </p>
+                            </div>
+                            {cumplimientoProveedores?.total_proveedores > 0 && (
+                                <span style={{
+                                    background: '#eff6ff',
+                                    color: colors.primary,
+                                    fontWeight: 700,
+                                    fontSize: '12.5px',
+                                    padding: '4px 12px',
+                                    borderRadius: '999px',
+                                    border: '1px solid #bfdbfe'
+                                }}>
+                                    {cumplimientoProveedores.total_proveedores} Proveedor{cumplimientoProveedores.total_proveedores === 1 ? '' : 'es'} en total
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="table-scroll">
+                            <table style={{ ...styles.table, marginTop: 0 }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ ...styles.th, width: '25%', padding: '10px 14px' }}>Gestión</th>
+                                        <th style={{ ...styles.th, width: '45%', padding: '10px 14px' }}>Estado de Avance</th>
+                                        <th style={{ ...styles.th, textAlign: 'center', width: '20%', padding: '10px 14px' }}>Conteo Documental</th>
+                                        <th style={{ ...styles.th, textAlign: 'center', width: '10%', padding: '10px 14px' }}>Cumplimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(cumplimientoGlobal && cumplimientoGlobal.length > 0 ? cumplimientoGlobal : [
+                                        { nombre: 'SST-MA', porcentaje: 0, documentos_registrados: 0, documentos_exigibles: 0, proveedores_cumplidos: 0, total_proveedores: 0 },
+                                        { nombre: 'CALIDAD', porcentaje: 0, documentos_registrados: 0, documentos_exigibles: 0, proveedores_cumplidos: 0, total_proveedores: 0 },
+                                        { nombre: 'SEG. PATRIMONIAL', porcentaje: 0, documentos_registrados: 0, documentos_exigibles: 0, proveedores_cumplidos: 0, total_proveedores: 0 },
+                                        { nombre: 'ETICA', porcentaje: 0, documentos_registrados: 0, documentos_exigibles: 0, proveedores_cumplidos: 0, total_proveedores: 0 },
+                                    ]).map((item, index) => {
+                                        const pct = Number(item.porcentaje || 0);
+                                        const progressColor = pct >= 90 ? colors.success : pct >= 75 ? colors.amber : colors.danger;
+                                        const badgeBg = pct >= 90 ? colors.successBg : pct >= 75 ? '#fef3c7' : colors.dangerBg;
+                                        const badgeFg = pct >= 90 ? colors.success : pct >= 75 ? '#b45309' : colors.danger;
+
+                                        return (
+                                            <tr key={index}>
+                                                <td style={{ ...styles.td, padding: '14px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: progressColor }}></span>
+                                                        <strong>{item.nombre}</strong>
+                                                    </div>
+                                                </td>
+                                                <td style={{ ...styles.td, padding: '14px' }}>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
+                                                        <div style={{ width: '100%', background: colors.border, borderRadius: '6px', overflow: 'hidden', height: '8px' }}>
+                                                            <div style={{
+                                                                width: `${Math.min(pct, 100)}%`,
+                                                                background: progressColor,
+                                                                height: '100%',
+                                                                transition: 'width 1s ease-in-out',
+                                                                borderRadius: '6px'
+                                                            }}></div>
+                                                        </div>
+                                                        {item.total_proveedores > 0 && (
+                                                            <span style={{ fontSize: '11.5px', color: colors.textMuted, fontWeight: '600' }}>
+                                                                {item.proveedores_cumplidos ?? 0} de {item.total_proveedores} proveedores con cumplimiento completo
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td style={{ ...styles.td, textAlign: 'center', padding: '14px' }}>
+                                                    <span style={{ fontSize: '13px', color: colors.text, fontWeight: '600' }}>
+                                                        {item.documentos_registrados ?? 0} / {item.documentos_exigibles ?? 0} docs
+                                                    </span>
+                                                </td>
+                                                <td style={{ ...styles.td, textAlign: 'center', padding: '14px' }}>
+                                                    <span style={styles.badge(badgeBg, badgeFg)}>
+                                                        {pct.toFixed(2)}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Tabla de pendientes de ingresar (Solo Proveedor y Admin, NO Consultor) ───────────────────────── */}
+                {!esConsultor && (
                     <div ref={pendientesRef} style={{ ...styles.card, marginTop: '30px' }}>
                         <h2 style={styles.sectionTitle}>
                             {esProveedor
@@ -1353,8 +1453,10 @@ export default function DashboardPage() {
                             </div>
                         )}
                     </div>
+                )}
 
-                    {/* ── TARJETA: DIRECTORIO DE CLIENTES POTENCIALES ────────────── */}
+                {/* ── TARJETA: DIRECTORIO DE CLIENTES POTENCIALES (Solo Proveedor) ────────────── */}
+                {esProveedor && (
                     <div style={{ ...styles.card, marginTop: '30px' }}>
                         <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '700', color: colors.text, display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ display: 'inline-block', width: '4px', height: '18px', background: '#2563eb', borderRadius: '2px' }}></span>
