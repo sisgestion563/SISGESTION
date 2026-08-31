@@ -1583,8 +1583,9 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </div>
-                </>
-            )}
+                )}
+            </>
+        )}
 
             {mostrarConstruccion && (
                 <div style={{
