@@ -865,195 +865,222 @@ export default function DashboardPage() {
                 <>
 
 
-                    {/* ── Tarjetas de estadísticas y KPI ─────────────────────────── */}
-                    {(resumen || esConsultor || !esProveedor) && (
-                        <div className={`stats-grid ${esProveedor ? 'proveedor' : ''}`}>
+                    {/* ── VISTA CONSULTOR: TARJETA GENERAL PROVEEDORES (Agrandada y Destacada) ─────────── */}
+                    {esConsultor && (() => {
+                        const totalP = Number(cumplimientoProveedores?.total_proveedores ?? resumen?.total_proveedores ?? 0);
+                        const recP = Number(cumplimientoProveedores?.recomendados ?? 0);
+                        const restP = Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
+                        const noRecP = Number(cumplimientoProveedores?.no_recomendados ?? 0);
 
-                            {/* Primer stat: Tarjeta GENERAL PROVEEDORES (CONSULTOR), Proveedores simple (ADMIN) o KPI (PROVEEDOR) */}
-                            {esConsultor ? (() => {
-                                const totalP = Number(cumplimientoProveedores?.total_proveedores ?? resumen?.total_proveedores ?? 0);
-                                const recP = Number(cumplimientoProveedores?.recomendados ?? 0);
-                                const restP = Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
-                                const noRecP = Number(cumplimientoProveedores?.no_recomendados ?? 0);
+                        const recPct = totalP > 0 ? Math.round((recP / totalP) * 100) : 0;
+                        const restPct = totalP > 0 ? Math.round((restP / totalP) * 100) : 0;
+                        const noRecPct = totalP > 0 ? Math.round((noRecP / totalP) * 100) : 0;
 
-                                const recPct = totalP > 0 ? Math.round((recP / totalP) * 100) : 0;
-                                const restPct = totalP > 0 ? Math.round((restP / totalP) * 100) : 0;
-                                const noRecPct = totalP > 0 ? Math.round((noRecP / totalP) * 100) : 0;
+                        return (
+                            <div style={{
+                                ...styles.card,
+                                padding: '26px 30px',
+                                borderLeft: `5px solid ${colors.primary}`,
+                                borderRadius: '14px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                marginBottom: '28px'
+                            }}>
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginBottom: '22px',
+                                    borderBottom: `1px solid ${colors.border}`,
+                                    paddingBottom: '16px',
+                                    flexWrap: 'wrap',
+                                    gap: '12px'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                        <div style={{
+                                            width: 44,
+                                            height: 44,
+                                            borderRadius: '10px',
+                                            background: '#eff6ff',
+                                            border: '1px solid #bfdbfe',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: colors.primary,
+                                            boxShadow: '0 2px 4px rgba(37,99,235,0.08)'
+                                        }}>
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="9" cy="7" r="4"></circle>
+                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 style={{ fontSize: '18px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.01em' }}>
+                                                General Proveedores
+                                            </h2>
+                                            <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
+                                                Distribución global del cumplimiento y calificación de proveedores en el sistema.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span style={{
+                                        background: '#eff6ff',
+                                        color: colors.primary,
+                                        fontWeight: 800,
+                                        fontSize: '13.5px',
+                                        padding: '6px 18px',
+                                        borderRadius: '999px',
+                                        border: '1px solid #bfdbfe',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        boxShadow: '0 1px 2px rgba(37,99,235,0.05)'
+                                    }}>
+                                        <span>Total:</span>
+                                        <strong style={{ fontSize: '15.5px' }}>{totalP}</strong>
+                                    </span>
+                                </div>
 
-                                return (
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                                    gap: '16px'
+                                }}>
+                                    {/* 1. Recomendados */}
                                     <div style={{
-                                        ...styles.card,
-                                        padding: '20px 22px',
-                                        borderLeft: `4px solid ${colors.primary}`,
+                                        padding: '16px 18px',
+                                        background: colors.successBg,
+                                        border: '1px solid #a7f3d0',
+                                        borderRadius: '12px',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         justifyContent: 'space-between',
-                                        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                                        borderRadius: '12px'
+                                        gap: '12px'
                                     }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '10px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                 <div style={{
-                                                    width: 32,
-                                                    height: 32,
+                                                    width: 28,
+                                                    height: 28,
                                                     borderRadius: '8px',
-                                                    background: '#eff6ff',
-                                                    border: '1px solid #bfdbfe',
+                                                    background: '#dcfce7',
+                                                    border: '1px solid #bbf7d0',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    color: colors.primary
+                                                    color: '#16a34a',
+                                                    flexShrink: 0
                                                 }}>
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                                        <circle cx="9" cy="7" r="4"></circle>
-                                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                        <polyline points="9 12 11 14 15 10"></polyline>
                                                     </svg>
                                                 </div>
-                                                <h3 style={{ fontSize: '13.5px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.02em' }}>
-                                                    General Proveedores
-                                                </h3>
+                                                <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#166534' }}>Recomendados</span>
                                             </div>
-                                            <span style={{
-                                                background: '#eff6ff',
-                                                color: colors.primary,
-                                                fontWeight: 800,
-                                                fontSize: '12px',
-                                                padding: '3px 10px',
-                                                borderRadius: '999px',
-                                                border: '1px solid #bfdbfe'
-                                            }}>
-                                                Total: {totalP}
+                                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '3px 10px', borderRadius: '999px', border: '1px solid #bbf7d0' }}>
+                                                {recPct}%
                                             </span>
                                         </div>
-
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                            {/* 1. Recomendados */}
-                                            <div style={{
-                                                padding: '10px 12px',
-                                                background: colors.successBg,
-                                                border: '1px solid #a7f3d0',
-                                                borderRadius: '10px',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '6px'
-                                            }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <div style={{
-                                                            width: 24,
-                                                            height: 24,
-                                                            borderRadius: '6px',
-                                                            background: '#dcfce7',
-                                                            border: '1px solid #bbf7d0',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            color: '#16a34a',
-                                                            flexShrink: 0
-                                                        }}>
-                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                                                <polyline points="9 12 11 14 15 10"></polyline>
-                                                            </svg>
-                                                        </div>
-                                                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#166534' }}>Recomendados</span>
-                                                    </div>
-                                                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '2px 8px', borderRadius: '999px', border: '1px solid #bbf7d0' }}>
-                                                        {recPct}%
-                                                    </span>
-                                                </div>
-                                                <div style={{ width: '100%', background: '#bbf7d0', borderRadius: '999px', overflow: 'hidden', height: '5px' }}>
-                                                    <div style={{ width: `${recPct}%`, background: colors.success, height: '100%', transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
-                                                </div>
-                                            </div>
-
-                                            {/* 2. Recomendados con restricciones */}
-                                            <div style={{
-                                                padding: '10px 12px',
-                                                background: '#fef3c7',
-                                                border: '1px solid #fde68a',
-                                                borderRadius: '10px',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '6px'
-                                            }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <div style={{
-                                                            width: 24,
-                                                            height: 24,
-                                                            borderRadius: '6px',
-                                                            background: '#fef3c7',
-                                                            border: '1px solid #fde68a',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            color: '#d97706',
-                                                            flexShrink: 0
-                                                        }}>
-                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                                            </svg>
-                                                        </div>
-                                                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#92400e' }}>Recomendados con restricciones</span>
-                                                    </div>
-                                                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#b45309', background: '#fef3c7', padding: '2px 8px', borderRadius: '999px', border: '1px solid #fde68a' }}>
-                                                        {restPct}%
-                                                    </span>
-                                                </div>
-                                                <div style={{ width: '100%', background: '#fde68a', borderRadius: '999px', overflow: 'hidden', height: '5px' }}>
-                                                    <div style={{ width: `${restPct}%`, background: '#d97706', height: '100%', transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
-                                                </div>
-                                            </div>
-
-                                            {/* 3. No recomendados */}
-                                            <div style={{
-                                                padding: '10px 12px',
-                                                background: colors.dangerBg,
-                                                border: '1px solid #fecaca',
-                                                borderRadius: '10px',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '6px'
-                                            }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <div style={{
-                                                            width: 24,
-                                                            height: 24,
-                                                            borderRadius: '6px',
-                                                            background: '#fee2e2',
-                                                            border: '1px solid #fecaca',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            color: '#dc2626',
-                                                            flexShrink: 0
-                                                        }}>
-                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                                                <line x1="15" y1="9" x2="9" y2="15"></line>
-                                                                <line x1="9" y1="9" x2="15" y2="15"></line>
-                                                            </svg>
-                                                        </div>
-                                                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#991b1b' }}>No recomendados</span>
-                                                    </div>
-                                                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#dc2626', background: '#fee2e2', padding: '2px 8px', borderRadius: '999px', border: '1px solid #fecaca' }}>
-                                                        {noRecPct}%
-                                                    </span>
-                                                </div>
-                                                <div style={{ width: '100%', background: '#fecaca', borderRadius: '999px', overflow: 'hidden', height: '5px' }}>
-                                                    <div style={{ width: `${noRecPct}%`, background: colors.danger, height: '100%', transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
-                                                </div>
-                                            </div>
+                                        <div style={{ width: '100%', background: '#bbf7d0', borderRadius: '999px', overflow: 'hidden', height: '7px' }}>
+                                            <div style={{ width: `${recPct}%`, background: colors.success, height: '100%', transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
                                         </div>
                                     </div>
-                                );
-                            })() : !esProveedor ? (
+
+                                    {/* 2. Recomendados con restricciones */}
+                                    <div style={{
+                                        padding: '16px 18px',
+                                        background: '#fef3c7',
+                                        border: '1px solid #fde68a',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        gap: '12px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{
+                                                    width: 28,
+                                                    height: 28,
+                                                    borderRadius: '8px',
+                                                    background: '#fef3c7',
+                                                    border: '1px solid #fde68a',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#d97706',
+                                                    flexShrink: 0
+                                                }}>
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                                    </svg>
+                                                </div>
+                                                <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#92400e' }}>Recomendados con restricciones</span>
+                                            </div>
+                                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#b45309', background: '#fef3c7', padding: '3px 10px', borderRadius: '999px', border: '1px solid #fde68a' }}>
+                                                {restPct}%
+                                            </span>
+                                        </div>
+                                        <div style={{ width: '100%', background: '#fde68a', borderRadius: '999px', overflow: 'hidden', height: '7px' }}>
+                                            <div style={{ width: `${restPct}%`, background: '#d97706', height: '100%', transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
+                                        </div>
+                                    </div>
+
+                                    {/* 3. No recomendados */}
+                                    <div style={{
+                                        padding: '16px 18px',
+                                        background: colors.dangerBg,
+                                        border: '1px solid #fecaca',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        gap: '12px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{
+                                                    width: 28,
+                                                    height: 28,
+                                                    borderRadius: '8px',
+                                                    background: '#fee2e2',
+                                                    border: '1px solid #fecaca',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#dc2626',
+                                                    flexShrink: 0
+                                                }}>
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                                    </svg>
+                                                </div>
+                                                <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#991b1b' }}>No recomendados</span>
+                                            </div>
+                                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#dc2626', background: '#fee2e2', padding: '3px 10px', borderRadius: '999px', border: '1px solid #fecaca' }}>
+                                                {noRecPct}%
+                                            </span>
+                                        </div>
+                                        <div style={{ width: '100%', background: '#fecaca', borderRadius: '999px', overflow: 'hidden', height: '7px' }}>
+                                            <div style={{ width: `${noRecPct}%`, background: colors.danger, height: '100%', transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
+
+                    {/* ── Tarjetas de estadísticas y KPI (Solo Admin y Proveedor) ─────────────────────────── */}
+                    {!esConsultor && (resumen || !esProveedor) && (
+                        <div className={`stats-grid ${esProveedor ? 'proveedor' : ''}`}>
+
+                            {!esProveedor ? (
                                 <div style={styles.statCard(colors.primary)}>
                                     <p style={styles.statLabel}>Proveedores</p>
                                     <p style={styles.statValue(colors.text)}>{resumen?.total_proveedores ?? 0}</p>
@@ -1379,8 +1406,8 @@ export default function DashboardPage() {
                         </div>
                     )}
 
-                {/* ── Gráfico de torta: estado de documentos ───────────── */}
-                {estados.length > 0 && (
+                {/* ── Gráfico de torta: estado de documentos (Solo Admin y Proveedor) ───────────── */}
+                {!esConsultor && estados.length > 0 && (
                     <div style={{ ...styles.card, marginTop: '30px' }}>
                         <h2 style={styles.sectionTitle}>Estado de Documentos</h2>
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
