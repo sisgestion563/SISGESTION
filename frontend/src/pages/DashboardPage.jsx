@@ -847,103 +847,191 @@ export default function DashboardPage() {
                     {resumen && (
                         <div className={`stats-grid ${esProveedor ? 'proveedor' : ''}`}>
 
-                            {/* Primer stat: Tarjeta PROVEEDORES (CONSULTOR), Proveedores simple (ADMIN) o KPI (PROVEEDOR) */}
-                            {esConsultor ? (
-                                <div style={{
-                                    ...styles.card,
-                                    padding: '20px 24px',
-                                    borderLeft: `4px solid ${colors.primary}`,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'space-between',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
-                                }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '10px' }}>
-                                        <h3 style={{ fontSize: '13px', fontWeight: 700, color: colors.textMuted, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                            PROVEEDORES
-                                        </h3>
-                                        <span style={{
-                                            background: '#eff6ff',
-                                            color: colors.primary,
-                                            fontWeight: 800,
-                                            fontSize: '13px',
-                                            padding: '4px 12px',
-                                            borderRadius: '999px',
-                                            border: '1px solid #bfdbfe'
-                                        }}>
-                                            Total: {cumplimientoProveedores?.total_proveedores ?? resumen.total_proveedores ?? 0}
-                                        </span>
-                                    </div>
+                            {/* Primer stat: Tarjeta GENERAL PROVEEDORES (CONSULTOR), Proveedores simple (ADMIN) o KPI (PROVEEDOR) */}
+                            {esConsultor ? (() => {
+                                const totalP = Number(cumplimientoProveedores?.total_proveedores ?? resumen.total_proveedores ?? 0);
+                                const recP = Number(cumplimientoProveedores?.recomendados ?? 0);
+                                const restP = Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
+                                const noRecP = Number(cumplimientoProveedores?.no_recomendados ?? 0);
 
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        {/* 1. Recomendados */}
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                padding: '10px 14px',
+                                const recPct = totalP > 0 ? Math.round((recP / totalP) * 100) : 0;
+                                const restPct = totalP > 0 ? Math.round((restP / totalP) * 100) : 0;
+                                const noRecPct = totalP > 0 ? Math.round((noRecP / totalP) * 100) : 0;
+
+                                return (
+                                    <div style={{
+                                        ...styles.card,
+                                        padding: '20px 22px',
+                                        borderLeft: `4px solid ${colors.primary}`,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                        borderRadius: '12px'
+                                    }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '10px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: '8px',
+                                                    background: '#eff6ff',
+                                                    border: '1px solid #bfdbfe',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: colors.primary
+                                                }}>
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                        <circle cx="9" cy="7" r="4"></circle>
+                                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                                    </svg>
+                                                </div>
+                                                <h3 style={{ fontSize: '13.5px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.02em' }}>
+                                                    General Proveedores
+                                                </h3>
+                                            </div>
+                                            <span style={{
+                                                background: '#eff6ff',
+                                                color: colors.primary,
+                                                fontWeight: 800,
+                                                fontSize: '12px',
+                                                padding: '3px 10px',
+                                                borderRadius: '999px',
+                                                border: '1px solid #bfdbfe'
+                                            }}>
+                                                Total: {totalP}
+                                            </span>
+                                        </div>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                            {/* 1. Recomendados */}
+                                            <div style={{
+                                                padding: '10px 12px',
                                                 background: colors.successBg,
                                                 border: '1px solid #a7f3d0',
                                                 borderRadius: '10px',
-                                                boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-                                            }}
-                                        >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: colors.success, boxShadow: `0 0 6px ${colors.success}` }}></span>
-                                                <span style={{ fontSize: '13px', fontWeight: 600, color: colors.success }}>Recomendados</span>
-                                            </div>
-                                            <span style={{ fontSize: '17px', fontWeight: 800, color: colors.success }}>
-                                                {cumplimientoProveedores?.recomendados ?? 0}
-                                            </span>
-                                        </div>
-
-                                        {/* 2. Recomendados con restricciones */}
-                                        <div
-                                            style={{
                                                 display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                padding: '10px 14px',
+                                                flexDirection: 'column',
+                                                gap: '6px'
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <div style={{
+                                                            width: 24,
+                                                            height: 24,
+                                                            borderRadius: '6px',
+                                                            background: '#dcfce7',
+                                                            border: '1px solid #bbf7d0',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: '#16a34a',
+                                                            flexShrink: 0
+                                                        }}>
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                                <polyline points="9 12 11 14 15 10"></polyline>
+                                                            </svg>
+                                                        </div>
+                                                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#166534' }}>Recomendados</span>
+                                                    </div>
+                                                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '2px 8px', borderRadius: '999px', border: '1px solid #bbf7d0' }}>
+                                                        {recPct}%
+                                                    </span>
+                                                </div>
+                                                <div style={{ width: '100%', background: '#bbf7d0', borderRadius: '999px', overflow: 'hidden', height: '5px' }}>
+                                                    <div style={{ width: `${recPct}%`, background: colors.success, height: '100%', transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
+                                                </div>
+                                            </div>
+
+                                            {/* 2. Recomendados con restricciones */}
+                                            <div style={{
+                                                padding: '10px 12px',
                                                 background: '#fef3c7',
                                                 border: '1px solid #fde68a',
                                                 borderRadius: '10px',
-                                                boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-                                            }}
-                                        >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#b45309', boxShadow: '0 0 6px #b45309' }}></span>
-                                                <span style={{ fontSize: '13px', fontWeight: 600, color: '#b45309' }}>Recomendados con restricciones</span>
-                                            </div>
-                                            <span style={{ fontSize: '17px', fontWeight: 800, color: '#b45309' }}>
-                                                {cumplimientoProveedores?.recomendados_con_restricciones ?? 0}
-                                            </span>
-                                        </div>
-
-                                        {/* 3. No recomendados */}
-                                        <div
-                                            style={{
                                                 display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                padding: '10px 14px',
+                                                flexDirection: 'column',
+                                                gap: '6px'
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <div style={{
+                                                            width: 24,
+                                                            height: 24,
+                                                            borderRadius: '6px',
+                                                            background: '#fef3c7',
+                                                            border: '1px solid #fde68a',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: '#d97706',
+                                                            flexShrink: 0
+                                                        }}>
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                                            </svg>
+                                                        </div>
+                                                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#92400e' }}>Recomendados con restricciones</span>
+                                                    </div>
+                                                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#b45309', background: '#fef3c7', padding: '2px 8px', borderRadius: '999px', border: '1px solid #fde68a' }}>
+                                                        {restPct}%
+                                                    </span>
+                                                </div>
+                                                <div style={{ width: '100%', background: '#fde68a', borderRadius: '999px', overflow: 'hidden', height: '5px' }}>
+                                                    <div style={{ width: `${restPct}%`, background: '#d97706', height: '100%', transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
+                                                </div>
+                                            </div>
+
+                                            {/* 3. No recomendados */}
+                                            <div style={{
+                                                padding: '10px 12px',
                                                 background: colors.dangerBg,
                                                 border: '1px solid #fecaca',
                                                 borderRadius: '10px',
-                                                boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-                                            }}
-                                        >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: colors.danger, boxShadow: `0 0 6px ${colors.danger}` }}></span>
-                                                <span style={{ fontSize: '13px', fontWeight: 600, color: colors.danger }}>No recomendados</span>
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '6px'
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <div style={{
+                                                            width: 24,
+                                                            height: 24,
+                                                            borderRadius: '6px',
+                                                            background: '#fee2e2',
+                                                            border: '1px solid #fecaca',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: '#dc2626',
+                                                            flexShrink: 0
+                                                        }}>
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                                                            </svg>
+                                                        </div>
+                                                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#991b1b' }}>No recomendados</span>
+                                                    </div>
+                                                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#dc2626', background: '#fee2e2', padding: '2px 8px', borderRadius: '999px', border: '1px solid #fecaca' }}>
+                                                        {noRecPct}%
+                                                    </span>
+                                                </div>
+                                                <div style={{ width: '100%', background: '#fecaca', borderRadius: '999px', overflow: 'hidden', height: '5px' }}>
+                                                    <div style={{ width: `${noRecPct}%`, background: colors.danger, height: '100%', transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
+                                                </div>
                                             </div>
-                                            <span style={{ fontSize: '17px', fontWeight: 800, color: colors.danger }}>
-                                                {cumplimientoProveedores?.no_recomendados ?? 0}
-                                            </span>
                                         </div>
                                     </div>
-                                </div>
-                            ) : !esProveedor ? (
+                                );
+                            })() : !esProveedor ? (
                                 <div style={styles.statCard(colors.primary)}>
                                     <p style={styles.statLabel}>Proveedores</p>
                                     <p style={styles.statValue(colors.text)}>{resumen.total_proveedores}</p>
@@ -1305,16 +1393,24 @@ export default function DashboardPage() {
 
                 {/* ── TARJETA: CUMPLIMIENTO POR GESTIÓN (Solo Consultor) ────────────── */}
                 {esConsultor && (
-                    <div style={{ ...styles.card, marginTop: '30px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-                            <div>
-                                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: colors.text, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ display: 'inline-block', width: '4px', height: '18px', background: colors.primary, borderRadius: '2px' }}></span>
-                                    CUMPLIMIENTO POR GESTIÓN
-                                </h3>
-                                <p style={{ color: colors.textMuted, fontSize: '13px', margin: '4px 0 0 12px' }}>
-                                    Indicadores globales de cumplimiento documental de los proveedores por cada área de gestión.
-                                </p>
+                    <div style={{
+                        ...styles.card,
+                        marginTop: '30px',
+                        padding: '24px 28px',
+                        borderRadius: '12px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ display: 'inline-block', width: '4px', height: '22px', background: colors.primary, borderRadius: '4px' }}></span>
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: colors.text, letterSpacing: '0.02em' }}>
+                                        CUMPLIMIENTO POR GESTIÓN
+                                    </h3>
+                                    <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
+                                        Indicadores de cumplimiento de los proveedores por cada área de gestión.
+                                    </p>
+                                </div>
                             </div>
                             {cumplimientoProveedores?.total_proveedores > 0 && (
                                 <span style={{
@@ -1322,11 +1418,11 @@ export default function DashboardPage() {
                                     color: colors.primary,
                                     fontWeight: 700,
                                     fontSize: '12.5px',
-                                    padding: '4px 12px',
+                                    padding: '5px 14px',
                                     borderRadius: '999px',
                                     border: '1px solid #bfdbfe'
                                 }}>
-                                    {cumplimientoProveedores.total_proveedores} Proveedor{cumplimientoProveedores.total_proveedores === 1 ? '' : 'es'} en total
+                                    {cumplimientoProveedores.total_proveedores} Proveedor{cumplimientoProveedores.total_proveedores === 1 ? '' : 'es'} evaluados
                                 </span>
                             )}
                         </div>
@@ -1335,57 +1431,49 @@ export default function DashboardPage() {
                             <table style={{ ...styles.table, marginTop: 0 }}>
                                 <thead>
                                     <tr>
-                                        <th style={{ ...styles.th, width: '25%', padding: '10px 14px' }}>Gestión</th>
-                                        <th style={{ ...styles.th, width: '45%', padding: '10px 14px' }}>Estado de Avance</th>
-                                        <th style={{ ...styles.th, textAlign: 'center', width: '20%', padding: '10px 14px' }}>Conteo Documental</th>
-                                        <th style={{ ...styles.th, textAlign: 'center', width: '10%', padding: '10px 14px' }}>Cumplimiento</th>
+                                        <th style={{ ...styles.th, width: '30%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Gestión</th>
+                                        <th style={{ ...styles.th, width: '55%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Avance de Cumplimiento</th>
+                                        <th style={{ ...styles.th, textAlign: 'center', width: '15%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Cumplimiento</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {(cumplimientoGlobal && cumplimientoGlobal.length > 0 ? cumplimientoGlobal : [
-                                        { nombre: 'SST-MA', porcentaje: 0, documentos_registrados: 0, documentos_exigibles: 0, proveedores_cumplidos: 0, total_proveedores: 0 },
-                                        { nombre: 'CALIDAD', porcentaje: 0, documentos_registrados: 0, documentos_exigibles: 0, proveedores_cumplidos: 0, total_proveedores: 0 },
-                                        { nombre: 'SEG. PATRIMONIAL', porcentaje: 0, documentos_registrados: 0, documentos_exigibles: 0, proveedores_cumplidos: 0, total_proveedores: 0 },
-                                        { nombre: 'ETICA', porcentaje: 0, documentos_registrados: 0, documentos_exigibles: 0, proveedores_cumplidos: 0, total_proveedores: 0 },
+                                        { nombre: 'SST-MA', porcentaje: 0 },
+                                        { nombre: 'CALIDAD', porcentaje: 0 },
+                                        { nombre: 'SEG. PATRIMONIAL', porcentaje: 0 },
+                                        { nombre: 'ETICA', porcentaje: 0 },
                                     ]).map((item, index) => {
                                         const pct = Number(item.porcentaje || 0);
-                                        const progressColor = pct >= 90 ? colors.success : pct >= 75 ? colors.amber : colors.danger;
-                                        const badgeBg = pct >= 90 ? colors.successBg : pct >= 75 ? '#fef3c7' : colors.dangerBg;
-                                        const badgeFg = pct >= 90 ? colors.success : pct >= 75 ? '#b45309' : colors.danger;
+                                        const progressColor = pct >= 90 ? colors.success : pct >= 75 ? '#d97706' : colors.danger;
+                                        const badgeBg = pct >= 90 ? '#dcfce7' : pct >= 75 ? '#fef3c7' : '#fee2e2';
+                                        const badgeFg = pct >= 90 ? '#15803d' : pct >= 75 ? '#b45309' : '#dc2626';
+                                        const badgeBorder = pct >= 90 ? '#bbf7d0' : pct >= 75 ? '#fde68a' : '#fecaca';
 
                                         return (
-                                            <tr key={index}>
-                                                <td style={{ ...styles.td, padding: '14px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: progressColor }}></span>
-                                                        <strong>{item.nombre}</strong>
+                                            <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                <td style={{ ...styles.td, padding: '16px' }}>
+                                                    <strong style={{ fontSize: '13.5px', color: colors.text }}>{item.nombre}</strong>
+                                                </td>
+                                                <td style={{ ...styles.td, padding: '16px' }}>
+                                                    <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden', height: '10px' }}>
+                                                        <div style={{
+                                                            width: `${Math.min(pct, 100)}%`,
+                                                            background: progressColor,
+                                                            height: '100%',
+                                                            transition: 'width 1s ease-in-out',
+                                                            borderRadius: '999px'
+                                                        }}></div>
                                                     </div>
                                                 </td>
-                                                <td style={{ ...styles.td, padding: '14px' }}>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center' }}>
-                                                        <div style={{ width: '100%', background: colors.border, borderRadius: '6px', overflow: 'hidden', height: '8px' }}>
-                                                            <div style={{
-                                                                width: `${Math.min(pct, 100)}%`,
-                                                                background: progressColor,
-                                                                height: '100%',
-                                                                transition: 'width 1s ease-in-out',
-                                                                borderRadius: '6px'
-                                                            }}></div>
-                                                        </div>
-                                                        {item.total_proveedores > 0 && (
-                                                            <span style={{ fontSize: '11.5px', color: colors.textMuted, fontWeight: '600' }}>
-                                                                {item.proveedores_cumplidos ?? 0} de {item.total_proveedores} proveedores con cumplimiento completo
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td style={{ ...styles.td, textAlign: 'center', padding: '14px' }}>
-                                                    <span style={{ fontSize: '13px', color: colors.text, fontWeight: '600' }}>
-                                                        {item.documentos_registrados ?? 0} / {item.documentos_exigibles ?? 0} docs
-                                                    </span>
-                                                </td>
-                                                <td style={{ ...styles.td, textAlign: 'center', padding: '14px' }}>
-                                                    <span style={styles.badge(badgeBg, badgeFg)}>
+                                                <td style={{ ...styles.td, textAlign: 'center', padding: '16px' }}>
+                                                    <span style={{
+                                                        ...styles.badge(badgeBg, badgeFg),
+                                                        padding: '5px 14px',
+                                                        fontSize: '13px',
+                                                        fontWeight: 800,
+                                                        border: `1px solid ${badgeBorder}`,
+                                                        borderRadius: '999px'
+                                                    }}>
                                                         {pct.toFixed(2)}%
                                                     </span>
                                                 </td>
