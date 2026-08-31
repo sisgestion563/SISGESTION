@@ -373,10 +373,10 @@ export default function DashboardPage() {
 
     // ── Identidad del usuario logueado ──────────────────────────────────────
     const usuarioLogueado = obtenerUsuario();
-    const rolCodigo = (usuarioLogueado?.rol_codigo || usuarioLogueado?.rol || '').toUpperCase();
-    const rolId = usuarioLogueado?.rol_id;
-    const esProveedor = rolCodigo === 'PROVEEDOR' || rolId === 2;
-    const esConsultor = rolCodigo === 'CONSULTOR' || rolId === 3;
+    const rolCodigo = (usuarioLogueado?.rol_codigo || usuarioLogueado?.rol || usuarioLogueado?.role || '').toUpperCase();
+    const rolId = Number(usuarioLogueado?.rol_id);
+    const esProveedor = rolCodigo === 'PROVEEDOR' || rolId === 2 || usuarioLogueado?.tipo_usuario === 'PROVEEDOR';
+    const esConsultor = rolCodigo === 'CONSULTOR' || rolId === 3 || usuarioLogueado?.tipo_usuario === 'CONSULTOR' || (usuarioLogueado?.rol_nombre || '').toUpperCase().includes('CONSULT');
     const miProveedorId = usuarioLogueado?.proveedor_id;
 
     // Escucha de cambios de gestión desde el Header
@@ -441,21 +441,43 @@ export default function DashboardPage() {
     // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
     async function cargarDashboardAdmin(periodo) {
         try {
-            const resumenData = await obtenerResumen(periodo);
-            const gruposData = await obtenerDocumentosPorGrupo(periodo);
-            const estadosData = await obtenerDocumentosPorEstado(periodo);
-            const proximosData = await obtenerProximosVencer(periodo);
-            const cumplimientoData = await obtenerResumenProveedoresCumplimiento(periodo);
-            const globalGestionData = await obtenerCumplimientoGlobalPorGestion(periodo);
+            const [
+                resumenRes,
+                gruposRes,
+                estadosRes,
+                proximosRes,
+                cumplimientoRes,
+                globalGestionRes
+            ] = await Promise.allSettled([
+                obtenerResumen(periodo),
+                obtenerDocumentosPorGrupo(periodo),
+                obtenerDocumentosPorEstado(periodo),
+                obtenerProximosVencer(periodo),
+                obtenerResumenProveedoresCumplimiento(periodo),
+                obtenerCumplimientoGlobalPorGestion(periodo)
+            ]);
+
+            const resumenData = (resumenRes.status === 'fulfilled' && resumenRes.value) ? resumenRes.value : { total_proveedores: 0, total_documentos: 0, documentos_vigentes: 0, documentos_vencidos: 0 };
+            const gruposData = (gruposRes.status === 'fulfilled' && Array.isArray(gruposRes.value)) ? gruposRes.value : [];
+            const estadosData = (estadosRes.status === 'fulfilled' && Array.isArray(estadosRes.value)) ? estadosRes.value : [];
+            const proximosData = (proximosRes.status === 'fulfilled' && Array.isArray(proximosRes.value)) ? proximosRes.value : [];
+            const cumplimientoData = (cumplimientoRes.status === 'fulfilled' && cumplimientoRes.value) ? cumplimientoRes.value : { total_proveedores: 0, recomendados: 0, recomendados_con_restricciones: 0, no_recomendados: 0 };
+            const globalGestionData = (globalGestionRes.status === 'fulfilled' && Array.isArray(globalGestionRes.value)) ? globalGestionRes.value : [];
 
             setRawAdminResumen(resumenData);
-            setRawAdminGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
-            setRawAdminEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
+            setResumen(resumenData);
+            setRawAdminGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
+            setGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
+            setRawAdminEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
+            setEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
             setRawAdminProximos(proximosData);
+            setProximos(proximosData);
             setCumplimientoProveedores(cumplimientoData);
-            setCumplimientoGlobal(globalGestionData || []);
+            setCumplimientoGlobal(globalGestionData);
         } catch (error) {
-            console.error(error);
+            console.error("Error al cargar dashboard admin/consultor:", error);
+            setResumen({ total_proveedores: 0, total_documentos: 0, documentos_vigentes: 0, documentos_vencidos: 0 });
+            setCumplimientoProveedores({ total_proveedores: 0, recomendados: 0, recomendados_con_restricciones: 0, no_recomendados: 0 });
         }
     };
 
@@ -844,12 +866,12 @@ export default function DashboardPage() {
 
 
                     {/* ── Tarjetas de estadísticas y KPI ─────────────────────────── */}
-                    {resumen && (
+                    {(resumen || esConsultor || !esProveedor) && (
                         <div className={`stats-grid ${esProveedor ? 'proveedor' : ''}`}>
 
                             {/* Primer stat: Tarjeta GENERAL PROVEEDORES (CONSULTOR), Proveedores simple (ADMIN) o KPI (PROVEEDOR) */}
                             {esConsultor ? (() => {
-                                const totalP = Number(cumplimientoProveedores?.total_proveedores ?? resumen.total_proveedores ?? 0);
+                                const totalP = Number(cumplimientoProveedores?.total_proveedores ?? resumen?.total_proveedores ?? 0);
                                 const recP = Number(cumplimientoProveedores?.recomendados ?? 0);
                                 const restP = Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
                                 const noRecP = Number(cumplimientoProveedores?.no_recomendados ?? 0);
@@ -1034,7 +1056,7 @@ export default function DashboardPage() {
                             })() : !esProveedor ? (
                                 <div style={styles.statCard(colors.primary)}>
                                     <p style={styles.statLabel}>Proveedores</p>
-                                    <p style={styles.statValue(colors.text)}>{resumen.total_proveedores}</p>
+                                    <p style={styles.statValue(colors.text)}>{resumen?.total_proveedores ?? 0}</p>
                                 </div>
                             ) : (
                                 kpisGestion && kpisGestion.length > 0 ? (
@@ -1106,7 +1128,7 @@ export default function DashboardPage() {
                                 ) : (
                                     <div style={styles.statCard(colors.primary)}>
                                         <p style={styles.statLabel}>Total Documentos Cargados</p>
-                                        <p style={styles.statValue(colors.text)}>{resumen.total_documentos}</p>
+                                        <p style={styles.statValue(colors.text)}>{resumen?.total_documentos ?? 0}</p>
                                     </div>
                                 )
                             )}
@@ -1258,9 +1280,9 @@ export default function DashboardPage() {
                             )}
 
                             {!esProveedor && (() => {
-                                const registrados = resumen.total_documentos || 0;
-                                const vigentes = resumen.documentos_vigentes || 0;
-                                const porcentaje = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(2) : 0;
+                                const registrados = resumen?.total_documentos || 0;
+                                const vigentes = resumen?.documentos_vigentes || 0;
+                                const porcentaje = registrados > 0 ? ((vigentes / registrados) * 100).toFixed(2) : '0.00';
                                 return (
                                     <div style={{ ...styles.card, padding: '20px 24px', borderLeft: `4px solid ${colors.success}`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                         <p style={styles.statLabel}>VIGENCIA DOCUMENTAL</p>
@@ -1280,7 +1302,7 @@ export default function DashboardPage() {
                             {!esProveedor ? (
                                 <div style={styles.statCard(colors.danger)}>
                                     <p style={styles.statLabel}>Documentos Vencidos</p>
-                                    <p style={styles.statValue(colors.danger)}>{resumen.documentos_vencidos}</p>
+                                    <p style={styles.statValue(colors.danger)}>{resumen?.documentos_vencidos ?? 0}</p>
                                 </div>
                             ) : (
                                 estadoExpediente ? (
