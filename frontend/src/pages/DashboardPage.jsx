@@ -27,6 +27,8 @@ import {
     obtenerCumplimientoGlobalPorGestion
 } from '../services/dashboard.service';
 
+import { obtenerCatalogo, obtenerPeriodos } from '../services/catalogos.service';
+
 // Reutilizamos el servicio para listar los expedientes por grupo corporativo
 import { listarPorGrupo } from '../services/documentos.service';
 import { obtenerProveedorPorId } from '../services/providers.service';
@@ -343,6 +345,8 @@ export default function DashboardPage() {
     const [calificacion, setCalificacion] = useState(null);
     const [cumplimientoProveedores, setCumplimientoProveedores] = useState(null);
     const [cumplimientoGlobal, setCumplimientoGlobal] = useState([]);
+    const [rubros, setRubros] = useState([]);
+    const [rubroFiltro, setRubroFiltro] = useState('ALL');
     const [loadingProveedor, setLoadingProveedor] = useState(true);
     const [proveedorInfo, setProveedorInfo] = useState(null);
     const [mostrarConstruccion, setMostrarConstruccion] = useState(false);
@@ -405,9 +409,22 @@ export default function DashboardPage() {
         if (esProveedor) {
             cargarDashboardProveedor();
         } else {
-            cargarDashboardAdmin(periodoFiltro);
+            cargarDashboardAdmin(periodoFiltro, rubroFiltro);
         }
-    }, [esProveedor, miProveedorId, periodoFiltro]);
+    }, [esProveedor, miProveedorId, periodoFiltro, rubroFiltro]);
+
+    // Cargar catálogo de rubros (CIIU) para consultor
+    useEffect(() => {
+        if (esConsultor) {
+            obtenerCatalogo('0002', 'CODIGO_CIIU_SUNAT')
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        setRubros(data);
+                    }
+                })
+                .catch(err => console.error("Error al cargar catalogo de rubros:", err));
+        }
+    }, [esConsultor]);
 
     // Cargar información de la razón social del proveedor
     useEffect(() => {
@@ -439,7 +456,7 @@ export default function DashboardPage() {
     }, [gestionFiltro, rawDocsProveedor, rawKpisProveedor, rawCalificacion, rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, esProveedor]);
 
     // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
-    async function cargarDashboardAdmin(periodo) {
+    async function cargarDashboardAdmin(periodo, rubro = 'ALL') {
         try {
             const [
                 resumenRes,
@@ -453,8 +470,8 @@ export default function DashboardPage() {
                 obtenerDocumentosPorGrupo(periodo),
                 obtenerDocumentosPorEstado(periodo),
                 obtenerProximosVencer(periodo),
-                obtenerResumenProveedoresCumplimiento(periodo),
-                obtenerCumplimientoGlobalPorGestion(periodo)
+                obtenerResumenProveedoresCumplimiento(periodo, rubro),
+                obtenerCumplimientoGlobalPorGestion(periodo, rubro)
             ]);
 
             const resumenData = (resumenRes.status === 'fulfilled' && resumenRes.value) ? resumenRes.value : { total_proveedores: 0, total_documentos: 0, documentos_vigentes: 0, documentos_vencidos: 0 };
@@ -863,7 +880,123 @@ export default function DashboardPage() {
                 </div>
             ) : (
                 <>
+                    {/* ── BARRA DE FILTROS PARA CONSULTOR (Rubro CIIU, Gestión y Periodo) ─────────── */}
+                    {esConsultor && (
+                        <div style={{
+                            ...styles.card,
+                            padding: '16px 20px',
+                            marginBottom: '24px',
+                            background: '#ffffff',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '12px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '16px'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: '8px',
+                                    background: '#eff6ff',
+                                    border: '1px solid #bfdbfe',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: colors.primary
+                                }}>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: colors.text, letterSpacing: '0.02em' }}>
+                                        FILTROS DE AUDITORÍA
+                                    </h3>
+                                    <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: colors.textMuted }}>
+                                        Filtre los indicadores por rubro económico (CIIU), gestión y periodo.
+                                    </p>
+                                </div>
+                            </div>
 
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                                {/* Filtro Rubro (CIIU) */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <label style={{ fontSize: '11.5px', fontWeight: 700, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                                        Rubro / Actividad Económica (CIIU)
+                                    </label>
+                                    <select
+                                        value={rubroFiltro}
+                                        onChange={(e) => setRubroFiltro(e.target.value)}
+                                        style={{
+                                            padding: '8px 12px',
+                                            borderRadius: '8px',
+                                            border: '1px solid #cbd5e1',
+                                            background: '#ffffff',
+                                            fontSize: '13px',
+                                            color: colors.text,
+                                            fontWeight: 600,
+                                            outline: 'none',
+                                            cursor: 'pointer',
+                                            minWidth: '260px',
+                                            maxWidth: '340px',
+                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                        }}
+                                    >
+                                        <option value="ALL">Todos los Rubros (CIIU)</option>
+                                        {rubros.map((item, idx) => {
+                                            const code = item.codigo_valor || item.ciiu || item.code || item.id_catalogo;
+                                            const label = item.descripcion || item.nombre || item.label || item.actividad;
+                                            return (
+                                                <option key={idx} value={code} title={`${code} - ${label}`}>
+                                                    {code} - {label}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                </div>
+
+                                {/* Botón Limpiar Filtros */}
+                                {(rubroFiltro !== 'ALL' || (gestionFiltro && !gestionFiltro.includes('ALL'))) && (
+                                    <button
+                                        onClick={() => {
+                                            setRubroFiltro('ALL');
+                                            setGestionFiltro(['ALL']);
+                                            localStorage.setItem('sisgestion_gestion_actual', JSON.stringify(['ALL']));
+                                            window.dispatchEvent(new CustomEvent('sisgestion:gestion_change', { detail: ['ALL'] }));
+                                        }}
+                                        style={{
+                                            marginTop: '16px',
+                                            padding: '7px 14px',
+                                            borderRadius: '8px',
+                                            border: '1px solid #fecaca',
+                                            background: '#fee2e2',
+                                            color: '#dc2626',
+                                            fontSize: '12.5px',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '5px',
+                                            transition: 'all 0.2s ease',
+                                            boxShadow: '0 1px 2px rgba(220,38,38,0.1)'
+                                        }}
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.background = '#fecaca';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.background = '#fee2e2';
+                                        }}
+                                    >
+                                        ✕ Limpiar Filtros
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* ── VISTA CONSULTOR: TARJETA GENERAL PROVEEDORES (Agrandada y Destacada) ─────────── */}
                     {esConsultor && (() => {
@@ -1487,11 +1620,18 @@ export default function DashboardPage() {
                                 </thead>
                                 <tbody>
                                     {(cumplimientoGlobal && cumplimientoGlobal.length > 0 ? cumplimientoGlobal : [
-                                        { nombre: 'SST-MA', porcentaje: 0 },
-                                        { nombre: 'CALIDAD', porcentaje: 0 },
-                                        { nombre: 'SEG. PATRIMONIAL', porcentaje: 0 },
-                                        { nombre: 'ETICA', porcentaje: 0 },
-                                    ]).map((item, index) => {
+                                        { codigo: 'SST_MA', nombre: 'SST-MA', porcentaje: 0 },
+                                        { codigo: 'CALIDAD', nombre: 'CALIDAD', porcentaje: 0 },
+                                        { codigo: 'PATRIMONIAL', nombre: 'SEG. PATRIMONIAL', porcentaje: 0 },
+                                        { codigo: 'ETICA', nombre: 'ETICA', porcentaje: 0 },
+                                    ]).filter(item => {
+                                        if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL')) return true;
+                                        if ((item.codigo === 'SST_MA' || (item.nombre || '').includes('SST')) && (gestionFiltro.includes('GSG,GMA') || gestionFiltro.includes('GSG') || gestionFiltro.includes('GMA'))) return true;
+                                        if ((item.codigo === 'CALIDAD' || (item.nombre || '').includes('CALIDAD')) && (gestionFiltro.includes('GCA') || gestionFiltro.includes('CALIDAD'))) return true;
+                                        if ((item.codigo === 'PATRIMONIAL' || (item.nombre || '').includes('PATRIMONIAL')) && (gestionFiltro.includes('GPA') || gestionFiltro.includes('PATRIMONIAL'))) return true;
+                                        if ((item.codigo === 'ETICA' || (item.nombre || '').includes('ETICA')) && (gestionFiltro.includes('GTR') || gestionFiltro.includes('ETICA'))) return true;
+                                        return false;
+                                    }).map((item, index) => {
                                         const pct = Number(item.porcentaje || 0);
                                         const progressColor = pct >= 90 ? colors.success : pct >= 75 ? '#d97706' : colors.danger;
                                         const badgeBg = pct >= 90 ? '#dcfce7' : pct >= 75 ? '#fef3c7' : '#fee2e2';

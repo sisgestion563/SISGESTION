@@ -52,12 +52,12 @@ const obtenerCalificacionProveedor = async (proveedorId) => {
     return await repository.obtenerCalificacionProveedor(proveedorId);
 };
 
-const obtenerResumenProveedoresCumplimiento = async (periodo) => {
-    return await repository.obtenerResumenProveedoresCumplimiento(periodo);
+const obtenerResumenProveedoresCumplimiento = async (periodo, rubro) => {
+    return await repository.obtenerResumenProveedoresCumplimiento(periodo, rubro);
 };
 
-const obtenerCumplimientoGlobalPorGestion = async (periodo) => {
-    return await repository.obtenerCumplimientoGlobalPorGestion(periodo);
+const obtenerCumplimientoGlobalPorGestion = async (periodo, rubro) => {
+    return await repository.obtenerCumplimientoGlobalPorGestion(periodo, rubro);
 };
 
 module.exports = {

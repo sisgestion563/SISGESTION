@@ -566,15 +566,20 @@ FROM evaluacion;
     return result.rows[0] || null;
 };
 
-module.exports = {
-    obtenerResumen,
-    obtenerDocumentosPorGrupo,
-    obtenerDocumentosPorEstado,
-    obtenerProveedoresVencidos,
-    obtenerDocumentosProximosVencer,
-    obtenerCumplimientoPorGestion,
-    obtenerEstadoExpediente,
-const obtenerResumenProveedoresCumplimiento = async (periodo) => {
+const obtenerResumenProveedoresCumplimiento = async (periodo, rubro) => {
+    let whereProv = "(r.codigo = 'PROVEEDOR' OR u.rol_id = 2) AND u.estado_usuario = 'A'";
+    const params = [];
+
+    if (periodo && periodo !== 'ALL') {
+        params.push(periodo);
+        whereProv += ` AND p.periodo = $${params.length}`;
+    }
+
+    if (rubro && rubro !== 'ALL') {
+        params.push(rubro);
+        whereProv += ` AND p.ciiu::varchar = $${params.length}::varchar`;
+    }
+
     const sql = `
 WITH usuarios_proveedores AS (
     SELECT 
@@ -586,6 +591,7 @@ WITH usuarios_proveedores AS (
             ELSE TRIM(COALESCE(p.nombre,'') || ' ' || COALESCE(p.apellido_paterno,'') || ' ' || COALESCE(p.apellido_materno,''))
         END AS proveedor_nombre,
         p.nro_documento,
+        p.ciiu,
         COALESCE(p.regimen_tributario, 'RG') AS regimen_tributario,
         CASE 
             WHEN p.regimen_tributario = 'RG' THEN 12
@@ -606,8 +612,7 @@ WITH usuarios_proveedores AS (
     FROM "SISGES"."SEG_USUARIO" u
     JOIN "SISGES"."SEG_ROL" r ON u.rol_id = r.rol_id
     LEFT JOIN "SISGES"."MAE_PROVEEDOR" p ON u.proveedor_id = p.proveedor_id
-    WHERE (r.codigo = 'PROVEEDOR' OR u.rol_id = 2)
-      AND u.estado_usuario = 'A'
+    WHERE ${whereProv}
 ),
 doc_counts AS (
     SELECT
@@ -629,6 +634,7 @@ capped_counts AS (
         up.proveedor_id,
         up.proveedor_nombre,
         up.nro_documento,
+        up.ciiu,
         up.regimen_tributario,
         up.total_exigibles,
         (
@@ -648,6 +654,7 @@ evaluacion AS (
         proveedor_id,
         proveedor_nombre,
         nro_documento,
+        ciiu,
         regimen_tributario,
         total_exigibles,
         cantidad_documentos_vigentes,
@@ -677,6 +684,7 @@ SELECT
                 'proveedor_id', proveedor_id,
                 'proveedor_nombre', proveedor_nombre,
                 'nro_documento', nro_documento,
+                'ciiu', ciiu,
                 'regimen_tributario', regimen_tributario,
                 'total_exigibles', total_exigibles,
                 'cantidad_documentos_vigentes', cantidad_documentos_vigentes,
@@ -689,7 +697,7 @@ SELECT
     ) AS proveedores
 FROM evaluacion;
     `;
-    const result = await pool.query(sql);
+    const result = await pool.query(sql, params);
     const row = result.rows[0] || {
         total_proveedores: 0,
         recomendados: 0,
@@ -706,12 +714,26 @@ FROM evaluacion;
     };
 };
 
-const obtenerCumplimientoGlobalPorGestion = async (periodo) => {
+const obtenerCumplimientoGlobalPorGestion = async (periodo, rubro) => {
+    let whereProv = "(r.codigo = 'PROVEEDOR' OR u.rol_id = 2) AND u.estado_usuario = 'A'";
+    const params = [];
+
+    if (periodo && periodo !== 'ALL') {
+        params.push(periodo);
+        whereProv += ` AND p.periodo = $${params.length}`;
+    }
+
+    if (rubro && rubro !== 'ALL') {
+        params.push(rubro);
+        whereProv += ` AND p.ciiu::varchar = $${params.length}::varchar`;
+    }
+
     const sql = `
 WITH usuarios_proveedores AS (
     SELECT 
         u.usuario_id,
         u.proveedor_id,
+        p.ciiu,
         CASE 
             WHEN p.regimen_tributario = 'RG' THEN 12
             WHEN p.regimen_tributario = 'RP' THEN 9
@@ -731,8 +753,7 @@ WITH usuarios_proveedores AS (
     FROM "SISGES"."SEG_USUARIO" u
     JOIN "SISGES"."SEG_ROL" r ON u.rol_id = r.rol_id
     LEFT JOIN "SISGES"."MAE_PROVEEDOR" p ON u.proveedor_id = p.proveedor_id
-    WHERE (r.codigo = 'PROVEEDOR' OR u.rol_id = 2)
-      AND u.estado_usuario = 'A'
+    WHERE ${whereProv}
 ),
 doc_counts AS (
     SELECT
@@ -801,7 +822,7 @@ SELECT
     ROUND(COALESCE((SUM(reg_etica)::numeric / NULLIF(SUM(exigible_etica), 0)) * 100, 0), 2) AS porcentaje
 FROM capped_counts;
     `;
-    const result = await pool.query(sql);
+    const result = await pool.query(sql, params);
     return result.rows;
 };
 

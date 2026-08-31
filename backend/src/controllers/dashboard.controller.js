@@ -163,7 +163,8 @@ const calificacionProveedor = async (req, res) => {
 
 const proveedoresCumplimiento = async (req, res) => {
     try {
-        const data = await service.obtenerResumenProveedoresCumplimiento(req.query.periodo);
+        const rubro = req.query.rubro || req.query.ciiu;
+        const data = await service.obtenerResumenProveedoresCumplimiento(req.query.periodo, rubro);
         return res.status(200).json({ success: true, data });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
@@ -172,7 +173,8 @@ const proveedoresCumplimiento = async (req, res) => {
 
 const cumplimientoGlobalGestion = async (req, res) => {
     try {
-        const data = await service.obtenerCumplimientoGlobalPorGestion(req.query.periodo);
+        const rubro = req.query.rubro || req.query.ciiu;
+        const data = await service.obtenerCumplimientoGlobalPorGestion(req.query.periodo, rubro);
         return res.status(200).json({ success: true, data });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });

@@ -103,24 +103,24 @@ export const obtenerCalificacionProveedor =
     };
 
 export const obtenerResumenProveedoresCumplimiento =
-    async (periodo) => {
+    async (periodo, rubro) => {
         const response = await api.get(
             '/dashboard/proveedores-cumplimiento',
             {
                 ...getHeaders(),
-                params: { periodo }
+                params: { periodo, rubro }
             }
         );
         return response.data.data;
     };
 
 export const obtenerCumplimientoGlobalPorGestion =
-    async (periodo) => {
+    async (periodo, rubro) => {
         const response = await api.get(
             '/dashboard/cumplimiento-global-gestion',
             {
                 ...getHeaders(),
-                params: { periodo }
+                params: { periodo, rubro }
             }
         );
         return response.data.data;
