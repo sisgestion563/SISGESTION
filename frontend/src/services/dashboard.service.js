@@ -101,3 +101,15 @@ export const obtenerCalificacionProveedor =
         );
         return response.data.data;
     };
+
+export const obtenerResumenProveedoresCumplimiento =
+    async (periodo) => {
+        const response = await api.get(
+            '/dashboard/proveedores-cumplimiento',
+            {
+                ...getHeaders(),
+                params: { periodo }
+            }
+        );
+        return response.data.data;
+    };

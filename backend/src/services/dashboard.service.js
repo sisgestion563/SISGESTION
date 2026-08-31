@@ -52,6 +52,10 @@ const obtenerCalificacionProveedor = async (proveedorId) => {
     return await repository.obtenerCalificacionProveedor(proveedorId);
 };
 
+const obtenerResumenProveedoresCumplimiento = async (periodo) => {
+    return await repository.obtenerResumenProveedoresCumplimiento(periodo);
+};
+
 module.exports = {
     obtenerResumen,
     obtenerDocumentosPorGrupo,
@@ -60,5 +64,6 @@ module.exports = {
     obtenerDocumentosProximosVencer,
     obtenerCumplimientoPorGestion,
     obtenerEstadoExpediente,
-    obtenerCalificacionProveedor
+    obtenerCalificacionProveedor,
+    obtenerResumenProveedoresCumplimiento
 };

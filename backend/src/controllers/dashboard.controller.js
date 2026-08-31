@@ -161,6 +161,15 @@ const calificacionProveedor = async (req, res) => {
     }
 };
 
+const proveedoresCumplimiento = async (req, res) => {
+    try {
+        const data = await service.obtenerResumenProveedoresCumplimiento(req.query.periodo);
+        return res.status(200).json({ success: true, data });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     resumen,
     documentosPorGrupo,
@@ -169,5 +178,6 @@ module.exports = {
     proximosVencer,
     cumplimientoPorGestion,
     estadoExpediente,
-    calificacionProveedor
+    calificacionProveedor,
+    proveedoresCumplimiento
 };

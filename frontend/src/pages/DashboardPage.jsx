@@ -22,7 +22,8 @@ import {
     obtenerProximosVencer,
     obtenerCumplimientoGestion,
     obtenerEstadoExpediente,
-    obtenerCalificacionProveedor
+    obtenerCalificacionProveedor,
+    obtenerResumenProveedoresCumplimiento
 } from '../services/dashboard.service';
 
 // Reutilizamos el servicio para listar los expedientes por grupo corporativo
@@ -339,6 +340,7 @@ export default function DashboardPage() {
     const [kpisGestion, setKpisGestion] = useState([]);
     const [estadoExpediente, setEstadoExpediente] = useState(null);
     const [calificacion, setCalificacion] = useState(null);
+    const [cumplimientoProveedores, setCumplimientoProveedores] = useState(null);
     const [loadingProveedor, setLoadingProveedor] = useState(true);
     const [proveedorInfo, setProveedorInfo] = useState(null);
     const [mostrarConstruccion, setMostrarConstruccion] = useState(false);
@@ -369,9 +371,10 @@ export default function DashboardPage() {
 
     // ── Identidad del usuario logueado ──────────────────────────────────────
     const usuarioLogueado = obtenerUsuario();
-    const rolCodigo = usuarioLogueado?.rol_codigo || '';
-    const esProveedor = rolCodigo === 'PROVEEDOR';
-    const esConsultor = rolCodigo === 'CONSULTOR';
+    const rolCodigo = (usuarioLogueado?.rol_codigo || usuarioLogueado?.rol || '').toUpperCase();
+    const rolId = usuarioLogueado?.rol_id;
+    const esProveedor = rolCodigo === 'PROVEEDOR' || rolId === 2;
+    const esConsultor = rolCodigo === 'CONSULTOR' || rolId === 3;
     const miProveedorId = usuarioLogueado?.proveedor_id;
 
     // Escucha de cambios de gestión desde el Header
@@ -440,11 +443,13 @@ export default function DashboardPage() {
             const gruposData = await obtenerDocumentosPorGrupo(periodo);
             const estadosData = await obtenerDocumentosPorEstado(periodo);
             const proximosData = await obtenerProximosVencer(periodo);
+            const cumplimientoData = await obtenerResumenProveedoresCumplimiento(periodo);
 
             setRawAdminResumen(resumenData);
             setRawAdminGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
             setRawAdminEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad) })));
             setRawAdminProximos(proximosData);
+            setCumplimientoProveedores(cumplimientoData);
         } catch (error) {
             console.error(error);
         }
@@ -780,9 +785,11 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                 <div>
                     <h1 style={styles.heading}>
-                        {esProveedor || esConsultor
+                        {esProveedor
                             ? `Panel de Control - ${obtenerIdentidadProveedor()}`
-                            : 'Dashboard ProvGestion'}
+                            : esConsultor
+                                ? 'Panel de Control - Consultor'
+                                : 'Dashboard ProvGestion'}
                     </h1>
                     <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
                         {esProveedor
@@ -836,8 +843,103 @@ export default function DashboardPage() {
                     {resumen && (
                         <div className={`stats-grid ${esProveedor ? 'proveedor' : ''}`}>
 
-                            {/* Primer stat: Proveedores (ADMIN) o KPI (PROVEEDOR) */}
-                            {!esProveedor ? (
+                            {/* Primer stat: Tarjeta PROVEEDORES (CONSULTOR), Proveedores simple (ADMIN) o KPI (PROVEEDOR) */}
+                            {esConsultor ? (
+                                <div style={{
+                                    ...styles.card,
+                                    padding: '20px 24px',
+                                    borderLeft: `4px solid ${colors.primary}`,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'space-between',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '10px' }}>
+                                        <h3 style={{ fontSize: '13px', fontWeight: 700, color: colors.textMuted, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            PROVEEDORES
+                                        </h3>
+                                        <span style={{
+                                            background: '#eff6ff',
+                                            color: colors.primary,
+                                            fontWeight: 800,
+                                            fontSize: '13px',
+                                            padding: '4px 12px',
+                                            borderRadius: '999px',
+                                            border: '1px solid #bfdbfe'
+                                        }}>
+                                            Total: {cumplimientoProveedores?.total_proveedores ?? resumen.total_proveedores ?? 0}
+                                        </span>
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        {/* 1. Recomendados */}
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                padding: '10px 14px',
+                                                background: colors.successBg,
+                                                border: '1px solid #a7f3d0',
+                                                borderRadius: '10px',
+                                                boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: colors.success, boxShadow: `0 0 6px ${colors.success}` }}></span>
+                                                <span style={{ fontSize: '13px', fontWeight: 600, color: colors.success }}>Recomendados</span>
+                                            </div>
+                                            <span style={{ fontSize: '17px', fontWeight: 800, color: colors.success }}>
+                                                {cumplimientoProveedores?.recomendados ?? 0}
+                                            </span>
+                                        </div>
+
+                                        {/* 2. Recomendados con restricciones */}
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                padding: '10px 14px',
+                                                background: '#fef3c7',
+                                                border: '1px solid #fde68a',
+                                                borderRadius: '10px',
+                                                boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#b45309', boxShadow: '0 0 6px #b45309' }}></span>
+                                                <span style={{ fontSize: '13px', fontWeight: 600, color: '#b45309' }}>Recomendados con restricciones</span>
+                                            </div>
+                                            <span style={{ fontSize: '17px', fontWeight: 800, color: '#b45309' }}>
+                                                {cumplimientoProveedores?.recomendados_con_restricciones ?? 0}
+                                            </span>
+                                        </div>
+
+                                        {/* 3. No recomendados */}
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                padding: '10px 14px',
+                                                background: colors.dangerBg,
+                                                border: '1px solid #fecaca',
+                                                borderRadius: '10px',
+                                                boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ width: 8, height: 8, borderRadius: '50%', background: colors.danger, boxShadow: `0 0 6px ${colors.danger}` }}></span>
+                                                <span style={{ fontSize: '13px', fontWeight: 600, color: colors.danger }}>No recomendados</span>
+                                            </div>
+                                            <span style={{ fontSize: '17px', fontWeight: 800, color: colors.danger }}>
+                                                {cumplimientoProveedores?.no_recomendados ?? 0}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : !esProveedor ? (
                                 <div style={styles.statCard(colors.primary)}>
                                     <p style={styles.statLabel}>Proveedores</p>
                                     <p style={styles.statValue(colors.text)}>{resumen.total_proveedores}</p>

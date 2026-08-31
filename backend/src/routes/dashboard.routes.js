@@ -93,4 +93,14 @@ router.get(
     controller.calificacionProveedor
 );
 
+/*******************************************
+ CUMPLIMIENTO GLOBAL DE PROVEEDORES (CONSULTOR / ADMIN)
+********************************************/
+
+router.get(
+    '/dashboard/proveedores-cumplimiento',
+    authenticateToken,
+    controller.proveedoresCumplimiento
+);
+
 module.exports = router;

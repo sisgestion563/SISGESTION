@@ -574,5 +574,146 @@ module.exports = {
     obtenerDocumentosProximosVencer,
     obtenerCumplimientoPorGestion,
     obtenerEstadoExpediente,
-    obtenerCalificacionProveedor
+const obtenerResumenProveedoresCumplimiento = async (periodo) => {
+    const sql = `
+WITH usuarios_proveedores AS (
+    SELECT 
+        u.usuario_id,
+        u.username,
+        u.proveedor_id,
+        CASE
+            WHEN p.razon_social IS NOT NULL AND TRIM(p.razon_social) <> '' THEN p.razon_social
+            ELSE TRIM(COALESCE(p.nombre,'') || ' ' || COALESCE(p.apellido_paterno,'') || ' ' || COALESCE(p.apellido_materno,''))
+        END AS proveedor_nombre,
+        p.nro_documento,
+        COALESCE(p.regimen_tributario, 'RG') AS regimen_tributario,
+        CASE 
+            WHEN p.regimen_tributario = 'RG' THEN 12
+            WHEN p.regimen_tributario = 'RP' THEN 9
+            WHEN p.regimen_tributario = 'RM' THEN 7
+            ELSE 12
+        END as exigible_sst,
+        1 as exigible_ma,
+        1 as exigible_calidad,
+        1 as exigible_patrimonial,
+        1 as exigible_etica,
+        CASE 
+            WHEN p.regimen_tributario = 'RG' THEN 16
+            WHEN p.regimen_tributario = 'RP' THEN 13
+            WHEN p.regimen_tributario = 'RM' THEN 11
+            ELSE 16
+        END as total_exigibles
+    FROM "SISGES"."SEG_USUARIO" u
+    JOIN "SISGES"."SEG_ROL" r ON u.rol_id = r.rol_id
+    LEFT JOIN "SISGES"."MAE_PROVEEDOR" p ON u.proveedor_id = p.proveedor_id
+    WHERE (r.codigo = 'PROVEEDOR' OR u.rol_id = 2)
+      AND u.estado_usuario = 'A'
+),
+doc_counts AS (
+    SELECT
+        up.usuario_id,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GSG' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_sst,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GMA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_etica
+    FROM usuarios_proveedores up
+    LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
+        ON up.proveedor_id = d.proveedor_id AND d.estado_documento = 'V'
+    GROUP BY up.usuario_id
+),
+capped_counts AS (
+    SELECT
+        up.usuario_id,
+        up.username,
+        up.proveedor_id,
+        up.proveedor_nombre,
+        up.nro_documento,
+        up.regimen_tributario,
+        up.total_exigibles,
+        (
+            LEAST(COALESCE(c.reg_sst, 0), up.exigible_sst) +
+            LEAST(COALESCE(c.reg_ma, 0), up.exigible_ma) +
+            LEAST(COALESCE(c.reg_calidad, 0), up.exigible_calidad) +
+            LEAST(COALESCE(c.reg_patrimonial, 0), up.exigible_patrimonial) +
+            LEAST(COALESCE(c.reg_etica, 0), up.exigible_etica)
+        ) AS cantidad_documentos_vigentes
+    FROM usuarios_proveedores up
+    LEFT JOIN doc_counts c ON up.usuario_id = c.usuario_id
+),
+evaluacion AS (
+    SELECT 
+        usuario_id,
+        username,
+        proveedor_id,
+        proveedor_nombre,
+        nro_documento,
+        regimen_tributario,
+        total_exigibles,
+        cantidad_documentos_vigentes,
+        ROUND((cantidad_documentos_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100, 0) AS puntaje_numerico,
+        CASE 
+            WHEN ((cantidad_documentos_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100) > 90 THEN 'RECOMENDADO'
+            WHEN ((cantidad_documentos_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100) >= 75 THEN 'RECOMENDADO CON RESTRICCIONES'
+            ELSE 'NO RECOMENDADO'
+        END AS recomendacion,
+        CASE 
+            WHEN ((cantidad_documentos_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100) > 90 THEN 'ALTO'
+            WHEN ((cantidad_documentos_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100) >= 75 THEN 'MEDIO'
+            ELSE 'BAJO'
+        END AS nivel_documental
+    FROM capped_counts
+)
+SELECT 
+    (SELECT COUNT(*) FROM evaluacion) AS total_proveedores,
+    (SELECT COUNT(*) FROM evaluacion WHERE recomendacion = 'RECOMENDADO') AS recomendados,
+    (SELECT COUNT(*) FROM evaluacion WHERE recomendacion = 'RECOMENDADO CON RESTRICCIONES') AS recomendados_con_restricciones,
+    (SELECT COUNT(*) FROM evaluacion WHERE recomendacion = 'NO RECOMENDADO') AS no_recomendados,
+    COALESCE(
+        json_agg(
+            json_build_object(
+                'usuario_id', usuario_id,
+                'username', username,
+                'proveedor_id', proveedor_id,
+                'proveedor_nombre', proveedor_nombre,
+                'nro_documento', nro_documento,
+                'regimen_tributario', regimen_tributario,
+                'total_exigibles', total_exigibles,
+                'cantidad_documentos_vigentes', cantidad_documentos_vigentes,
+                'puntaje_numerico', puntaje_numerico,
+                'recomendacion', recomendacion,
+                'nivel_documental', nivel_documental
+            )
+        ) FILTER (WHERE usuario_id IS NOT NULL),
+        '[]'::json
+    ) AS proveedores
+FROM evaluacion;
+    `;
+    const result = await pool.query(sql);
+    const row = result.rows[0] || {
+        total_proveedores: 0,
+        recomendados: 0,
+        recomendados_con_restricciones: 0,
+        no_recomendados: 0,
+        proveedores: []
+    };
+    return {
+        total_proveedores: Number(row.total_proveedores) || 0,
+        recomendados: Number(row.recomendados) || 0,
+        recomendados_con_restricciones: Number(row.recomendados_con_restricciones) || 0,
+        no_recomendados: Number(row.no_recomendados) || 0,
+        proveedores: row.proveedores || []
+    };
+};
+
+module.exports = {
+    obtenerResumen,
+    obtenerDocumentosPorGrupo,
+    obtenerDocumentosPorEstado,
+    obtenerProveedoresVencidos,
+    obtenerDocumentosProximosVencer,
+    obtenerCumplimientoPorGestion,
+    obtenerEstadoExpediente,
+    obtenerCalificacionProveedor,
+    obtenerResumenProveedoresCumplimiento
 };
