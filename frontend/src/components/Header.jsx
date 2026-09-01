@@ -322,7 +322,7 @@ export default function Header() {
                         flexWrap: 'wrap'
                     }}
                 >
-                    {/* Fecha institucional moderna sin emojis */}
+                    {/* Fecha institucional*/}
                     <div
                         style={{
                             display: 'flex',
