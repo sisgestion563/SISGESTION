@@ -125,3 +125,27 @@ export const obtenerCumplimientoGlobalPorGestion =
         );
         return response.data.data;
     };
+
+export const obtenerRankingProveedores =
+    async (periodo, rubro) => {
+        const response = await api.get(
+            '/dashboard/consultor-ranking',
+            {
+                ...getHeaders(),
+                params: { periodo, rubro }
+            }
+        );
+        return response.data.data;
+    };
+
+export const obtenerAlertasConsultor =
+    async (periodo, rubro) => {
+        const response = await api.get(
+            '/dashboard/consultor-alertas',
+            {
+                ...getHeaders(),
+                params: { periodo, rubro }
+            }
+        );
+        return response.data.data;
+    };

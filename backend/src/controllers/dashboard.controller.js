@@ -181,6 +181,26 @@ const cumplimientoGlobalGestion = async (req, res) => {
     }
 };
 
+const rankingProveedores = async (req, res) => {
+    try {
+        const rubro = req.query.rubro || req.query.ciiu;
+        const data = await service.obtenerRankingProveedores(req.query.periodo, rubro);
+        return res.status(200).json({ success: true, data });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const alertasConsultor = async (req, res) => {
+    try {
+        const rubro = req.query.rubro || req.query.ciiu;
+        const data = await service.obtenerAlertasConsultor(req.query.periodo, rubro);
+        return res.status(200).json({ success: true, data });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     resumen,
     documentosPorGrupo,
@@ -191,5 +211,7 @@ module.exports = {
     estadoExpediente,
     calificacionProveedor,
     proveedoresCumplimiento,
-    cumplimientoGlobalGestion
+    cumplimientoGlobalGestion,
+    rankingProveedores,
+    alertasConsultor
 };

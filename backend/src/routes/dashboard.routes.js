@@ -113,4 +113,24 @@ router.get(
     controller.cumplimientoGlobalGestion
 );
 
+/*******************************************
+ RANKING DE PROVEEDORES (CONSULTOR)
+********************************************/
+
+router.get(
+    '/dashboard/consultor-ranking',
+    authenticateToken,
+    controller.rankingProveedores
+);
+
+/*******************************************
+ ALERTAS / ATENCIÓN (CONSULTOR)
+********************************************/
+
+router.get(
+    '/dashboard/consultor-alertas',
+    authenticateToken,
+    controller.alertasConsultor
+);
+
 module.exports = router;

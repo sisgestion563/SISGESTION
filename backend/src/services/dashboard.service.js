@@ -60,6 +60,14 @@ const obtenerCumplimientoGlobalPorGestion = async (periodo, rubro) => {
     return await repository.obtenerCumplimientoGlobalPorGestion(periodo, rubro);
 };
 
+const obtenerRankingProveedores = async (periodo, rubro) => {
+    return await repository.obtenerRankingProveedores(periodo, rubro);
+};
+
+const obtenerAlertasConsultor = async (periodo, rubro) => {
+    return await repository.obtenerAlertasConsultor(periodo, rubro);
+};
+
 module.exports = {
     obtenerResumen,
     obtenerDocumentosPorGrupo,
@@ -70,5 +78,7 @@ module.exports = {
     obtenerEstadoExpediente,
     obtenerCalificacionProveedor,
     obtenerResumenProveedoresCumplimiento,
-    obtenerCumplimientoGlobalPorGestion
+    obtenerCumplimientoGlobalPorGestion,
+    obtenerRankingProveedores,
+    obtenerAlertasConsultor
 };

@@ -826,6 +826,291 @@ FROM capped_counts;
     return result.rows;
 };
 
+const obtenerRankingProveedores = async (periodo, rubro) => {
+    let whereProv = "(r.codigo = 'PROVEEDOR' OR u.rol_id = 2) AND u.estado_usuario = 'A'";
+    const params = [];
+
+    if (periodo && periodo !== 'ALL') {
+        params.push(periodo);
+        whereProv += ` AND p.periodo = $${params.length}`;
+    }
+
+    if (rubro && rubro !== 'ALL') {
+        params.push(rubro);
+        whereProv += ` AND p.ciiu::varchar = $${params.length}::varchar`;
+    }
+
+    const sql = `
+WITH usuarios_proveedores AS (
+    SELECT 
+        u.usuario_id,
+        u.username,
+        u.proveedor_id,
+        CASE
+            WHEN p.razon_social IS NOT NULL AND TRIM(p.razon_social) <> '' THEN p.razon_social
+            ELSE TRIM(COALESCE(p.nombre,'') || ' ' || COALESCE(p.apellido_paterno,'') || ' ' || COALESCE(p.apellido_materno,''))
+        END AS proveedor_nombre,
+        p.nro_documento,
+        p.ciiu,
+        COALESCE(p.regimen_tributario, 'RG') AS regimen_tributario,
+        CASE 
+            WHEN p.regimen_tributario = 'RG' THEN 12
+            WHEN p.regimen_tributario = 'RP' THEN 9
+            WHEN p.regimen_tributario = 'RM' THEN 7
+            ELSE 12
+        END as exigible_sst,
+        1 as exigible_ma,
+        1 as exigible_calidad,
+        1 as exigible_patrimonial,
+        1 as exigible_etica,
+        CASE 
+            WHEN p.regimen_tributario = 'RG' THEN 16
+            WHEN p.regimen_tributario = 'RP' THEN 13
+            WHEN p.regimen_tributario = 'RM' THEN 11
+            ELSE 16
+        END as total_exigibles
+    FROM "SISGES"."SEG_USUARIO" u
+    JOIN "SISGES"."SEG_ROL" r ON u.rol_id = r.rol_id
+    LEFT JOIN "SISGES"."MAE_PROVEEDOR" p ON u.proveedor_id = p.proveedor_id
+    WHERE ${whereProv}
+),
+doc_counts AS (
+    SELECT
+        up.usuario_id,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GSG' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_sst,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GMA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as reg_etica
+    FROM usuarios_proveedores up
+    LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
+        ON up.proveedor_id = d.proveedor_id AND d.estado_documento = 'V'
+    GROUP BY up.usuario_id
+),
+capped_counts AS (
+    SELECT
+        up.usuario_id,
+        up.username,
+        up.proveedor_id,
+        up.proveedor_nombre,
+        up.nro_documento,
+        up.ciiu,
+        up.regimen_tributario,
+        up.exigible_sst,
+        up.exigible_ma,
+        up.exigible_calidad,
+        up.exigible_patrimonial,
+        up.exigible_etica,
+        up.total_exigibles,
+        LEAST(COALESCE(c.reg_sst, 0), up.exigible_sst) as reg_sst,
+        LEAST(COALESCE(c.reg_ma, 0), up.exigible_ma) as reg_ma,
+        LEAST(COALESCE(c.reg_calidad, 0), up.exigible_calidad) as reg_calidad,
+        LEAST(COALESCE(c.reg_patrimonial, 0), up.exigible_patrimonial) as reg_patrimonial,
+        LEAST(COALESCE(c.reg_etica, 0), up.exigible_etica) as reg_etica,
+        (
+            LEAST(COALESCE(c.reg_sst, 0), up.exigible_sst) +
+            LEAST(COALESCE(c.reg_ma, 0), up.exigible_ma) +
+            LEAST(COALESCE(c.reg_calidad, 0), up.exigible_calidad) +
+            LEAST(COALESCE(c.reg_patrimonial, 0), up.exigible_patrimonial) +
+            LEAST(COALESCE(c.reg_etica, 0), up.exigible_etica)
+        ) AS total_vigentes
+    FROM usuarios_proveedores up
+    LEFT JOIN doc_counts c ON up.usuario_id = c.usuario_id
+)
+SELECT 
+    usuario_id,
+    username,
+    proveedor_id,
+    proveedor_nombre,
+    nro_documento,
+    ciiu,
+    regimen_tributario,
+    exigible_sst,
+    exigible_ma,
+    exigible_calidad,
+    exigible_patrimonial,
+    exigible_etica,
+    total_exigibles,
+    reg_sst,
+    reg_ma,
+    reg_calidad,
+    reg_patrimonial,
+    reg_etica,
+    total_vigentes,
+    ROUND((total_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100, 0) AS puntaje_global,
+    CASE 
+        WHEN ((total_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100) > 90 THEN 'RECOMENDADO'
+        WHEN ((total_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100) >= 75 THEN 'RECOMENDADO CON RESTRICCIONES'
+        ELSE 'NO RECOMENDADO'
+    END AS recomendacion_global,
+    CASE 
+        WHEN ((total_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100) > 90 THEN 'ALTO'
+        WHEN ((total_vigentes::numeric / NULLIF(total_exigibles, 0)) * 100) >= 75 THEN 'MEDIO'
+        ELSE 'BAJO'
+    END AS nivel_documental_global
+FROM capped_counts
+ORDER BY puntaje_global DESC, proveedor_nombre ASC;
+    `;
+
+    const result = await pool.query(sql, params);
+    return result.rows;
+};
+
+const obtenerAlertasConsultor = async (periodo, rubro) => {
+    let whereProv = "(r.codigo = 'PROVEEDOR' OR u.rol_id = 2) AND u.estado_usuario = 'A'";
+    const params = [];
+
+    if (periodo && periodo !== 'ALL') {
+        params.push(periodo);
+        whereProv += ` AND p.periodo = $${params.length}`;
+    }
+
+    if (rubro && rubro !== 'ALL') {
+        params.push(rubro);
+        whereProv += ` AND p.ciiu::varchar = $${params.length}::varchar`;
+    }
+
+    // 1. Proveedores con documentos registrados vs exigibles (para cálculo de avance de llenado y alertas)
+    const sqlProveedoresLlenado = `
+WITH usuarios_proveedores AS (
+    SELECT 
+        u.usuario_id,
+        u.username,
+        u.proveedor_id,
+        CASE
+            WHEN p.razon_social IS NOT NULL AND TRIM(p.razon_social) <> '' THEN p.razon_social
+            ELSE TRIM(COALESCE(p.nombre,'') || ' ' || COALESCE(p.apellido_paterno,'') || ' ' || COALESCE(p.apellido_materno,''))
+        END AS proveedor_nombre,
+        p.nro_documento,
+        p.ciiu,
+        COALESCE(p.regimen_tributario, 'RG') AS regimen_tributario,
+        CASE 
+            WHEN p.regimen_tributario = 'RG' THEN 12
+            WHEN p.regimen_tributario = 'RP' THEN 9
+            WHEN p.regimen_tributario = 'RM' THEN 7
+            ELSE 12
+        END as exigible_sst,
+        1 as exigible_ma,
+        1 as exigible_calidad,
+        1 as exigible_patrimonial,
+        1 as exigible_etica,
+        CASE 
+            WHEN p.regimen_tributario = 'RG' THEN 16
+            WHEN p.regimen_tributario = 'RP' THEN 13
+            WHEN p.regimen_tributario = 'RM' THEN 11
+            ELSE 16
+        END as total_exigibles
+    FROM "SISGES"."SEG_USUARIO" u
+    JOIN "SISGES"."SEG_ROL" r ON u.rol_id = r.rol_id
+    LEFT JOIN "SISGES"."MAE_PROVEEDOR" p ON u.proveedor_id = p.proveedor_id
+    WHERE ${whereProv}
+),
+doc_uploads AS (
+    SELECT
+        up.usuario_id,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GSG' THEN d.tipo_documento_id END) as uploaded_sst,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GMA' THEN d.tipo_documento_id END) as uploaded_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' THEN d.tipo_documento_id END) as uploaded_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' THEN d.tipo_documento_id END) as uploaded_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' THEN d.tipo_documento_id END) as uploaded_etica,
+
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GSG' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_sst,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GMA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_ma,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GCA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_calidad,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GPA' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_patrimonial,
+        COUNT(DISTINCT CASE WHEN d.alcance = 'GTR' AND d.estado_documento = 'V' AND d.fecha_vigencia >= CURRENT_DATE THEN d.tipo_documento_id END) as vig_etica
+    FROM usuarios_proveedores up
+    LEFT JOIN "SISGES"."MOV_DOCUMENTOS" d 
+        ON up.proveedor_id = d.proveedor_id AND (d.estado_documento = 'V' OR d.estado_documento = 'C')
+    GROUP BY up.usuario_id
+)
+SELECT 
+    up.usuario_id,
+    up.username,
+    up.proveedor_id,
+    up.proveedor_nombre,
+    up.nro_documento,
+    up.ciiu,
+    up.regimen_tributario,
+    up.exigible_sst,
+    up.exigible_ma,
+    up.exigible_calidad,
+    up.exigible_patrimonial,
+    up.exigible_etica,
+    up.total_exigibles,
+    COALESCE(u.uploaded_sst, 0) as uploaded_sst,
+    COALESCE(u.uploaded_ma, 0) as uploaded_ma,
+    COALESCE(u.uploaded_calidad, 0) as uploaded_calidad,
+    COALESCE(u.uploaded_patrimonial, 0) as uploaded_patrimonial,
+    COALESCE(u.uploaded_etica, 0) as uploaded_etica,
+    (
+        LEAST(COALESCE(u.uploaded_sst, 0), up.exigible_sst) +
+        LEAST(COALESCE(u.uploaded_ma, 0), up.exigible_ma) +
+        LEAST(COALESCE(u.uploaded_calidad, 0), up.exigible_calidad) +
+        LEAST(COALESCE(u.uploaded_patrimonial, 0), up.exigible_patrimonial) +
+        LEAST(COALESCE(u.uploaded_etica, 0), up.exigible_etica)
+    ) AS total_uploaded_capped,
+    (
+        LEAST(COALESCE(u.vig_sst, 0), up.exigible_sst) +
+        LEAST(COALESCE(u.vig_ma, 0), up.exigible_ma) +
+        LEAST(COALESCE(u.vig_calidad, 0), up.exigible_calidad) +
+        LEAST(COALESCE(u.vig_patrimonial, 0), up.exigible_patrimonial) +
+        LEAST(COALESCE(u.vig_etica, 0), up.exigible_etica)
+    ) AS total_vigentes_capped,
+    COALESCE(u.vig_sst, 0) as vig_sst,
+    COALESCE(u.vig_ma, 0) as vig_ma,
+    COALESCE(u.vig_calidad, 0) as vig_calidad,
+    COALESCE(u.vig_patrimonial, 0) as vig_patrimonial,
+    COALESCE(u.vig_etica, 0) as vig_etica
+FROM usuarios_proveedores up
+LEFT JOIN doc_uploads u ON up.usuario_id = u.usuario_id
+ORDER BY up.proveedor_nombre ASC;
+    `;
+
+    // 2. Documentos por vencer en menos de 15 días (vigentes y por expirar)
+    const sqlDocsPorVencer = `
+SELECT 
+    d.documento_id,
+    d.proveedor_id,
+    CASE
+        WHEN p.razon_social IS NOT NULL AND TRIM(p.razon_social) <> '' THEN p.razon_social
+        ELSE TRIM(COALESCE(p.nombre,'') || ' ' || COALESCE(p.apellido_paterno,'') || ' ' || COALESCE(p.apellido_materno,''))
+    END AS proveedor_nombre,
+    p.nro_documento,
+    d.alcance,
+    CASE 
+        WHEN d.alcance = 'GSG' THEN 'GESTIÓN SST'
+        WHEN d.alcance = 'GMA' THEN 'GESTIÓN MA'
+        WHEN d.alcance = 'GCA' THEN 'GESTIÓN DE CALIDAD'
+        WHEN d.alcance = 'GPA' THEN 'GESTIÓN PATRIMONIAL'
+        WHEN d.alcance = 'GTR' THEN 'CÓDIGO ÉTICA'
+        ELSE d.alcance
+    END AS gestion_nombre,
+    d.tipo_documento_id,
+    d.fecha_vigencia,
+    (d.fecha_vigencia - CURRENT_DATE)::int AS dias_restantes
+FROM "SISGES"."MOV_DOCUMENTOS" d
+JOIN "SISGES"."MAE_PROVEEDOR" p ON d.proveedor_id = p.proveedor_id
+JOIN "SISGES"."SEG_USUARIO" u ON u.proveedor_id = p.proveedor_id
+JOIN "SISGES"."SEG_ROL" r ON u.rol_id = r.rol_id
+WHERE ${whereProv}
+  AND (d.estado_documento = 'V' OR d.estado_documento = 'C')
+  AND d.fecha_vigencia >= CURRENT_DATE
+  AND d.fecha_vigencia <= CURRENT_DATE + INTERVAL '15 days'
+ORDER BY d.fecha_vigencia ASC, proveedor_nombre ASC;
+    `;
+
+    const [resLlenado, resPorVencer] = await Promise.all([
+        pool.query(sqlProveedoresLlenado, params),
+        pool.query(sqlDocsPorVencer, params)
+    ]);
+
+    return {
+        proveedores: resLlenado.rows,
+        documentos_por_vencer: resPorVencer.rows
+    };
+};
+
 module.exports = {
     obtenerResumen,
     obtenerDocumentosPorGrupo,
@@ -836,5 +1121,7 @@ module.exports = {
     obtenerEstadoExpediente,
     obtenerCalificacionProveedor,
     obtenerResumenProveedoresCumplimiento,
-    obtenerCumplimientoGlobalPorGestion
+    obtenerCumplimientoGlobalPorGestion,
+    obtenerRankingProveedores,
+    obtenerAlertasConsultor
 };
