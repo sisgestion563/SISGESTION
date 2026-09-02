@@ -2452,6 +2452,9 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 )}
+            </>
+        )}
+
             {/* ── MODAL: RANKING COMPLETO DE PROVEEDORES ────────────────────────── */}
             {modalRankingOpen && (
                 <div style={{
