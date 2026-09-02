@@ -343,6 +343,19 @@ const obtenerNombreMostrado = (gestionRaw) => {
     return gestionRaw;
 };
 
+const MAPA_REGIMENES = {
+    'RG': 'Régimen General',
+    'RP': 'Pequeña Empresa',
+    'RM': 'Micro Empresa'
+};
+
+const obtenerDescripcionRegimen = (regimen, descripcion) => {
+    if (descripcion && descripcion.trim()) return descripcion;
+    if (!regimen) return 'Régimen General';
+    const code = String(regimen).trim().toUpperCase();
+    return MAPA_REGIMENES[code] || (code === 'RG' ? 'Régimen General' : code === 'RP' ? 'Pequeña Empresa' : code === 'RM' ? 'Micro Empresa' : regimen);
+};
+
 const calcularRankingYAlertas = (rawRanking, rawAlertas, gestionesCodeArray) => {
     const isAll = !gestionesCodeArray || gestionesCodeArray.length === 0 || gestionesCodeArray.includes('ALL');
     const configs = isAll ? [] : gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
@@ -2570,9 +2583,9 @@ export default function DashboardPage() {
                                             <tr>
                                                 <th style={{ ...styles.th, width: '8%', textAlign: 'center' }}>Pos.</th>
                                                 <th style={{ ...styles.th, width: '36%' }}>Proveedor</th>
-                                                <th style={{ ...styles.th, width: '18%' }}>RUC / Doc.</th>
-                                                <th style={{ ...styles.th, width: '12%', textAlign: 'center' }}>Régimen</th>
-                                                <th style={{ ...styles.th, width: '26%', textAlign: 'center' }}>Calificación</th>
+                                                <th style={{ ...styles.th, width: '16%' }}>RUC</th>
+                                                <th style={{ ...styles.th, width: '16%', textAlign: 'center' }}>Régimen</th>
+                                                <th style={{ ...styles.th, width: '24%', textAlign: 'center' }}>Calificación</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -2623,7 +2636,7 @@ export default function DashboardPage() {
                                                         </td>
                                                         <td style={{ ...styles.td, textAlign: 'center' }}>
                                                             <span style={{ background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
-                                                                {prov.regimen_tributario || 'RG'}
+                                                                {obtenerDescripcionRegimen(prov.regimen_tributario, prov.descripcion_regimen_tributario)}
                                                             </span>
                                                         </td>
                                                         <td style={{ ...styles.td }}>
@@ -2810,9 +2823,9 @@ export default function DashboardPage() {
                                         <table style={{ ...styles.table, marginTop: 0 }}>
                                             <thead>
                                                 <tr>
-                                                    <th style={{ ...styles.th, width: '45%' }}>Proveedor</th>
-                                                    <th style={{ ...styles.th, width: '20%' }}>RUC / Doc.</th>
-                                                    <th style={{ ...styles.th, width: '15%', textAlign: 'center' }}>Régimen</th>
+                                                    <th style={{ ...styles.th, width: '42%' }}>Proveedor</th>
+                                                    <th style={{ ...styles.th, width: '18%' }}>RUC</th>
+                                                    <th style={{ ...styles.th, width: '20%', textAlign: 'center' }}>Régimen</th>
                                                     <th style={{ ...styles.th, width: '20%', textAlign: 'center' }}>Calificación</th>
                                                 </tr>
                                             </thead>
@@ -2827,7 +2840,7 @@ export default function DashboardPage() {
                                                         </td>
                                                         <td style={{ ...styles.td, textAlign: 'center' }}>
                                                             <span style={{ background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
-                                                                {prov.regimen_tributario || 'RG'}
+                                                                {obtenerDescripcionRegimen(prov.regimen_tributario, prov.descripcion_regimen_tributario)}
                                                             </span>
                                                         </td>
                                                         <td style={{ ...styles.td, textAlign: 'center' }}>
@@ -2905,11 +2918,10 @@ export default function DashboardPage() {
                                         <table style={{ ...styles.table, marginTop: 0 }}>
                                             <thead>
                                                 <tr>
-                                                    <th style={{ ...styles.th, width: '40%' }}>Proveedor</th>
-                                                    <th style={{ ...styles.th, width: '18%' }}>RUC / Doc.</th>
-                                                    <th style={{ ...styles.th, width: '12%', textAlign: 'center' }}>Régimen</th>
-                                                    <th style={{ ...styles.th, width: '15%', textAlign: 'center' }}>Cargados</th>
-                                                    <th style={{ ...styles.th, width: '15%', textAlign: 'center' }}>Pendientes</th>
+                                                    <th style={{ ...styles.th, width: '42%' }}>Proveedor</th>
+                                                    <th style={{ ...styles.th, width: '18%' }}>RUC</th>
+                                                    <th style={{ ...styles.th, width: '22%', textAlign: 'center' }}>Tipo Régimen</th>
+                                                    <th style={{ ...styles.th, width: '18%', textAlign: 'center' }}>Pendientes</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -2923,11 +2935,8 @@ export default function DashboardPage() {
                                                         </td>
                                                         <td style={{ ...styles.td, textAlign: 'center' }}>
                                                             <span style={{ background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
-                                                                {prov.regimen_tributario || 'RG'}
+                                                                {obtenerDescripcionRegimen(prov.regimen_tributario, prov.descripcion_regimen_tributario)}
                                                             </span>
-                                                        </td>
-                                                        <td style={{ ...styles.td, textAlign: 'center', fontSize: '13px', fontWeight: 600 }}>
-                                                            {prov.total_uploaded_evaluados} de {prov.total_exigibles_evaluados}
                                                         </td>
                                                         <td style={{ ...styles.td, textAlign: 'center' }}>
                                                             <span style={{ ...styles.badge('#fee2e2', '#dc2626'), padding: '3px 10px', fontSize: '12px', fontWeight: 800 }}>

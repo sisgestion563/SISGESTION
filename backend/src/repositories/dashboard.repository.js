@@ -853,6 +853,13 @@ WITH usuarios_proveedores AS (
         p.nro_documento,
         p.ciiu,
         COALESCE(p.regimen_tributario, 'RG') AS regimen_tributario,
+        COALESCE(reg_trib.descripcion_valor, 
+            CASE 
+                WHEN p.regimen_tributario = 'RG' THEN 'Régimen General'
+                WHEN p.regimen_tributario = 'RP' THEN 'Pequeña Empresa'
+                WHEN p.regimen_tributario = 'RM' THEN 'Micro Empresa'
+                ELSE p.regimen_tributario
+            END, 'Régimen General') AS descripcion_regimen_tributario,
         CASE 
             WHEN p.regimen_tributario = 'RG' THEN 12
             WHEN p.regimen_tributario = 'RP' THEN 9
@@ -872,6 +879,10 @@ WITH usuarios_proveedores AS (
     FROM "SISGES"."SEG_USUARIO" u
     JOIN "SISGES"."SEG_ROL" r ON u.rol_id = r.rol_id
     LEFT JOIN "SISGES"."MAE_PROVEEDOR" p ON u.proveedor_id = p.proveedor_id
+    LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib 
+        ON reg_trib.cod_grupo = '0100' 
+        AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' 
+        AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
     WHERE ${whereProv}
 ),
 doc_counts AS (
@@ -896,6 +907,7 @@ capped_counts AS (
         up.nro_documento,
         up.ciiu,
         up.regimen_tributario,
+        up.descripcion_regimen_tributario,
         up.exigible_sst,
         up.exigible_ma,
         up.exigible_calidad,
@@ -925,6 +937,7 @@ SELECT
     nro_documento,
     ciiu,
     regimen_tributario,
+    descripcion_regimen_tributario,
     exigible_sst,
     exigible_ma,
     exigible_calidad,
@@ -984,6 +997,13 @@ WITH usuarios_proveedores AS (
         p.nro_documento,
         p.ciiu,
         COALESCE(p.regimen_tributario, 'RG') AS regimen_tributario,
+        COALESCE(reg_trib.descripcion_valor, 
+            CASE 
+                WHEN p.regimen_tributario = 'RG' THEN 'Régimen General'
+                WHEN p.regimen_tributario = 'RP' THEN 'Pequeña Empresa'
+                WHEN p.regimen_tributario = 'RM' THEN 'Micro Empresa'
+                ELSE p.regimen_tributario
+            END, 'Régimen General') AS descripcion_regimen_tributario,
         CASE 
             WHEN p.regimen_tributario = 'RG' THEN 12
             WHEN p.regimen_tributario = 'RP' THEN 9
@@ -1003,6 +1023,10 @@ WITH usuarios_proveedores AS (
     FROM "SISGES"."SEG_USUARIO" u
     JOIN "SISGES"."SEG_ROL" r ON u.rol_id = r.rol_id
     LEFT JOIN "SISGES"."MAE_PROVEEDOR" p ON u.proveedor_id = p.proveedor_id
+    LEFT JOIN "SISGES"."MAE_LISTA_VALORES" reg_trib 
+        ON reg_trib.cod_grupo = '0100' 
+        AND reg_trib.tipo_grupo = 'TIPO_REGIMEN' 
+        AND reg_trib.codigo_valor::varchar = p.regimen_tributario::varchar
     WHERE ${whereProv}
 ),
 doc_uploads AS (
@@ -1032,6 +1056,7 @@ SELECT
     up.nro_documento,
     up.ciiu,
     up.regimen_tributario,
+    up.descripcion_regimen_tributario,
     up.exigible_sst,
     up.exigible_ma,
     up.exigible_calidad,
@@ -1064,7 +1089,7 @@ SELECT
     COALESCE(u.vig_etica, 0) as vig_etica
 FROM usuarios_proveedores up
 LEFT JOIN doc_uploads u ON up.usuario_id = u.usuario_id
-ORDER BY up.proveedor_nombre ASC;
+ORDER BY total_uploaded_capped ASC, up.proveedor_nombre ASC;
     `;
 
     // 2. Documentos por vencer en menos de 15 días (vigentes y por expirar)
