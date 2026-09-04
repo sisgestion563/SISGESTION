@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Layers, CalendarDays, Calendar, User, ChevronDown, RotateCcw, Briefcase } from 'lucide-react';
+/*import { obtenerCatalogo, obtenerPeriodos } from '../services/catalogos.service';
+import { obtenerProveedorPorId } from '../services/providers.service';*/
+/*EROMAN 03/09/2026*/
 import { obtenerCatalogo, obtenerPeriodos } from '../services/catalogos.service';
-import { obtenerProveedorPorId } from '../services/providers.service';
+import { obtenerProveedorPorId, obtenerProveedores} from '../services/providers.service';
+
 
 /**
- * Formatea los textos de gestión provenientes de base de datos a formato título institucional
+ * Formatea los textos de gestión provenientes de base de datos a formato título institucional 
  */
 const formatearNombreGestion = (texto) => {
     if (!texto) return '';
@@ -86,6 +90,14 @@ export default function Header() {
         return localStorage.getItem('sisgestion_rubro_actual') || 'ALL';
     });
     const [rubrosList, setRubrosList] = useState([]);
+
+    // 7. Estado para Proveedor - Solo Consultor EROMAN 03/09/2026
+    const [proveedorFiltro, setProveedorFiltro] = useState(() => {
+        return localStorage.getItem('sisgestion_proveedor_actual') || 'ALL';
+    });
+
+const [proveedoresList, setProveedoresList] = useState([]);
+
     
     const mostrarFiltros = window.location.pathname.startsWith('/dashboard');
     const mostrarFiltroPeriodo = mostrarFiltros;
@@ -116,6 +128,9 @@ export default function Header() {
         return () => { isMounted = false; };
     }, [mostrarFiltroPeriodo]);
 
+
+
+
     // Cargar catálogo de rubros (CIIU) para consultor
     useEffect(() => {
         let isMounted = true;
@@ -141,11 +156,111 @@ export default function Header() {
         window.dispatchEvent(new CustomEvent('sisgestion:periodo_change', { detail: nuevoPeriodo }));
     };
 
-    const cambiarRubro = (nuevoRubro) => {
+    /*const cambiarRubro = (nuevoRubro) => {
         setRubro(nuevoRubro);
         localStorage.setItem('sisgestion_rubro_actual', nuevoRubro);
         window.dispatchEvent(new CustomEvent('sisgestion:rubro_change', { detail: nuevoRubro }));
+    };*/
+
+    /**EROMAN 09/03/2026 **/
+    const cambiarRubro = (nuevoRubro) => {
+    setRubro(nuevoRubro);
+
+    localStorage.setItem(
+        'sisgestion_rubro_actual',
+        nuevoRubro
+    );
+
+    // Al cambiar Rubro, recalcular la lista de proveedores
+    // y seleccionar inicialmente todos los proveedores
+    setProveedorFiltro('ALL');
+
+    localStorage.setItem(
+        'sisgestion_proveedor_actual',
+        'ALL'
+    );
+
+    window.dispatchEvent(
+        new CustomEvent(
+            'sisgestion:rubro_change',
+            {
+                detail: nuevoRubro
+            }
+        )
+    );
+
+    window.dispatchEvent(
+        new CustomEvent(
+            'sisgestion:proveedor_change',
+            {
+                detail: 'ALL'
+            }
+        )
+    );
+};
+
+    /** EROMAN 03/9/2026 **/
+    const cambiarProveedor = (nuevoProveedor) => {
+    setProveedorFiltro(nuevoProveedor);
+
+    localStorage.setItem(
+        'sisgestion_proveedor_actual',
+        nuevoProveedor
+    );
+
+    window.dispatchEvent(
+        new CustomEvent(
+            'sisgestion:proveedor_change',
+            {
+                detail: nuevoProveedor
+            }
+        )
+    );
+};
+/** EROMAN 03/9/2026 **/
+const proveedoresFiltrados =
+    rubro === 'ALL'
+        ? proveedoresList
+        : proveedoresList.filter(item => {
+            const actividad =
+                item.actividad_economica || '';
+
+            const codigoCiiu =
+                actividad.split('-')[0]?.trim();
+
+            return codigoCiiu === String(rubro);
+        });
+
+
+
+
+    // Cargar proveedores para el filtro del Consultor EROMAN 03/09/2026
+useEffect(() => {
+    let isMounted = true;
+
+    const cargarProveedores = async () => {
+        try {
+            const list = await obtenerProveedores();
+
+            if (isMounted && Array.isArray(list)) {
+                setProveedoresList(list);
+            }
+        } catch (error) {
+            console.error('Error al cargar proveedores:', error);
+        }
     };
+
+    if (esConsultor && mostrarFiltros) {
+        cargarProveedores();
+    }
+
+    return () => {
+        isMounted = false;
+    };
+}, [esConsultor, mostrarFiltros]);
+
+
+
 
     // Sincronizar rubro si se cambia externamente
     useEffect(() => {
@@ -282,7 +397,7 @@ export default function Header() {
             <div
                 style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
+                    justifyContent: 'flex-start',
                     alignItems: 'center',
                     flexWrap: 'wrap',
                     gap: '12px'
@@ -421,12 +536,181 @@ export default function Header() {
                     <div
                         style={{
                             display: 'flex',
-                            justifyContent: 'space-between',
+                            justifyContent: 'flex-start',
                             alignItems: 'center',
                             flexWrap: 'wrap',
                             gap: '16px'
                         }}
                     >
+
+                     {/* Selector de Proveedor - Solo Consultor EROMAN 03/09/2026*/}
+{esConsultor && (
+    <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+    }}>
+        <span
+            style={{
+                fontSize: '13px',
+                fontWeight: '700',
+                color: '#1E293B'
+            }}
+        >
+            Proveedor:
+        </span>
+
+        <div
+            style={{
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                background: '#FFFFFF',
+                border: '1px solid #CBD5E1',
+                borderRadius: '8px',
+                padding: '0 10px',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                transition: 'all 0.2s ease',
+                maxWidth: '300px'
+            }}
+        >
+            <User
+                size={15}
+                color="#2563EB"
+                style={{
+                    marginRight: '6px',
+                    flexShrink: 0
+                }}
+            />
+
+            <select
+                id="header-select-proveedor"
+                aria-label="Seleccionar Proveedor"
+                value={proveedorFiltro}
+                onChange={(e) =>
+                    cambiarProveedor(e.target.value)
+                }
+                style={{
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    padding: '7px 22px 7px 0',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#0F172A',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    maxWidth: '240px',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                }}
+            >
+                <option value="ALL">
+                    Todos los Proveedores
+                </option>
+
+                {proveedoresFiltrados.map((item) => (
+                    <option
+                        key={item.proveedor_id}
+                        value={item.proveedor_id}
+                        title={item.proveedor}
+                    >
+                        {item.proveedor}
+                    </option>
+                ))}
+            </select>
+
+            <ChevronDown
+                size={14}
+                color="#64748B"
+                style={{
+                    position: 'absolute',
+                    right: '10px',
+                    pointerEvents: 'none'
+                }}
+            />
+        </div>
+    </div>
+)}    
+
+
+
+                            {/* Selector de Rubro (CIIU) - Solo Consultor */}
+                            {esConsultor && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span
+                                        style={{
+                                            fontSize: '13px',
+                                            fontWeight: '700',
+                                            color: '#1E293B'
+                                        }}
+                                    >
+                                        Rubro:
+                                    </span>
+                                    <div
+                                        style={{
+                                            position: 'relative',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            background: '#FFFFFF',
+                                            border: '1px solid #CBD5E1',
+                                            borderRadius: '8px',
+                                            padding: '0 10px',
+                                            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                            transition: 'all 0.2s ease',
+                                            maxWidth: '300px'
+                                        }}
+                                    >
+                                        <Briefcase size={15} color="#2563EB" style={{ marginRight: '6px', flexShrink: 0 }} />
+                                        <select
+                                            id="header-select-rubro"
+                                            aria-label="Seleccionar Rubro CIIU"
+                                            value={rubro}
+                                            onChange={(e) => cambiarRubro(e.target.value)}
+                                            style={{
+                                                appearance: 'none',
+                                                WebkitAppearance: 'none',
+                                                backgroundColor: 'transparent',
+                                                border: 'none',
+                                                padding: '7px 22px 7px 0',
+                                                fontSize: '13px',
+                                                fontWeight: '600',
+                                                color: '#0F172A',
+                                                cursor: 'pointer',
+                                                outline: 'none',
+                                                maxWidth: '240px',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden'
+                                            }}
+                                        >
+                                            <option value="ALL">Todos los Rubros (CIIU)</option>
+                                            {rubrosList.map((item, idx) => {
+                                                const code = item.codigo_valor || item.ciiu || item.code;
+                                                const label = item.descripcion || item.nombre || item.label;
+                                                return (
+                                                    <option key={idx} value={code} title={`${code} - ${label}`}>
+                                                        {code} - {label}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                        <ChevronDown
+                                            size={14}
+                                            color="#64748B"
+                                            style={{
+                                                position: 'absolute',
+                                                right: '10px',
+                                                pointerEvents: 'none'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            )}    
+
+
                         {/* Lado izquierdo: Selectores modernos de Gestión y Periodo */}
                         <div
                             style={{
@@ -556,78 +840,7 @@ export default function Header() {
                                 </button>
                             )}
 
-                            {/* Selector de Rubro (CIIU) - Solo Consultor */}
-                            {esConsultor && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span
-                                        style={{
-                                            fontSize: '13px',
-                                            fontWeight: '700',
-                                            color: '#1E293B'
-                                        }}
-                                    >
-                                        Rubro:
-                                    </span>
-                                    <div
-                                        style={{
-                                            position: 'relative',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            background: '#FFFFFF',
-                                            border: '1px solid #CBD5E1',
-                                            borderRadius: '8px',
-                                            padding: '0 10px',
-                                            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-                                            transition: 'all 0.2s ease',
-                                            maxWidth: '300px'
-                                        }}
-                                    >
-                                        <Briefcase size={15} color="#2563EB" style={{ marginRight: '6px', flexShrink: 0 }} />
-                                        <select
-                                            id="header-select-rubro"
-                                            aria-label="Seleccionar Rubro CIIU"
-                                            value={rubro}
-                                            onChange={(e) => cambiarRubro(e.target.value)}
-                                            style={{
-                                                appearance: 'none',
-                                                WebkitAppearance: 'none',
-                                                backgroundColor: 'transparent',
-                                                border: 'none',
-                                                padding: '7px 22px 7px 0',
-                                                fontSize: '13px',
-                                                fontWeight: '600',
-                                                color: '#0F172A',
-                                                cursor: 'pointer',
-                                                outline: 'none',
-                                                maxWidth: '240px',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden'
-                                            }}
-                                        >
-                                            <option value="ALL">Todos los Rubros (CIIU)</option>
-                                            {rubrosList.map((item, idx) => {
-                                                const code = item.codigo_valor || item.ciiu || item.code;
-                                                const label = item.descripcion || item.nombre || item.label;
-                                                return (
-                                                    <option key={idx} value={code} title={`${code} - ${label}`}>
-                                                        {code} - {label}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                        <ChevronDown
-                                            size={14}
-                                            color="#64748B"
-                                            style={{
-                                                position: 'absolute',
-                                                right: '10px',
-                                                pointerEvents: 'none'
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            )}
+                           
 
                             {/* Selector de Periodo */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

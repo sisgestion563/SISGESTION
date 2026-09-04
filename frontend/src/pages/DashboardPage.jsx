@@ -177,6 +177,41 @@ const responsiveCSS = `
     @media (max-width: 960px) {
         .consultor-grid { grid-template-columns: 1fr; }
     }
+    
+    .consultor-cartera-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+@media (max-width: 960px) {
+    .consultor-cartera-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.consultor-cumplimiento-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.consultor-cumplimiento-full {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+@media (max-width: 960px) {
+    .consultor-cumplimiento-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
     .pie-chart-wrap {
         width: 60%;
     }
@@ -500,6 +535,12 @@ export default function DashboardPage() {
     const [kpisGestion, setKpisGestion] = useState([]);
     const [estadoExpediente, setEstadoExpediente] = useState(null);
     const [calificacion, setCalificacion] = useState(null);
+    //EROMAN 03/09/2026
+    const [proveedorSeleccionado, setProveedorSeleccionado] = useState(() => {
+    return localStorage.getItem('sisgestion_proveedor_actual') || 'ALL';});
+    const [calificacionConsultor, setCalificacionConsultor] = useState(null);
+    const [proveedorConsultorInfo, setProveedorConsultorInfo] = useState(null);
+    //EROMAN 03/09/2026
     const [cumplimientoProveedores, setCumplimientoProveedores] = useState(null);
     const [cumplimientoGlobal, setCumplimientoGlobal] = useState([]);
     const [rubroFiltro, setRubroFiltro] = useState(() => {
@@ -578,7 +619,7 @@ export default function DashboardPage() {
         return () => window.removeEventListener('sisgestion:periodo_change', handlePeriodoChange);
     }, []);
 
-    // Escucha de cambios de rubro desde el Header
+    // Escucha de cambios de Proveedor desde el Header 
     useEffect(() => {
         const handleRubroChange = (e) => {
             if (e.detail !== undefined) {
@@ -589,13 +630,120 @@ export default function DashboardPage() {
         return () => window.removeEventListener('sisgestion:rubro_change', handleRubroChange);
     }, []);
 
-    useEffect(() => {
-        if (esProveedor) {
-            cargarDashboardProveedor();
-        } else {
-            cargarDashboardAdmin(periodoFiltro, rubroFiltro);
+    // Escucha de cambios de proveedor desde el Header EROMAN 03/09/2026
+useEffect(() => {
+    const handleProveedorChange = (e) => {
+        if (e.detail !== undefined) {
+            console.log('>>> proveedor seleccionado en Dashboard:', e.detail);
+            setProveedorSeleccionado(e.detail);
         }
-    }, [esProveedor, miProveedorId, periodoFiltro, rubroFiltro]);
+    };
+
+    window.addEventListener('sisgestion:proveedor_change', handleProveedorChange);
+
+    return () => {
+        window.removeEventListener('sisgestion:proveedor_change', handleProveedorChange);
+    };
+}, []);
+
+
+// Obtener calificación del proveedor seleccionado por CONSULTOR
+useEffect(() => {
+    if (!esConsultor) return;
+
+    if (!proveedorSeleccionado || proveedorSeleccionado === 'ALL') {
+        setCalificacionConsultor(null);
+        return;
+    }
+
+    const cargarCalificacionConsultor = async () => {
+        try {
+            console.log(
+                '>>> obteniendo calificación para proveedor:',
+                proveedorSeleccionado
+            );
+
+            const data = await obtenerCalificacionProveedor(
+                Number(proveedorSeleccionado)
+            );
+
+            console.log(
+                '>>> calificación proveedor seleccionado:',
+                data
+            );
+
+            setCalificacionConsultor(data || null);
+
+        } catch (error) {
+            console.error(
+                'Error al obtener calificación del proveedor seleccionado:',
+                error
+            );
+
+            setCalificacionConsultor(null);
+        }
+    };
+
+    cargarCalificacionConsultor();
+
+}, [esConsultor, proveedorSeleccionado]);
+
+
+// Obtener información del proveedor seleccionado por CONSULTOR EROMAN 03/09/2026
+useEffect(() => {
+    if (!esConsultor) return;
+
+    if (!proveedorSeleccionado || proveedorSeleccionado === 'ALL') {
+        setProveedorConsultorInfo(null);
+        return;
+    }
+
+    const cargarProveedorConsultor = async () => {
+        try {
+            console.log(
+                '>>> obteniendo información del proveedor:',
+                proveedorSeleccionado
+            );
+
+            const data = await obtenerProveedorPorId(
+                Number(proveedorSeleccionado)
+            );
+
+            console.log(
+                '>>> información proveedor seleccionado:',
+                data
+            );
+
+            setProveedorConsultorInfo(data || null);
+
+        } catch (error) {
+            console.error(
+                'Error al obtener información del proveedor seleccionado:',
+                error
+            );
+
+            setProveedorConsultorInfo(null);
+        }
+    };
+
+    cargarProveedorConsultor();
+
+}, [esConsultor, proveedorSeleccionado]);
+
+
+    useEffect(() => {
+    if (esProveedor) {
+        cargarDashboardProveedor();
+    } else {
+        cargarDashboardAdmin(periodoFiltro, rubroFiltro);
+    }
+}, [
+    esProveedor,
+    miProveedorId,
+    periodoFiltro,
+    rubroFiltro,
+    proveedorSeleccionado
+]);
 
     // Cargar información de la razón social del proveedor
     useEffect(() => {
@@ -616,6 +764,30 @@ export default function DashboardPage() {
         const nombresCompletos = `${proveedorInfo.nombre || ''} ${proveedorInfo.apellido_paterno || ''} ${proveedorInfo.apellido_materno || ''}`.trim();
         return nombresCompletos || proveedorInfo.proveedor || usuarioLogueado?.username || '';
     };
+    //EROMAN 03/09/2026
+    const obtenerIdentidadProveedorConsultor = () => {
+    if (!proveedorConsultorInfo) return String(proveedorSeleccionado || '');
+
+    if (
+        proveedorConsultorInfo.tipo_documento === '06' ||
+        proveedorConsultorInfo.razon_social
+    ) {
+        return (
+            proveedorConsultorInfo.razon_social ||
+            proveedorConsultorInfo.proveedor ||
+            String(proveedorSeleccionado)
+        );
+    }
+
+    const nombresCompletos = `${proveedorConsultorInfo.nombre || ''} ${proveedorConsultorInfo.apellido_paterno || ''} ${proveedorConsultorInfo.apellido_materno || ''}`.trim();
+
+    return (
+        nombresCompletos ||
+        proveedorConsultorInfo.proveedor ||
+        String(proveedorSeleccionado)
+    );
+};
+
 
     // Reaccionar al cambio de gestión para filtrar los datos en pantalla
     useEffect(() => {
@@ -646,8 +818,10 @@ export default function DashboardPage() {
                 obtenerDocumentosPorGrupo(periodo),
                 obtenerDocumentosPorEstado(periodo),
                 obtenerProximosVencer(periodo),
-                obtenerResumenProveedoresCumplimiento(periodo, rubro),
-                obtenerCumplimientoGlobalPorGestion(periodo, rubro),
+                obtenerResumenProveedoresCumplimiento(periodo, rubro),                
+                esConsultor && proveedorSeleccionado !== 'ALL'
+    ? obtenerCumplimientoGestion(Number(proveedorSeleccionado))
+    : obtenerCumplimientoGlobalPorGestion(periodo, rubro),
                 obtenerRankingProveedores(periodo, rubro),
                 obtenerAlertasConsultor(periodo, rubro)
             ]);
@@ -657,7 +831,35 @@ export default function DashboardPage() {
             const estadosData = (estadosRes.status === 'fulfilled' && Array.isArray(estadosRes.value)) ? estadosRes.value : [];
             const proximosData = (proximosRes.status === 'fulfilled' && Array.isArray(proximosRes.value)) ? proximosRes.value : [];
             const cumplimientoData = (cumplimientoRes.status === 'fulfilled' && cumplimientoRes.value) ? cumplimientoRes.value : { total_proveedores: 0, recomendados: 0, recomendados_con_restricciones: 0, no_recomendados: 0 };
-            const globalGestionData = (globalGestionRes.status === 'fulfilled' && Array.isArray(globalGestionRes.value)) ? globalGestionRes.value : [];
+            
+            const globalGestionRaw = (globalGestionRes.status === 'fulfilled' && Array.isArray(globalGestionRes.value))? globalGestionRes.value: [];
+            const globalGestionData =
+    esConsultor && proveedorSeleccionado !== 'ALL'
+        ? globalGestionRaw.map(item => ({
+            codigo:
+                item.gestion === 'SST / MA'
+                    ? 'SST_MA'
+                    : item.gestion === 'CALIDAD'
+                        ? 'CALIDAD'
+                        : item.gestion === 'PATRIMONIAL'
+                            ? 'PATRIMONIAL'
+                            : item.gestion === 'ETICA'
+                                ? 'ETICA'
+                                : item.gestion,
+
+            nombre:
+                item.gestion === 'SST / MA'
+                    ? 'SST-MA'
+                    : item.gestion || '',
+
+            porcentaje: Number(item.porcentaje || 0),
+
+            documentos_registrados: Number(item.documentos_registrados || 0),
+            documentos_exigibles: Number(item.documentos_exigibles || 0)
+        }))
+        : globalGestionRaw;
+
+            console.log('DEBUG CUMPLIMIENTO GESTION:', globalGestionData);
             const rankingData = (rankingRes.status === 'fulfilled' && Array.isArray(rankingRes.value)) ? rankingRes.value : [];
             const alertasData = (alertasRes.status === 'fulfilled' && alertasRes.value) ? alertasRes.value : { proveedores: [], documentos_por_vencer: [] };
 
@@ -1066,25 +1268,28 @@ export default function DashboardPage() {
                 </div>
             ) : (
                 <>
-                    {/* ── VISTA CONSULTOR: TARJETA GENERAL PROVEEDORES (Agrandada y Destacada) ─────────── */}
+                    <div className="consultor-cartera-grid">
+
+                     {/* ── VISTA CONSULTOR: TARJETA GENERAL PROVEEDORES SOLO NUMEROS (Agrandada y Destacada) EROMAN 03/09/2026─────────── */}
                     {esConsultor && (() => {
                         const totalP = Number(cumplimientoProveedores?.total_proveedores ?? resumen?.total_proveedores ?? 0);
                         const recP = Number(cumplimientoProveedores?.recomendados ?? 0);
                         const restP = Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
                         const noRecP = Number(cumplimientoProveedores?.no_recomendados ?? 0);
 
-                        const recPct = totalP > 0 ? Math.round((recP / totalP) * 100) : 0;
+                        /*const recPct = totalP > 0 ? Math.round((recP / totalP) * 100) : 0;
                         const restPct = totalP > 0 ? Math.round((restP / totalP) * 100) : 0;
-                        const noRecPct = totalP > 0 ? Math.round((noRecP / totalP) * 100) : 0;
+                        const noRecPct = totalP > 0 ? Math.round((noRecP / totalP) * 100) : 0;*/
 
+                        
                         return (
                             <div style={{
                                 ...styles.card,
                                 padding: '26px 30px',
                                 borderLeft: `5px solid ${colors.primary}`,
                                 borderRadius: '14px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                                marginBottom: '28px'
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                                
                             }}>
                                 <div style={{
                                     display: 'flex',
@@ -1118,7 +1323,211 @@ export default function DashboardPage() {
                                         </div>
                                         <div>
                                             <h2 style={{ fontSize: '18px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.01em' }}>
-                                                General Proveedores
+                                                Salud De La Cartera - 1
+                                            </h2>
+                                            <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
+                                                Distribución global del cumplimiento y calificación de proveedores en el sistema.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span style={{
+                                        background: '#eff6ff',
+                                        color: colors.primary,
+                                        fontWeight: 800,
+                                        fontSize: '13.5px',
+                                        padding: '6px 18px',
+                                        borderRadius: '999px',
+                                        border: '1px solid #bfdbfe',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        boxShadow: '0 1px 2px rgba(37,99,235,0.05)'
+                                    }}>
+                                        <span>Total:</span>
+                                        <strong style={{ fontSize: '15.5px' }}>{totalP}</strong>
+                                    </span>
+                                </div>
+
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                                    gap: '16px'
+                                }}>
+                                    {/* 1. Recomendados */}
+                                    <div style={{
+                                        padding: '16px 18px',
+                                        background: colors.successBg,
+                                        border: '1px solid #a7f3d0',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        gap: '12px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{
+                                                    width: 28,
+                                                    height: 28,
+                                                    borderRadius: '8px',
+                                                    background: '#dcfce7',
+                                                    border: '1px solid #bbf7d0',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#16a34a',
+                                                    flexShrink: 0
+                                                }}>
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                        <polyline points="9 12 11 14 15 10"></polyline>
+                                                    </svg>
+                                                </div>
+                                                <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#166534' }}>Recomendados</span>
+                                            </div>
+                                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '3px 10px', borderRadius: '999px', border: '1px solid #bbf7d0' }}>
+                                                {recP}
+                                            </span>
+                                        </div>                                        
+                                    </div>
+
+                                    {/* 2. Recomendados con restricciones */}
+                                    <div style={{
+                                        padding: '16px 18px',
+                                        background: '#fef3c7',
+                                        border: '1px solid #fde68a',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        gap: '12px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{
+                                                    width: 28,
+                                                    height: 28,
+                                                    borderRadius: '8px',
+                                                    background: '#fef3c7',
+                                                    border: '1px solid #fde68a',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#d97706',
+                                                    flexShrink: 0
+                                                }}>
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                                    </svg>
+                                                </div>
+                                                <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#92400e' }}>Recomendados con restricciones</span>
+                                            </div>
+                                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#b45309', background: '#fef3c7', padding: '3px 10px', borderRadius: '999px', border: '1px solid #fde68a' }}>
+                                                {restP}
+                                            </span>
+                                        </div>                                        
+                                    </div>
+
+                                    {/* 3. No recomendados */}
+                                    <div style={{
+                                        padding: '16px 18px',
+                                        background: colors.dangerBg,
+                                        border: '1px solid #fecaca',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        gap: '12px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{
+                                                    width: 28,
+                                                    height: 28,
+                                                    borderRadius: '8px',
+                                                    background: '#fee2e2',
+                                                    border: '1px solid #fecaca',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#dc2626',
+                                                    flexShrink: 0
+                                                }}>
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                                    </svg>
+                                                </div>
+                                                <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#991b1b' }}>No recomendados</span>
+                                            </div>
+                                            <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#dc2626', background: '#fee2e2', padding: '3px 10px', borderRadius: '999px', border: '1px solid #fecaca' }}>
+                                                {noRecP}
+                                            </span>
+                                        </div>                                        
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
+
+
+                    {/* ── VISTA CONSULTOR: TARJETA GENERAL PROVEEDORES (Agrandada y Destacada) ─────────── */}
+                    {esConsultor && (() => {
+                        const totalP = Number(cumplimientoProveedores?.total_proveedores ?? resumen?.total_proveedores ?? 0);
+                        const recP = Number(cumplimientoProveedores?.recomendados ?? 0);
+                        const restP = Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
+                        const noRecP = Number(cumplimientoProveedores?.no_recomendados ?? 0);
+
+                        const recPct = totalP > 0 ? Math.round((recP / totalP) * 100) : 0;
+                        const restPct = totalP > 0 ? Math.round((restP / totalP) * 100) : 0;
+                        const noRecPct = totalP > 0 ? Math.round((noRecP / totalP) * 100) : 0;
+
+                        
+                        return (
+                            <div style={{
+                                ...styles.card,
+                                padding: '26px 30px',
+                                borderLeft: `5px solid ${colors.primary}`,
+                                borderRadius: '14px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                                
+                            }}>
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginBottom: '22px',
+                                    borderBottom: `1px solid ${colors.border}`,
+                                    paddingBottom: '16px',
+                                    flexWrap: 'wrap',
+                                    gap: '12px'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                        <div style={{
+                                            width: 44,
+                                            height: 44,
+                                            borderRadius: '10px',
+                                            background: '#eff6ff',
+                                            border: '1px solid #bfdbfe',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: colors.primary,
+                                            boxShadow: '0 2px 4px rgba(37,99,235,0.08)'
+                                        }}>
+                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="9" cy="7" r="4"></circle>
+                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 style={{ fontSize: '18px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.01em' }}>
+                                                Salud De La Cartera - 2
                                             </h2>
                                             <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
                                                 Distribución global del cumplimiento y calificación de proveedores en el sistema.
@@ -1276,6 +1685,358 @@ export default function DashboardPage() {
                             </div>
                         );
                     })()}
+                    </div>
+
+                     {/* ─ EROMAN 03/09/2026 ─*/}    
+                    {esConsultor && (
+                        <div
+                            className={
+                                proveedorSeleccionado !== 'ALL'
+                                    ? 'consultor-cumplimiento-grid'
+                                    : 'consultor-cumplimiento-full'
+                            }
+                        >
+
+                    {/* ─ EROMAN 03/09/2026 ─*/}
+                    {/* ── VISTA CONSULTOR: MI CALIFICACIÓN DEL PROVEEDOR SELECCIONADO ── */}
+{esConsultor &&
+    proveedorSeleccionado !== 'ALL' &&
+    calificacionConsultor &&
+    proveedorConsultorInfo && (() => {
+
+        const puntaje = Number(
+            String(calificacionConsultor.puntaje_formateado || '0')
+                .split('/')[0]
+                .trim()
+        ) || 0;
+
+        let nivel = 'BAJO';
+        let recomendacion = 'NO RECOMENDADO';
+        let descripcion = 'Presenta un bajo nivel de registro y vigencia documental';
+
+        if (puntaje > 90) {
+            nivel = 'ALTO';
+            recomendacion = 'RECOMENDADO';
+            descripcion = 'Mantiene un alto nivel de registro y vigencia documental';
+        } else if (puntaje >= 75) {
+            nivel = 'MEDIO';
+            recomendacion = 'RECOMENDADO CON RESTRICCIONES';
+            descripcion = 'Mantiene un nivel aceptable de registro y vigencia documental';
+        }
+
+        const identidad = obtenerIdentidadProveedorConsultor();
+
+        return (
+            <div style={{
+                ...styles.card,
+                border: nivel === 'BAJO'
+                    ? `2px solid ${colors.danger}`
+                    : `1px solid ${colors.border}`,
+                borderLeft: `6px solid ${
+                    nivel === 'ALTO'
+                        ? colors.success
+                        : nivel === 'MEDIO'
+                            ? colors.amber
+                            : colors.danger
+                }`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                background: nivel === 'BAJO'
+                    ? '#FEF2F2'
+                    : colors.card,
+                marginBottom: '28px'
+            }}>
+                
+                {/* CABECERA */}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: nivel === 'BAJO' ? 'column' : 'row',
+                    justifyContent: 'space-between',
+                    alignItems: nivel === 'BAJO' ? 'center' : 'flex-start',
+                    borderBottom: `1px solid ${colors.border}`,
+                    paddingBottom: '16px',
+                    gap: nivel === 'BAJO' ? '12px' : '0'
+                }}>
+                    <div style={{
+                        textAlign: nivel === 'BAJO' ? 'center' : 'left'
+                    }}>
+                        <h2 style={{
+                            fontSize: '16px',
+                            fontWeight: 800,
+                            color: colors.text,
+                            margin: 0,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                        }}>
+                            MI CALIFICACIÓN -{' '}
+                            <span style={{ color: colors.primary }}>
+                                {identidad}
+                            </span>
+                        </h2>
+
+                        <p style={{
+                            fontSize: '13px',
+                            color: colors.textMuted,
+                            margin: '4px 0 0 0'
+                        }}>
+                            Régimen Tributario:{' '}
+                            <strong>
+                                {calificacionConsultor.regimen_tributario}
+                            </strong>
+                        </p>
+                    </div>
+
+                    {/* RECOMENDACIÓN */}
+                    <div style={{ textAlign: 'center' }}>
+                        <span style={{
+                            ...styles.badge(
+                                nivel === 'ALTO'
+                                    ? colors.successBg
+                                    : nivel === 'MEDIO'
+                                        ? '#fef3c7'
+                                        : colors.danger,
+                                nivel === 'ALTO'
+                                    ? colors.success
+                                    : nivel === 'MEDIO'
+                                        ? '#b45309'
+                                        : '#FFFFFF'
+                            ),
+                            fontSize: nivel === 'BAJO' ? '16px' : '14px',
+                            padding: nivel === 'BAJO'
+                                ? '8px 24px'
+                                : '6px 16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            {recomendacion}
+                        </span>
+                    </div>
+                </div>
+
+                {/* PUNTAJE Y NIVEL */}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: nivel === 'BAJO' ? 'column' : 'row',
+                    alignItems: 'center',
+                    gap: nivel === 'BAJO' ? '16px' : '30px',
+                    textAlign: nivel === 'BAJO' ? 'center' : 'left'
+                }}>
+
+                    {/* PUNTAJE */}
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: nivel === 'BAJO'
+                            ? '#FFFFFF'
+                            : '#f8fafc',
+                        padding: '20px',
+                        borderRadius: '12px',
+                        minWidth: '150px',
+                        border: nivel === 'BAJO'
+                            ? `1px solid ${colors.danger}`
+                            : 'none'
+                    }}>
+                        <span style={{
+                            fontSize: '32px',
+                            fontWeight: 900,
+                            color: nivel === 'ALTO'
+                                ? colors.success
+                                : nivel === 'MEDIO'
+                                    ? '#b45309'
+                                    : colors.danger,
+                            lineHeight: '1'
+                        }}>
+                            {puntaje}
+                        </span>
+
+                        <span style={{
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            color: colors.textMuted,
+                            marginTop: '4px'
+                        }}>
+                            / 100
+                        </span>
+                    </div>
+
+                    {/* NIVEL */}
+                    <div style={{ flex: 1 }}>
+                        <h3 style={{
+                            fontSize: '16px',
+                            fontWeight: 700,
+                            color: nivel === 'BAJO'
+                                ? colors.danger
+                                : colors.text,
+                            margin: '0 0 8px 0'
+                        }}>
+                            Nivel de Gestión Documental: {nivel}
+                        </h3>
+
+                        <p style={{
+                            fontSize: '15px',
+                            color: colors.textMuted,
+                            margin: 0,
+                            lineHeight: '1.5'
+                        }}>
+                            {descripcion}
+                        </p>
+                    </div>
+                </div>
+
+                {/* DOCUMENTOS VIGENTES */}
+                <div style={{
+                    borderTop: `1px solid ${colors.border}`,
+                    paddingTop: '14px',
+                    marginTop: '4px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}>
+                    <span style={{
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: colors.textMuted
+                    }}>
+                        Documentos vigentes evaluados:{' '}
+                        <strong style={{ color: colors.primary }}>
+                            {calificacionConsultor.cantidad_documentos_vigentes ?? 0}
+                        </strong>
+                    </span>
+                </div>
+
+            </div>
+        );
+    })()}
+
+    {/* ── TARJETA: CUMPLIMIENTO POR GESTIÓN (Solo Consultor) ────────────── */}
+               
+                    <div style={{
+                        ...styles.card,                        
+                        padding: '24px 28px',
+                        borderRadius: '12px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ display: 'inline-block', width: '4px', height: '22px', background: colors.primary, borderRadius: '4px' }}></span>
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: colors.text, letterSpacing: '0.02em' }}>
+                                        CUMPLIMIENTO POR GESTIÓN
+                                    </h3>
+                                    <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
+                                        Indicadores de cumplimiento de los proveedores por cada área de gestión.
+                                    </p>
+                                </div>
+                            </div>
+                           
+                           {(() => {
+    const totalEvaluados =
+        proveedorSeleccionado !== 'ALL'
+            ? 1
+            : Number(cumplimientoProveedores?.total_proveedores || 0);
+
+    return totalEvaluados > 0 ? (
+        <span style={{
+            background: '#eff6ff',
+            color: colors.primary,
+            fontWeight: 700,
+            fontSize: '12.5px',
+            padding: '5px 14px',
+            borderRadius: '999px',
+            border: '1px solid #bfdbfe'
+        }}>
+            {totalEvaluados} Proveedor{totalEvaluados === 1 ? '' : 'es'} evaluado{totalEvaluados === 1 ? '' : 's'}
+        </span>
+    ) : null;
+})()}
+
+
+                        </div>
+
+                        <div className="table-scroll">
+                            <table style={{ ...styles.table, marginTop: 0 }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ ...styles.th, width: '30%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Gestión</th>
+                                        <th style={{ ...styles.th, width: '55%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Avance de Cumplimiento</th>
+                                        <th style={{ ...styles.th, textAlign: 'center', width: '15%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Cumplimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(cumplimientoGlobal && cumplimientoGlobal.length > 0 ? cumplimientoGlobal : [
+                                        { codigo: 'SST_MA', nombre: 'SST-MA', porcentaje: 0 },
+                                        { codigo: 'CALIDAD', nombre: 'CALIDAD', porcentaje: 0 },
+                                        { codigo: 'PATRIMONIAL', nombre: 'SEG. PATRIMONIAL', porcentaje: 0 },
+                                        { codigo: 'ETICA', nombre: 'ETICA', porcentaje: 0 },
+                                    ]).filter(item => {
+                                        if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL')) return true;
+                                        if ((item.codigo === 'SST_MA' || (item.nombre || '').includes('SST')) && (gestionFiltro.includes('GSG,GMA') || gestionFiltro.includes('GSG') || gestionFiltro.includes('GMA'))) return true;
+                                        if ((item.codigo === 'CALIDAD' || (item.nombre || '').includes('CALIDAD')) && (gestionFiltro.includes('GCA') || gestionFiltro.includes('CALIDAD'))) return true;
+                                        if ((item.codigo === 'PATRIMONIAL' || (item.nombre || '').includes('PATRIMONIAL')) && (gestionFiltro.includes('GPA') || gestionFiltro.includes('PATRIMONIAL'))) return true;
+                                        if ((item.codigo === 'ETICA' || (item.nombre || '').includes('ETICA')) && (gestionFiltro.includes('GTR') || gestionFiltro.includes('ETICA'))) return true;
+                                        return false;
+                                    }).map((item, index) => {
+                                        const pct = Number(item.porcentaje || 0);
+                                        const progressColor = pct >= 90 ? colors.success : pct >= 75 ? '#d97706' : colors.danger;
+                                        const badgeBg = pct >= 90 ? '#dcfce7' : pct >= 75 ? '#fef3c7' : '#fee2e2';
+                                        const badgeFg = pct >= 90 ? '#15803d' : pct >= 75 ? '#b45309' : '#dc2626';
+                                        const badgeBorder = pct >= 90 ? '#bbf7d0' : pct >= 75 ? '#fde68a' : '#fecaca';
+
+                                        return (
+                                            <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                
+
+                                                <td style={{
+                                                            ...styles.td,
+                                                            padding: '16px',
+                                                            color: '#000000',
+                                                            background: '#ffffff'
+                                                        }}>
+                                                            <strong style={{ fontSize: '13.5px', color: colors.text }}>
+                                                                {item.nombre}
+                                                            </strong>
+                                                        </td>
+
+                                                <td style={{ ...styles.td, padding: '16px' }}>
+                                                    <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden', height: '10px' }}>
+                                                        <div style={{
+                                                            width: `${Math.min(pct, 100)}%`,
+                                                            background: progressColor,
+                                                            height: '100%',
+                                                            transition: 'width 1s ease-in-out',
+                                                            borderRadius: '999px'
+                                                        }}></div>
+                                                    </div>
+                                                </td>
+                                                <td style={{ ...styles.td, textAlign: 'center', padding: '16px' }}>
+                                                    <span style={{
+                                                        ...styles.badge(badgeBg, badgeFg),
+                                                        padding: '5px 14px',
+                                                        fontSize: '13px',
+                                                        fontWeight: 800,
+                                                        border: `1px solid ${badgeBorder}`,
+                                                        borderRadius: '999px'
+                                                    }}>
+                                                        {pct.toFixed(2)}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    </div>
+                )}
+    
+        
+        {/* ─ EROMAN 03/09/2026 ─*/}
+
 
                     {/* ── VISTA CONSULTOR: TARJETAS RANKING DE PROVEEDORES Y ALERTAS / ATENCIÓN ─────────── */}
                     {esConsultor && (
@@ -1898,7 +2659,7 @@ export default function DashboardPage() {
                             )}
 
                             {/* ── Calificación de Proveedor ─────────────────────────── */}
-                            {esProveedor && calificacion && (
+                            { esProveedor  && calificacion && (
                                 <div style={{
                                     ...styles.card,
                                     border: calificacion.nivel_documental === 'BAJO' ? `2px solid ${colors.danger}` : `1px solid ${colors.border}`,
@@ -2143,6 +2904,7 @@ export default function DashboardPage() {
                         </div>
                     )}
 
+                    
                 {/* ── Gráfico de torta: estado de documentos (Solo Admin y Proveedor) ───────────── */}
                 {!esConsultor && estados.length > 0 && (
                     <div style={{ ...styles.card, marginTop: '30px' }}>
@@ -2177,107 +2939,10 @@ export default function DashboardPage() {
                     </div>
                 )}
 
-                {/* ── TARJETA: CUMPLIMIENTO POR GESTIÓN (Solo Consultor) ────────────── */}
-                {esConsultor && (
-                    <div style={{
-                        ...styles.card,
-                        marginTop: '30px',
-                        padding: '24px 28px',
-                        borderRadius: '12px',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ display: 'inline-block', width: '4px', height: '22px', background: colors.primary, borderRadius: '4px' }}></span>
-                                <div>
-                                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: colors.text, letterSpacing: '0.02em' }}>
-                                        CUMPLIMIENTO POR GESTIÓN
-                                    </h3>
-                                    <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
-                                        Indicadores de cumplimiento de los proveedores por cada área de gestión.
-                                    </p>
-                                </div>
-                            </div>
-                            {cumplimientoProveedores?.total_proveedores > 0 && (
-                                <span style={{
-                                    background: '#eff6ff',
-                                    color: colors.primary,
-                                    fontWeight: 700,
-                                    fontSize: '12.5px',
-                                    padding: '5px 14px',
-                                    borderRadius: '999px',
-                                    border: '1px solid #bfdbfe'
-                                }}>
-                                    {cumplimientoProveedores.total_proveedores} Proveedor{cumplimientoProveedores.total_proveedores === 1 ? '' : 'es'} evaluados
-                                </span>
-                            )}
-                        </div>
+                
 
-                        <div className="table-scroll">
-                            <table style={{ ...styles.table, marginTop: 0 }}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ ...styles.th, width: '30%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Gestión</th>
-                                        <th style={{ ...styles.th, width: '55%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Avance de Cumplimiento</th>
-                                        <th style={{ ...styles.th, textAlign: 'center', width: '15%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Cumplimiento</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(cumplimientoGlobal && cumplimientoGlobal.length > 0 ? cumplimientoGlobal : [
-                                        { codigo: 'SST_MA', nombre: 'SST-MA', porcentaje: 0 },
-                                        { codigo: 'CALIDAD', nombre: 'CALIDAD', porcentaje: 0 },
-                                        { codigo: 'PATRIMONIAL', nombre: 'SEG. PATRIMONIAL', porcentaje: 0 },
-                                        { codigo: 'ETICA', nombre: 'ETICA', porcentaje: 0 },
-                                    ]).filter(item => {
-                                        if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL')) return true;
-                                        if ((item.codigo === 'SST_MA' || (item.nombre || '').includes('SST')) && (gestionFiltro.includes('GSG,GMA') || gestionFiltro.includes('GSG') || gestionFiltro.includes('GMA'))) return true;
-                                        if ((item.codigo === 'CALIDAD' || (item.nombre || '').includes('CALIDAD')) && (gestionFiltro.includes('GCA') || gestionFiltro.includes('CALIDAD'))) return true;
-                                        if ((item.codigo === 'PATRIMONIAL' || (item.nombre || '').includes('PATRIMONIAL')) && (gestionFiltro.includes('GPA') || gestionFiltro.includes('PATRIMONIAL'))) return true;
-                                        if ((item.codigo === 'ETICA' || (item.nombre || '').includes('ETICA')) && (gestionFiltro.includes('GTR') || gestionFiltro.includes('ETICA'))) return true;
-                                        return false;
-                                    }).map((item, index) => {
-                                        const pct = Number(item.porcentaje || 0);
-                                        const progressColor = pct >= 90 ? colors.success : pct >= 75 ? '#d97706' : colors.danger;
-                                        const badgeBg = pct >= 90 ? '#dcfce7' : pct >= 75 ? '#fef3c7' : '#fee2e2';
-                                        const badgeFg = pct >= 90 ? '#15803d' : pct >= 75 ? '#b45309' : '#dc2626';
-                                        const badgeBorder = pct >= 90 ? '#bbf7d0' : pct >= 75 ? '#fde68a' : '#fecaca';
 
-                                        return (
-                                            <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                <td style={{ ...styles.td, padding: '16px' }}>
-                                                    <strong style={{ fontSize: '13.5px', color: colors.text }}>{item.nombre}</strong>
-                                                </td>
-                                                <td style={{ ...styles.td, padding: '16px' }}>
-                                                    <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden', height: '10px' }}>
-                                                        <div style={{
-                                                            width: `${Math.min(pct, 100)}%`,
-                                                            background: progressColor,
-                                                            height: '100%',
-                                                            transition: 'width 1s ease-in-out',
-                                                            borderRadius: '999px'
-                                                        }}></div>
-                                                    </div>
-                                                </td>
-                                                <td style={{ ...styles.td, textAlign: 'center', padding: '16px' }}>
-                                                    <span style={{
-                                                        ...styles.badge(badgeBg, badgeFg),
-                                                        padding: '5px 14px',
-                                                        fontSize: '13px',
-                                                        fontWeight: 800,
-                                                        border: `1px solid ${badgeBorder}`,
-                                                        borderRadius: '999px'
-                                                    }}>
-                                                        {pct.toFixed(2)}%
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
+
 
                 {/* ── Tabla de pendientes de ingresar (Solo Proveedor y Admin, NO Consultor) ───────────────────────── */}
                 {!esConsultor && (
