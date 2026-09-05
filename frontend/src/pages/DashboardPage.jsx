@@ -1704,27 +1704,168 @@ useEffect(() => {
     calificacionConsultor &&
     proveedorConsultorInfo && (() => {
 
-        const puntaje = Number(
-            String(calificacionConsultor.puntaje_formateado || '0')
-                .split('/')[0]
-                .trim()
-        ) || 0;
+        // ─────────────────────────────────────────────────────────────
+        // CALIFICACIÓN DINÁMICA DEL CONSULTOR
+        // Se comporta igual que la vista PROVEEDOR:
+        // - Todas las gestiones → calificación global
+        // - Gestiones específicas → recalcula según esas gestiones
+        // ─────────────────────────────────────────────────────────────
+        const isAllGestiones =
+    !gestionFiltro ||
+    gestionFiltro.length === 0 ||
+    gestionFiltro.includes('ALL');
+
+let calificacionMostrar = calificacionConsultor;
+
+if (!isAllGestiones && cumplimientoGlobal?.length > 0) {
+
+    // Obtener los alcances correspondientes a las gestiones seleccionadas
+    const alcancesSeleccionados = gestionFiltro.reduce(
+        (acc, codigoGestion) => {
+
+            const config = GESTION_MAP[codigoGestion];
+
+            if (config) {
+                return [...acc, ...config.alcances];
+            }
+
+            return acc;
+        },
+        []
+    );
+
+    /*
+     * Relación entre alcance y código de cumplimiento global
+     *
+     * GSG + GMA  -> SST_MA
+     * GCA         -> CALIDAD
+     * GPA         -> PATRIMONIAL
+     * GTR         -> ETICA
+     */
+    const codigosCumplimiento = [];
+
+    if (
+        alcancesSeleccionados.includes('GSG') ||
+        alcancesSeleccionados.includes('GMA')
+    ) {
+        codigosCumplimiento.push('SST_MA');
+    }
+
+    if (alcancesSeleccionados.includes('GCA')) {
+        codigosCumplimiento.push('CALIDAD');
+    }
+
+    if (alcancesSeleccionados.includes('GPA')) {
+        codigosCumplimiento.push('PATRIMONIAL');
+    }
+
+    if (alcancesSeleccionados.includes('GTR')) {
+        codigosCumplimiento.push('ETICA');
+    }
+
+    // Obtener solamente las gestiones seleccionadas
+    const gestionesSeleccionadas = cumplimientoGlobal.filter(
+        item => codigosCumplimiento.includes(item.codigo)
+    );
+
+    let totalExigibles = 0;
+    let totalVigentes = 0;
+
+    gestionesSeleccionadas.forEach(item => {
+
+        totalExigibles += Number(
+            item.documentos_exigibles || 0
+        );
+
+        totalVigentes += Number(
+            item.documentos_registrados || 0
+        );
+
+    });
+
+    if (totalExigibles > 0) {
+
+        let puntajeRaw =
+            (totalVigentes / totalExigibles) * 100;
+
+        if (puntajeRaw > 100) {
+            puntajeRaw = 100;
+        }
+
+        let recomendacion = 'NO RECOMENDADO';
+        let nivel = 'BAJO';
+
+        let descripcion =
+            'Presenta un bajo nivel de registro y vigencia documental';
+
+        if (puntajeRaw > 90) {
+
+            recomendacion = 'RECOMENDADO';
+            nivel = 'ALTO';
+
+            descripcion =
+                'Mantiene un alto nivel de registro y vigencia documental';
+
+        } else if (puntajeRaw >= 75) {
+
+            recomendacion =
+                'RECOMENDADO CON RESTRICCIONES';
+
+            nivel = 'MEDIO';
+
+            descripcion =
+                'Mantiene un nivel aceptable de registro y vigencia documental';
+        }
+
+        calificacionMostrar = {
+            ...calificacionConsultor,
+
+            cantidad_documentos_vigentes:
+                totalVigentes,
+
+            puntaje_formateado:
+                `${Math.round(puntajeRaw)} / 100`,
+
+            puntaje_numerico:
+                Math.round(puntajeRaw),
+
+            recomendacion,
+
+            nivel_documental:
+                nivel,
+
+            descripcion_nivel:
+                descripcion
+        };
+    }
+}
+
+const puntaje = Number(
+    String(calificacionMostrar.puntaje_formateado || '0')
+        .split('/')[0]
+        .trim()
+) || 0;
+        
 
         let nivel = 'BAJO';
         let recomendacion = 'NO RECOMENDADO';
-        let descripcion = 'Presenta un bajo nivel de registro y vigencia documental';
+        let descripcion =
+            'Presenta un bajo nivel de registro y vigencia documental';
 
         if (puntaje > 90) {
             nivel = 'ALTO';
             recomendacion = 'RECOMENDADO';
-            descripcion = 'Mantiene un alto nivel de registro y vigencia documental';
+            descripcion =
+                'Mantiene un alto nivel de registro y vigencia documental';
         } else if (puntaje >= 75) {
             nivel = 'MEDIO';
             recomendacion = 'RECOMENDADO CON RESTRICCIONES';
-            descripcion = 'Mantiene un nivel aceptable de registro y vigencia documental';
+            descripcion =
+                'Mantiene un nivel aceptable de registro y vigencia documental';
         }
 
         const identidad = obtenerIdentidadProveedorConsultor();
+        
 
         return (
             <div style={{
@@ -1903,7 +2044,8 @@ useEffect(() => {
                     }}>
                         Documentos vigentes evaluados:{' '}
                         <strong style={{ color: colors.primary }}>
-                            {calificacionConsultor.cantidad_documentos_vigentes ?? 0}
+                            {calificacionConsultor.cantidad_documentos_vigentes ?? 0 }
+                            {/*calificacionMostrar.cantidad_documentos_vigentes ?? 0 EROMAN 04092026*/}
                         </strong>
                     </span>
                 </div>
