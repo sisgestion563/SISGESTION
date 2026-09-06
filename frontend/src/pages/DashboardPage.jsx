@@ -664,20 +664,26 @@ export default function DashboardPage() {
     }, []);
 
     // Escucha de cambios de proveedor desde el Header EROMAN 03/09/2026
-useEffect(() => {
-    const handleProveedorChange = (e) => {
-        if (e.detail !== undefined) {
-            console.log('>>> proveedor seleccionado en Dashboard:', e.detail);
-            setProveedorSeleccionado(e.detail);
-        }
-    };
+    useEffect(() => {
+        const handleProveedorChange = (e) => {
+            if (e.detail !== undefined) {
+                console.log('>>> proveedor seleccionado en Dashboard:', e.detail);
+                setProveedorSeleccionado(e.detail);
+                if (e.detail === 'ALL') {
+                    setGestionFiltro(['ALL']);
+                    localStorage.setItem('sisgestion_gestion_actual', JSON.stringify(['ALL']));
+                    setRubroFiltro('ALL');
+                    localStorage.setItem('sisgestion_rubro_actual', 'ALL');
+                }
+            }
+        };
 
-    window.addEventListener('sisgestion:proveedor_change', handleProveedorChange);
+        window.addEventListener('sisgestion:proveedor_change', handleProveedorChange);
 
-    return () => {
-        window.removeEventListener('sisgestion:proveedor_change', handleProveedorChange);
-    };
-}, []);
+        return () => {
+            window.removeEventListener('sisgestion:proveedor_change', handleProveedorChange);
+        };
+    }, []);
 
 
 // Obtener calificación del proveedor seleccionado por CONSULTOR

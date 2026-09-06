@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { usersService } from '../modules/usuarios/services/users.service';
@@ -46,6 +46,15 @@ export default function LoginPage() {
 
   const { doLogin } = useAuth();
   const navigate = useNavigate();
+
+  // ── Auto-redirección si ya existe sesión iniciada en otra pestaña ──────────
+  const estaAutenticado = Boolean(localStorage.getItem('token') && localStorage.getItem('usuario'));
+
+  useEffect(() => {
+    if (estaAutenticado) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [estaAutenticado, navigate]);
 
   // ── Estado Login ─────────────────────────────────────────────────────────
   const [username, setUsername] = useState('');

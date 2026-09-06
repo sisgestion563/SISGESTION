@@ -197,7 +197,18 @@ const [proveedoresList, setProveedoresList] = useState([]);
             })
         );
 
-        if (nuevoProveedor !== 'ALL') {
+        if (nuevoProveedor === 'ALL') {
+            // Quitar los otros filtros aplicados al seleccionar 'Todos los proveedores'
+            setRubro('ALL');
+            localStorage.setItem('sisgestion_rubro_actual', 'ALL');
+            window.dispatchEvent(
+                new CustomEvent('sisgestion:rubro_change', {
+                    detail: 'ALL'
+                })
+            );
+
+            cambiarGestion(['ALL']);
+        } else {
             const selectedProv = proveedoresList.find(p => String(p.proveedor_id) === String(nuevoProveedor));
             const provCiiu = getProvCiiu(selectedProv);
             if (provCiiu && provCiiu !== rubro) {

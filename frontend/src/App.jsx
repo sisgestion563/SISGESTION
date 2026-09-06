@@ -14,7 +14,7 @@ import AlertsPage from './pages/AlertsPage';
 import UsersPage from './modules/usuarios/pages/UsersPage';
 import UserDetailPage from './modules/usuarios/pages/UserDetailPage';
 
-// Este layout envolverá SOLAMENTE a las páginas de usuarios para inyectarles el Sidebar limpio
+// Layout envolvente para páginas de usuarios
 function AdminLayout({ children }) {
     return (
         <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
@@ -26,24 +26,44 @@ function AdminLayout({ children }) {
     );
 }
 
+// Ruta pública (Login): si ya está autenticado en cualquier pestaña, redirige directo al dashboard
+function PublicRoute({ children }) {
+    const token = localStorage.getItem('token');
+    const usuario = localStorage.getItem('usuario');
+    if (token && usuario) {
+        return <Navigate to="/dashboard" replace />;
+    }
+    return children;
+}
+
+// Ruta protegida: si no está autenticado, redirige al login
+function ProtectedRoute({ children }) {
+    const token = localStorage.getItem('token');
+    const usuario = localStorage.getItem('usuario');
+    if (!token || !usuario) {
+        return <Navigate to="/" replace />;
+    }
+    return children;
+}
+
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Login suelto */}
-                <Route path="/" element={<LoginPage />} />
+                {/* Ruta de Login (redirecciona a /dashboard si ya hay sesión iniciada) */}
+                <Route path="/" element={<PublicRoute><LoginPage /></PublicRoute>} />
 
-                {/* Tus rutas antiguas planas (sin duplicar Sidebar) */}
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/providers" element={<ProvidersPage />} />
-                <Route path="/documents" element={<DocumentsPage />} />
-                <Route path="/processes" element={<ProcessesPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="/alerts" element={<AlertsPage />} />
+                {/* Rutas principales protegidas */}
+                <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                <Route path="/providers" element={<ProtectedRoute><ProvidersPage /></ProtectedRoute>} />
+                <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
+                <Route path="/processes" element={<ProtectedRoute><ProcessesPage /></ProtectedRoute>} />
+                <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+                <Route path="/alerts" element={<ProtectedRoute><AlertsPage /></ProtectedRoute>} />
 
-                {/* Tus nuevas rutas de usuarios envueltas de manera controlada */}
-                <Route path="/usuarios" element={<AdminLayout><UsersPage /></AdminLayout>} />
-                <Route path="/usuarios/:id" element={<AdminLayout><UserDetailPage /></AdminLayout>} />
+                {/* Módulo de usuarios protegido */}
+                <Route path="/usuarios" element={<ProtectedRoute><AdminLayout><UsersPage /></AdminLayout></ProtectedRoute>} />
+                <Route path="/usuarios/:id" element={<ProtectedRoute><AdminLayout><UserDetailPage /></AdminLayout></ProtectedRoute>} />
 
                 {/* Redirección por defecto */}
                 <Route path="*" element={<Navigate to="/" replace />} />
