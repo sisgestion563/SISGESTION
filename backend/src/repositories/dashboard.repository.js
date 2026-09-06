@@ -928,7 +928,7 @@ WITH usuarios_proveedores AS (
         p.nro_documento,
         p.ciiu,
         COALESCE(p.regimen_tributario, 'RG') AS regimen_tributario,
-        COALESCE(reg_trib.descripcion_valor, 
+        COALESCE(reg_trib.descripcion, 
             CASE 
                 WHEN p.regimen_tributario = 'RG' THEN 'Régimen General'
                 WHEN p.regimen_tributario = 'RP' THEN 'Pequeña Empresa'
@@ -1077,7 +1077,7 @@ WITH usuarios_proveedores AS (
         p.nro_documento,
         p.ciiu,
         COALESCE(p.regimen_tributario, 'RG') AS regimen_tributario,
-        COALESCE(reg_trib.descripcion_valor, 
+        COALESCE(reg_trib.descripcion, 
             CASE 
                 WHEN p.regimen_tributario = 'RG' THEN 'Régimen General'
                 WHEN p.regimen_tributario = 'RP' THEN 'Pequeña Empresa'
