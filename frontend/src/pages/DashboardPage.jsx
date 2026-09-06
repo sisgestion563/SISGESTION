@@ -205,6 +205,39 @@ const responsiveCSS = `
     margin-bottom: 28px;
 }
 
+.consultor-proveedor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr 2fr;
+    gap: 16px;
+    align-items: stretch;
+    margin-bottom: 28px;
+}
+
+.consultor-proveedor-grid-full {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.consultor-calificacion-card {
+    order: 1;
+}
+
+.consultor-alertas-card {
+    order: 2;
+}
+
+.consultor-cumplimiento-card {
+    order: 3;
+}
+
+@media (max-width: 1200px) {
+    .consultor-proveedor-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 960px) {
     .consultor-cumplimiento-grid {
         grid-template-columns: 1fr;
@@ -1268,7 +1301,737 @@ useEffect(() => {
                 </div>
             ) : (
                 <>
-                    <div className="consultor-cartera-grid">
+                    
+                    <div className={
+        esConsultor && proveedorSeleccionado !== 'ALL'
+            ? 'consultor-proveedor-grid'
+            : 'consultor-proveedor-grid-full'
+    }>
+
+        {/* ── VISTA CONSULTOR: MI CALIFICACIÓN... ── */}
+                           
+
+                    {/* ─ EROMAN 03/09/2026 ─*/}
+                    {/* ── VISTA CONSULTOR: MI CALIFICACIÓN DEL PROVEEDOR SELECCIONADO ── */}
+{esConsultor &&
+    proveedorSeleccionado !== 'ALL' &&
+    calificacionConsultor &&
+    proveedorConsultorInfo && (() => {
+
+        // ─────────────────────────────────────────────────────────────
+        // CALIFICACIÓN DINÁMICA DEL CONSULTOR
+        // Se comporta igual que la vista PROVEEDOR:
+        // - Todas las gestiones → calificación global
+        // - Gestiones específicas → recalcula según esas gestiones
+        // ─────────────────────────────────────────────────────────────
+        const isAllGestiones =
+    !gestionFiltro ||
+    gestionFiltro.length === 0 ||
+    gestionFiltro.includes('ALL');
+
+let calificacionMostrar = calificacionConsultor;
+
+if (!isAllGestiones && cumplimientoGlobal?.length > 0) {
+
+    // Obtener los alcances correspondientes a las gestiones seleccionadas
+    const alcancesSeleccionados = gestionFiltro.reduce(
+        (acc, codigoGestion) => {
+
+            const config = GESTION_MAP[codigoGestion];
+
+            if (config) {
+                return [...acc, ...config.alcances];
+            }
+
+            return acc;
+        },
+        []
+    );
+
+    /*
+     * Relación entre alcance y código de cumplimiento global
+     *
+     * GSG + GMA  -> SST_MA
+     * GCA         -> CALIDAD
+     * GPA         -> PATRIMONIAL
+     * GTR         -> ETICA
+     */
+    const codigosCumplimiento = [];
+
+    if (
+        alcancesSeleccionados.includes('GSG') ||
+        alcancesSeleccionados.includes('GMA')
+    ) {
+        codigosCumplimiento.push('SST_MA');
+    }
+
+    if (alcancesSeleccionados.includes('GCA')) {
+        codigosCumplimiento.push('CALIDAD');
+    }
+
+    if (alcancesSeleccionados.includes('GPA')) {
+        codigosCumplimiento.push('PATRIMONIAL');
+    }
+
+    if (alcancesSeleccionados.includes('GTR')) {
+        codigosCumplimiento.push('ETICA');
+    }
+
+    // Obtener solamente las gestiones seleccionadas
+    const gestionesSeleccionadas = cumplimientoGlobal.filter(
+        item => codigosCumplimiento.includes(item.codigo)
+    );
+
+    let totalExigibles = 0;
+    let totalVigentes = 0;
+
+    gestionesSeleccionadas.forEach(item => {
+
+        totalExigibles += Number(
+            item.documentos_exigibles || 0
+        );
+
+        totalVigentes += Number(
+            item.documentos_registrados || 0
+        );
+
+    });
+
+    if (totalExigibles > 0) {
+
+        let puntajeRaw =
+            (totalVigentes / totalExigibles) * 100;
+
+        if (puntajeRaw > 100) {
+            puntajeRaw = 100;
+        }
+
+        let recomendacion = 'NO RECOMENDADO';
+        let nivel = 'BAJO';
+
+        let descripcion =
+            'Presenta un bajo nivel de registro y vigencia documental';
+
+        if (puntajeRaw > 90) {
+
+            recomendacion = 'RECOMENDADO';
+            nivel = 'ALTO';
+
+            descripcion =
+                'Mantiene un alto nivel de registro y vigencia documental';
+
+        } else if (puntajeRaw >= 75) {
+
+            recomendacion =
+                'RECOMENDADO CON RESTRICCIONES';
+
+            nivel = 'MEDIO';
+
+            descripcion =
+                'Mantiene un nivel aceptable de registro y vigencia documental';
+        }
+
+        calificacionMostrar = {
+            ...calificacionConsultor,
+
+            cantidad_documentos_vigentes:
+                totalVigentes,
+
+            puntaje_formateado:
+                `${Math.round(puntajeRaw)} / 100`,
+
+            puntaje_numerico:
+                Math.round(puntajeRaw),
+
+            recomendacion,
+
+            nivel_documental:
+                nivel,
+
+            descripcion_nivel:
+                descripcion
+        };
+    }
+}
+
+const puntaje = Number(
+    String(calificacionMostrar.puntaje_formateado || '0')
+        .split('/')[0]
+        .trim()
+) || 0;
+        
+
+        let nivel = 'BAJO';
+        let recomendacion = 'NO RECOMENDADO';
+        let descripcion =
+            'Presenta un bajo nivel de registro y vigencia documental';
+
+        if (puntaje > 90) {
+            nivel = 'ALTO';
+            recomendacion = 'RECOMENDADO';
+            descripcion =
+                'Mantiene un alto nivel de registro y vigencia documental';
+        } else if (puntaje >= 75) {
+            nivel = 'MEDIO';
+            recomendacion = 'RECOMENDADO CON RESTRICCIONES';
+            descripcion =
+                'Mantiene un nivel aceptable de registro y vigencia documental';
+        }
+
+        const identidad = obtenerIdentidadProveedorConsultor();
+        
+
+        return (
+            
+    <div
+        className="consultor-calificacion-card"
+        style={{
+            ...styles.card,
+            border: nivel === 'BAJO'
+                    ? `2px solid ${colors.danger}`
+                    : `1px solid ${colors.border}`,
+                borderLeft: `6px solid ${
+                    nivel === 'ALTO'
+                        ? colors.success
+                        : nivel === 'MEDIO'
+                            ? colors.amber
+                            : colors.danger
+                }`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                background: nivel === 'BAJO'
+                    ? '#FEF2F2'
+                    : colors.card,
+                marginBottom: '28px'
+            }}>
+                
+                {/* CABECERA */}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: nivel === 'BAJO' ? 'column' : 'row',
+                    justifyContent: 'space-between',
+                    alignItems: nivel === 'BAJO' ? 'center' : 'flex-start',
+                    borderBottom: `1px solid ${colors.border}`,
+                    paddingBottom: '16px',
+                    gap: nivel === 'BAJO' ? '12px' : '0'
+                }}>
+                    <div style={{
+                        textAlign: nivel === 'BAJO' ? 'center' : 'left'
+                    }}>
+                        <h2 style={{
+                            fontSize: '16px',
+                            fontWeight: 800,
+                            color: colors.text,
+                            margin: 0,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                        }}>
+                            CALIFICACION DEL PROVEEDOR - {' '}
+                            <span style={{ color: colors.primary }}>
+                                {identidad}
+                            </span>
+                        </h2>
+
+                        <p style={{
+                            fontSize: '13px',
+                            color: colors.textMuted,
+                            margin: '4px 0 0 0'
+                        }}>
+                            Régimen Tributario:{' '}
+                            <strong>
+                                {calificacionConsultor.regimen_tributario}
+                            </strong>
+                        </p>
+                    </div>
+
+                    {/* RECOMENDACIÓN */}
+                    <div style={{ textAlign: 'center' }}>
+                        <span style={{
+                            ...styles.badge(
+                                nivel === 'ALTO'
+                                    ? colors.successBg
+                                    : nivel === 'MEDIO'
+                                        ? '#fef3c7'
+                                        : colors.danger,
+                                nivel === 'ALTO'
+                                    ? colors.success
+                                    : nivel === 'MEDIO'
+                                        ? '#b45309'
+                                        : '#FFFFFF'
+                            ),
+                            fontSize: nivel === 'BAJO' ? '16px' : '14px',
+                            padding: nivel === 'BAJO'
+                                ? '8px 24px'
+                                : '6px 16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            {recomendacion}
+                        </span>
+                    </div>
+                </div>
+
+                {/* PUNTAJE Y NIVEL */}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: nivel === 'BAJO' ? 'column' : 'row',
+                    alignItems: 'center',
+                    gap: nivel === 'BAJO' ? '16px' : '30px',
+                    textAlign: nivel === 'BAJO' ? 'center' : 'left'
+                }}>
+
+                    {/* PUNTAJE */}
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: nivel === 'BAJO'
+                            ? '#FFFFFF'
+                            : '#f8fafc',
+                        padding: '20px',
+                        borderRadius: '12px',
+                        minWidth: '150px',
+                        border: nivel === 'BAJO'
+                            ? `1px solid ${colors.danger}`
+                            : 'none'
+                    }}>
+                        <span style={{
+                            fontSize: '32px',
+                            fontWeight: 900,
+                            color: nivel === 'ALTO'
+                                ? colors.success
+                                : nivel === 'MEDIO'
+                                    ? '#b45309'
+                                    : colors.danger,
+                            lineHeight: '1'
+                        }}>
+                            {puntaje}
+                        </span>
+
+                        <span style={{
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            color: colors.textMuted,
+                            marginTop: '4px'
+                        }}>
+                            / 100
+                        </span>
+                    </div>
+
+                    {/* NIVEL */}
+                    <div style={{ flex: 1 }}>
+                        <h3 style={{
+                            fontSize: '16px',
+                            fontWeight: 700,
+                            color: nivel === 'BAJO'
+                                ? colors.danger
+                                : colors.text,
+                            margin: '0 0 8px 0'
+                        }}>
+                            Nivel de Gestión Documental: {nivel}
+                        </h3>
+
+                        <p style={{
+                            fontSize: '15px',
+                            color: colors.textMuted,
+                            margin: 0,
+                            lineHeight: '1.5'
+                        }}>
+                            {descripcion}
+                        </p>
+                    </div>
+                </div>
+
+                {/* DOCUMENTOS VIGENTES */}
+                <div style={{
+                    borderTop: `1px solid ${colors.border}`,
+                    paddingTop: '14px',
+                    marginTop: '4px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}>
+                    <span style={{
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: colors.textMuted
+                    }}>
+                        Documentos vigentes evaluados:{' '}
+                        <strong style={{ color: colors.primary }}>
+                            {calificacionConsultor.cantidad_documentos_vigentes ?? 0 }
+                            {/*calificacionMostrar.cantidad_documentos_vigentes ?? 0 EROMAN 04092026*/}
+                        </strong>
+                    </span>
+                </div>
+
+            </div>
+        );
+    })()}
+
+    {/* ── TARJETA: CUMPLIMIENTO POR GESTIÓN (Solo Consultor) ────────────── */}
+               
+                    <div
+    className="consultor-cumplimiento-card"
+    style={{
+        ...styles.card,
+        padding: '24px 28px',
+                        borderRadius: '12px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ display: 'inline-block', width: '4px', height: '22px', background: colors.primary, borderRadius: '4px' }}></span>
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: colors.text, letterSpacing: '0.02em' }}>
+                                        CUMPLIMIENTO POR GESTIÓN
+                                    </h3>
+                                    <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
+                                        Indicadores de cumplimiento de los proveedores por cada área de gestión.
+                                    </p>
+                                </div>
+                            </div>
+                           
+                           {(() => {
+    const totalEvaluados =
+        proveedorSeleccionado !== 'ALL'
+            ? 1
+            : Number(cumplimientoProveedores?.total_proveedores || 0);
+
+    return totalEvaluados > 0 ? (
+        <span style={{
+            background: '#eff6ff',
+            color: colors.primary,
+            fontWeight: 700,
+            fontSize: '12.5px',
+            padding: '5px 14px',
+            borderRadius: '999px',
+            border: '1px solid #bfdbfe'
+        }}>
+            {totalEvaluados} Proveedor{totalEvaluados === 1 ? '' : 'es'} evaluado{totalEvaluados === 1 ? '' : 's'}
+        </span>
+    ) : null;
+})()}
+
+
+                        </div>
+
+                        <div className="table-scroll">
+                            <table style={{ ...styles.table, marginTop: 0 }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ ...styles.th, width: '30%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Gestión</th>
+                                        <th style={{ ...styles.th, width: '55%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Avance de Cumplimiento</th>
+                                        <th style={{ ...styles.th, textAlign: 'center', width: '15%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Cumplimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(cumplimientoGlobal && cumplimientoGlobal.length > 0 ? cumplimientoGlobal : [
+                                        { codigo: 'SST_MA', nombre: 'SST-MA', porcentaje: 0 },
+                                        { codigo: 'CALIDAD', nombre: 'CALIDAD', porcentaje: 0 },
+                                        { codigo: 'PATRIMONIAL', nombre: 'SEG. PATRIMONIAL', porcentaje: 0 },
+                                        { codigo: 'ETICA', nombre: 'ETICA', porcentaje: 0 },
+                                    ]).filter(item => {
+                                        if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL')) return true;
+                                        if ((item.codigo === 'SST_MA' || (item.nombre || '').includes('SST')) && (gestionFiltro.includes('GSG,GMA') || gestionFiltro.includes('GSG') || gestionFiltro.includes('GMA'))) return true;
+                                        if ((item.codigo === 'CALIDAD' || (item.nombre || '').includes('CALIDAD')) && (gestionFiltro.includes('GCA') || gestionFiltro.includes('CALIDAD'))) return true;
+                                        if ((item.codigo === 'PATRIMONIAL' || (item.nombre || '').includes('PATRIMONIAL')) && (gestionFiltro.includes('GPA') || gestionFiltro.includes('PATRIMONIAL'))) return true;
+                                        if ((item.codigo === 'ETICA' || (item.nombre || '').includes('ETICA')) && (gestionFiltro.includes('GTR') || gestionFiltro.includes('ETICA'))) return true;
+                                        return false;
+                                    }).map((item, index) => {
+                                        const pct = Number(item.porcentaje || 0);
+                                        const progressColor = pct >= 90 ? colors.success : pct >= 75 ? '#d97706' : colors.danger;
+                                        const badgeBg = pct >= 90 ? '#dcfce7' : pct >= 75 ? '#fef3c7' : '#fee2e2';
+                                        const badgeFg = pct >= 90 ? '#15803d' : pct >= 75 ? '#b45309' : '#dc2626';
+                                        const badgeBorder = pct >= 90 ? '#bbf7d0' : pct >= 75 ? '#fde68a' : '#fecaca';
+
+                                        return (
+                                            <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                
+
+                                                <td style={{
+                                                            ...styles.td,
+                                                            padding: '16px',
+                                                            color: '#000000',
+                                                            background: '#ffffff'
+                                                        }}>
+                                                            <strong style={{ fontSize: '13.5px', color: colors.text }}>
+                                                                {item.nombre}
+                                                            </strong>
+                                                        </td>
+
+                                                <td style={{ ...styles.td, padding: '16px' }}>
+                                                    <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden', height: '10px' }}>
+                                                        <div style={{
+                                                            width: `${Math.min(pct, 100)}%`,
+                                                            background: progressColor,
+                                                            height: '100%',
+                                                            transition: 'width 1s ease-in-out',
+                                                            borderRadius: '999px'
+                                                        }}></div>
+                                                    </div>
+                                                </td>
+                                                <td style={{ ...styles.td, textAlign: 'center', padding: '16px' }}>
+                                                    <span style={{
+                                                        ...styles.badge(badgeBg, badgeFg),
+                                                        padding: '5px 14px',
+                                                        fontSize: '13px',
+                                                        fontWeight: 800,
+                                                        border: `1px solid ${badgeBorder}`,
+                                                        borderRadius: '999px'
+                                                    }}>
+                                                        {pct.toFixed(2)}%
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                   </div>
+
+                    {/* 2. TARJETA: ALERTAS DEL PROVEEDOR */}
+                    {proveedorSeleccionado !== 'ALL' && (
+                        <div
+    className="consultor-alertas-card"
+    style={{
+                                ...styles.card,
+                                padding: '24px 26px',
+                                borderLeft: `5px solid #dc2626`,
+                                borderRadius: '14px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between'
+                            }}>
+                                <div>
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '18px',
+                                        borderBottom: `1px solid ${colors.border}`,
+                                        paddingBottom: '14px',
+                                        flexWrap: 'wrap',
+                                        gap: '10px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: '10px',
+                                                background: '#fef2f2',
+                                                border: '1px solid #fecaca',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: colors.danger,
+                                                boxShadow: '0 2px 4px rgba(220,38,38,0.08)'
+                                            }}>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                                                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h2 style={{ fontSize: '17px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.01em' }}>
+                                                    Alertas del Proveedor
+                                                </h2>
+                                                <p style={{ color: colors.textMuted, fontSize: '12.5px', margin: '2px 0 0 0' }}>
+                                                    Monitoreo preventivo del proveedor seleccionado.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <span style={{
+                                            background: '#fef2f2',
+                                            color: '#b91c1c',
+                                            fontWeight: 700,
+                                            fontSize: '12px',
+                                            padding: '4px 12px',
+                                            borderRadius: '999px',
+                                            border: '1px solid #fecaca',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '5px'
+                                        }}>
+                                            <span>Total incidencias:</span>
+                                            <strong style={{ color: '#991b1b' }}>
+                                                {alertasCalculadas.noRecomendadosCount + (alertasCalculadas.porVencerCount > 0 ? 1 : 0) + (alertasCalculadas.incompletosCount > 0 ? 1 : 0)}
+                                            </strong>
+                                        </span>
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {/* Alerta 1: Proveedores No Recomendados */}
+                                        
+
+                                        {/* Alerta 2: Documentos por Vencer (< 15 días) */}
+                                        <div
+                                            onClick={() => setModalAlertaDetalle('POR_VENCER')}
+                                            style={{
+                                                padding: '14px 16px',
+                                                background: '#FFFBEB',
+                                                border: '1px solid #FDE68A',
+                                                borderRadius: '12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.15s ease',
+                                                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                                            }}
+                                            onMouseOver={(e) => {
+                                                e.currentTarget.style.borderColor = '#fbbf24';
+                                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                            }}
+                                            onMouseOut={(e) => {
+                                                e.currentTarget.style.borderColor = '#FDE68A';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <div style={{
+                                                    width: 34,
+                                                    height: 34,
+                                                    borderRadius: '8px',
+                                                    background: '#fef3c7',
+                                                    border: '1px solid #fde68a',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#d97706',
+                                                    flexShrink: 0
+                                                }}>
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: '13.5px', fontWeight: 750, color: '#92400E' }}>
+                                                        Documentos por vencer
+                                                    </div>
+                                                    <div style={{ fontSize: '12px', color: '#b45309', marginTop: '2px' }}>
+                                                        Vencimiento en menos de 15 días
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <span style={{
+                                                    fontSize: '18px',
+                                                    fontWeight: 800,
+                                                    color: '#b45309',
+                                                    background: '#ffffff',
+                                                    padding: '4px 14px',
+                                                    borderRadius: '999px',
+                                                    border: '1px solid #fde68a',
+                                                    boxShadow: '0 1px 2px rgba(217,119,6,0.08)'
+                                                }}>
+                                                    {alertasCalculadas.porVencerCount}
+                                                </span>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                                </svg>
+                                            </div>
+                                        </div>
+
+                                        {/* Alerta 3: Llenado Incompleto de Documentos */}
+                                        <div
+                                            onClick={() => setModalAlertaDetalle('INCOMPLETOS')}
+                                            style={{
+                                                padding: '14px 16px',
+                                                background: '#EFF6FF',
+                                                border: '1px solid #BFDBFE',
+                                                borderRadius: '12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.15s ease',
+                                                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                                            }}
+                                            onMouseOver={(e) => {
+                                                e.currentTarget.style.borderColor = '#60a5fa';
+                                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                            }}
+                                            onMouseOut={(e) => {
+                                                e.currentTarget.style.borderColor = '#BFDBFE';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <div style={{
+                                                    width: 34,
+                                                    height: 34,
+                                                    borderRadius: '8px',
+                                                    background: '#eff6ff',
+                                                    border: '1px solid #bfdbfe',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#2563eb',
+                                                    flexShrink: 0
+                                                }}>
+                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: '13.5px', fontWeight: 750, color: '#1E40AF' }}>
+                                                        Llenado incompleto de documentos
+                                                    </div>
+                                                    <div style={{ fontSize: '12px', color: '#1d4ed8', marginTop: '2px' }}>
+                                                        Proveedores con carga documental pendiente
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <span style={{
+                                                    fontSize: '18px',
+                                                    fontWeight: 800,
+                                                    color: '#1d4ed8',
+                                                    background: '#ffffff',
+                                                    padding: '4px 14px',
+                                                    borderRadius: '999px',
+                                                    border: '1px solid #bfdbfe',
+                                                    boxShadow: '0 1px 2px rgba(37,99,235,0.08)'
+                                                }}>
+                                                    {alertasCalculadas.incompletosCount}
+                                                </span>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{
+                                    marginTop: '16px',
+                                    paddingTop: '12px',
+                                    borderTop: `1px solid ${colors.border}`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    fontSize: '12px',
+                                    color: colors.textMuted
+                                }}>
+                                    <span>Haga clic en cualquier alerta para ver el detalle.</span>
+                                </div>
+                </div>                                
+                                 )}
+                            </div>                
+               
+        <div className="consultor-cartera-grid">
 
                      {/* ── VISTA CONSULTOR: TARJETA GENERAL PROVEEDORES SOLO NUMEROS (Agrandada y Destacada) EROMAN 03/09/2026─────────── */}
                     {esConsultor && (() => {
@@ -1323,7 +2086,7 @@ useEffect(() => {
                                         </div>
                                         <div>
                                             <h2 style={{ fontSize: '18px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.01em' }}>
-                                                Salud De La Cartera - 1
+                                                Proveedores
                                             </h2>
                                             <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
                                                 Distribución global del cumplimiento y calificación de proveedores en el sistema.
@@ -1527,7 +2290,7 @@ useEffect(() => {
                                         </div>
                                         <div>
                                             <h2 style={{ fontSize: '18px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.01em' }}>
-                                                Salud De La Cartera - 2
+                                                Salud De La Cartera
                                             </h2>
                                             <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
                                                 Distribución global del cumplimiento y calificación de proveedores en el sistema.
@@ -1685,496 +2448,11 @@ useEffect(() => {
                             </div>
                         );
                     })()}
-                    </div>
-
-                     {/* ─ EROMAN 03/09/2026 ─*/}    
-                    {esConsultor && (
-                        <div
-                            className={
-                                proveedorSeleccionado !== 'ALL'
-                                    ? 'consultor-cumplimiento-grid'
-                                    : 'consultor-cumplimiento-full'
-                            }
-                        >
-
-                    {/* ─ EROMAN 03/09/2026 ─*/}
-                    {/* ── VISTA CONSULTOR: MI CALIFICACIÓN DEL PROVEEDOR SELECCIONADO ── */}
-{esConsultor &&
-    proveedorSeleccionado !== 'ALL' &&
-    calificacionConsultor &&
-    proveedorConsultorInfo && (() => {
-
-        // ─────────────────────────────────────────────────────────────
-        // CALIFICACIÓN DINÁMICA DEL CONSULTOR
-        // Se comporta igual que la vista PROVEEDOR:
-        // - Todas las gestiones → calificación global
-        // - Gestiones específicas → recalcula según esas gestiones
-        // ─────────────────────────────────────────────────────────────
-        const isAllGestiones =
-    !gestionFiltro ||
-    gestionFiltro.length === 0 ||
-    gestionFiltro.includes('ALL');
-
-let calificacionMostrar = calificacionConsultor;
-
-if (!isAllGestiones && cumplimientoGlobal?.length > 0) {
-
-    // Obtener los alcances correspondientes a las gestiones seleccionadas
-    const alcancesSeleccionados = gestionFiltro.reduce(
-        (acc, codigoGestion) => {
-
-            const config = GESTION_MAP[codigoGestion];
-
-            if (config) {
-                return [...acc, ...config.alcances];
-            }
-
-            return acc;
-        },
-        []
-    );
-
-    /*
-     * Relación entre alcance y código de cumplimiento global
-     *
-     * GSG + GMA  -> SST_MA
-     * GCA         -> CALIDAD
-     * GPA         -> PATRIMONIAL
-     * GTR         -> ETICA
-     */
-    const codigosCumplimiento = [];
-
-    if (
-        alcancesSeleccionados.includes('GSG') ||
-        alcancesSeleccionados.includes('GMA')
-    ) {
-        codigosCumplimiento.push('SST_MA');
-    }
-
-    if (alcancesSeleccionados.includes('GCA')) {
-        codigosCumplimiento.push('CALIDAD');
-    }
-
-    if (alcancesSeleccionados.includes('GPA')) {
-        codigosCumplimiento.push('PATRIMONIAL');
-    }
-
-    if (alcancesSeleccionados.includes('GTR')) {
-        codigosCumplimiento.push('ETICA');
-    }
-
-    // Obtener solamente las gestiones seleccionadas
-    const gestionesSeleccionadas = cumplimientoGlobal.filter(
-        item => codigosCumplimiento.includes(item.codigo)
-    );
-
-    let totalExigibles = 0;
-    let totalVigentes = 0;
-
-    gestionesSeleccionadas.forEach(item => {
-
-        totalExigibles += Number(
-            item.documentos_exigibles || 0
-        );
-
-        totalVigentes += Number(
-            item.documentos_registrados || 0
-        );
-
-    });
-
-    if (totalExigibles > 0) {
-
-        let puntajeRaw =
-            (totalVigentes / totalExigibles) * 100;
-
-        if (puntajeRaw > 100) {
-            puntajeRaw = 100;
-        }
-
-        let recomendacion = 'NO RECOMENDADO';
-        let nivel = 'BAJO';
-
-        let descripcion =
-            'Presenta un bajo nivel de registro y vigencia documental';
-
-        if (puntajeRaw > 90) {
-
-            recomendacion = 'RECOMENDADO';
-            nivel = 'ALTO';
-
-            descripcion =
-                'Mantiene un alto nivel de registro y vigencia documental';
-
-        } else if (puntajeRaw >= 75) {
-
-            recomendacion =
-                'RECOMENDADO CON RESTRICCIONES';
-
-            nivel = 'MEDIO';
-
-            descripcion =
-                'Mantiene un nivel aceptable de registro y vigencia documental';
-        }
-
-        calificacionMostrar = {
-            ...calificacionConsultor,
-
-            cantidad_documentos_vigentes:
-                totalVigentes,
-
-            puntaje_formateado:
-                `${Math.round(puntajeRaw)} / 100`,
-
-            puntaje_numerico:
-                Math.round(puntajeRaw),
-
-            recomendacion,
-
-            nivel_documental:
-                nivel,
-
-            descripcion_nivel:
-                descripcion
-        };
-    }
-}
-
-const puntaje = Number(
-    String(calificacionMostrar.puntaje_formateado || '0')
-        .split('/')[0]
-        .trim()
-) || 0;
-        
-
-        let nivel = 'BAJO';
-        let recomendacion = 'NO RECOMENDADO';
-        let descripcion =
-            'Presenta un bajo nivel de registro y vigencia documental';
-
-        if (puntaje > 90) {
-            nivel = 'ALTO';
-            recomendacion = 'RECOMENDADO';
-            descripcion =
-                'Mantiene un alto nivel de registro y vigencia documental';
-        } else if (puntaje >= 75) {
-            nivel = 'MEDIO';
-            recomendacion = 'RECOMENDADO CON RESTRICCIONES';
-            descripcion =
-                'Mantiene un nivel aceptable de registro y vigencia documental';
-        }
-
-        const identidad = obtenerIdentidadProveedorConsultor();
-        
-
-        return (
-            <div style={{
-                ...styles.card,
-                border: nivel === 'BAJO'
-                    ? `2px solid ${colors.danger}`
-                    : `1px solid ${colors.border}`,
-                borderLeft: `6px solid ${
-                    nivel === 'ALTO'
-                        ? colors.success
-                        : nivel === 'MEDIO'
-                            ? colors.amber
-                            : colors.danger
-                }`,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                background: nivel === 'BAJO'
-                    ? '#FEF2F2'
-                    : colors.card,
-                marginBottom: '28px'
-            }}>
-                
-                {/* CABECERA */}
-                <div style={{
-                    display: 'flex',
-                    flexDirection: nivel === 'BAJO' ? 'column' : 'row',
-                    justifyContent: 'space-between',
-                    alignItems: nivel === 'BAJO' ? 'center' : 'flex-start',
-                    borderBottom: `1px solid ${colors.border}`,
-                    paddingBottom: '16px',
-                    gap: nivel === 'BAJO' ? '12px' : '0'
-                }}>
-                    <div style={{
-                        textAlign: nivel === 'BAJO' ? 'center' : 'left'
-                    }}>
-                        <h2 style={{
-                            fontSize: '16px',
-                            fontWeight: 800,
-                            color: colors.text,
-                            margin: 0,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em'
-                        }}>
-                            MI CALIFICACIÓN -{' '}
-                            <span style={{ color: colors.primary }}>
-                                {identidad}
-                            </span>
-                        </h2>
-
-                        <p style={{
-                            fontSize: '13px',
-                            color: colors.textMuted,
-                            margin: '4px 0 0 0'
-                        }}>
-                            Régimen Tributario:{' '}
-                            <strong>
-                                {calificacionConsultor.regimen_tributario}
-                            </strong>
-                        </p>
-                    </div>
-
-                    {/* RECOMENDACIÓN */}
-                    <div style={{ textAlign: 'center' }}>
-                        <span style={{
-                            ...styles.badge(
-                                nivel === 'ALTO'
-                                    ? colors.successBg
-                                    : nivel === 'MEDIO'
-                                        ? '#fef3c7'
-                                        : colors.danger,
-                                nivel === 'ALTO'
-                                    ? colors.success
-                                    : nivel === 'MEDIO'
-                                        ? '#b45309'
-                                        : '#FFFFFF'
-                            ),
-                            fontSize: nivel === 'BAJO' ? '16px' : '14px',
-                            padding: nivel === 'BAJO'
-                                ? '8px 24px'
-                                : '6px 16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}>
-                            {recomendacion}
-                        </span>
-                    </div>
-                </div>
-
-                {/* PUNTAJE Y NIVEL */}
-                <div style={{
-                    display: 'flex',
-                    flexDirection: nivel === 'BAJO' ? 'column' : 'row',
-                    alignItems: 'center',
-                    gap: nivel === 'BAJO' ? '16px' : '30px',
-                    textAlign: nivel === 'BAJO' ? 'center' : 'left'
-                }}>
-
-                    {/* PUNTAJE */}
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: nivel === 'BAJO'
-                            ? '#FFFFFF'
-                            : '#f8fafc',
-                        padding: '20px',
-                        borderRadius: '12px',
-                        minWidth: '150px',
-                        border: nivel === 'BAJO'
-                            ? `1px solid ${colors.danger}`
-                            : 'none'
-                    }}>
-                        <span style={{
-                            fontSize: '32px',
-                            fontWeight: 900,
-                            color: nivel === 'ALTO'
-                                ? colors.success
-                                : nivel === 'MEDIO'
-                                    ? '#b45309'
-                                    : colors.danger,
-                            lineHeight: '1'
-                        }}>
-                            {puntaje}
-                        </span>
-
-                        <span style={{
-                            fontSize: '14px',
-                            fontWeight: 700,
-                            color: colors.textMuted,
-                            marginTop: '4px'
-                        }}>
-                            / 100
-                        </span>
-                    </div>
-
-                    {/* NIVEL */}
-                    <div style={{ flex: 1 }}>
-                        <h3 style={{
-                            fontSize: '16px',
-                            fontWeight: 700,
-                            color: nivel === 'BAJO'
-                                ? colors.danger
-                                : colors.text,
-                            margin: '0 0 8px 0'
-                        }}>
-                            Nivel de Gestión Documental: {nivel}
-                        </h3>
-
-                        <p style={{
-                            fontSize: '15px',
-                            color: colors.textMuted,
-                            margin: 0,
-                            lineHeight: '1.5'
-                        }}>
-                            {descripcion}
-                        </p>
-                    </div>
-                </div>
-
-                {/* DOCUMENTOS VIGENTES */}
-                <div style={{
-                    borderTop: `1px solid ${colors.border}`,
-                    paddingTop: '14px',
-                    marginTop: '4px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                }}>
-                    <span style={{
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        color: colors.textMuted
-                    }}>
-                        Documentos vigentes evaluados:{' '}
-                        <strong style={{ color: colors.primary }}>
-                            {calificacionConsultor.cantidad_documentos_vigentes ?? 0 }
-                            {/*calificacionMostrar.cantidad_documentos_vigentes ?? 0 EROMAN 04092026*/}
-                        </strong>
-                    </span>
-                </div>
-
-            </div>
-        );
-    })()}
-
-    {/* ── TARJETA: CUMPLIMIENTO POR GESTIÓN (Solo Consultor) ────────────── */}
-               
-                    <div style={{
-                        ...styles.card,                        
-                        padding: '24px 28px',
-                        borderRadius: '12px',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ display: 'inline-block', width: '4px', height: '22px', background: colors.primary, borderRadius: '4px' }}></span>
-                                <div>
-                                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: colors.text, letterSpacing: '0.02em' }}>
-                                        CUMPLIMIENTO POR GESTIÓN
-                                    </h3>
-                                    <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
-                                        Indicadores de cumplimiento de los proveedores por cada área de gestión.
-                                    </p>
-                                </div>
-                            </div>
-                           
-                           {(() => {
-    const totalEvaluados =
-        proveedorSeleccionado !== 'ALL'
-            ? 1
-            : Number(cumplimientoProveedores?.total_proveedores || 0);
-
-    return totalEvaluados > 0 ? (
-        <span style={{
-            background: '#eff6ff',
-            color: colors.primary,
-            fontWeight: 700,
-            fontSize: '12.5px',
-            padding: '5px 14px',
-            borderRadius: '999px',
-            border: '1px solid #bfdbfe'
-        }}>
-            {totalEvaluados} Proveedor{totalEvaluados === 1 ? '' : 'es'} evaluado{totalEvaluados === 1 ? '' : 's'}
-        </span>
-    ) : null;
-})()}
 
 
-                        </div>
 
-                        <div className="table-scroll">
-                            <table style={{ ...styles.table, marginTop: 0 }}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ ...styles.th, width: '30%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Gestión</th>
-                                        <th style={{ ...styles.th, width: '55%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Avance de Cumplimiento</th>
-                                        <th style={{ ...styles.th, textAlign: 'center', width: '15%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Cumplimiento</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(cumplimientoGlobal && cumplimientoGlobal.length > 0 ? cumplimientoGlobal : [
-                                        { codigo: 'SST_MA', nombre: 'SST-MA', porcentaje: 0 },
-                                        { codigo: 'CALIDAD', nombre: 'CALIDAD', porcentaje: 0 },
-                                        { codigo: 'PATRIMONIAL', nombre: 'SEG. PATRIMONIAL', porcentaje: 0 },
-                                        { codigo: 'ETICA', nombre: 'ETICA', porcentaje: 0 },
-                                    ]).filter(item => {
-                                        if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL')) return true;
-                                        if ((item.codigo === 'SST_MA' || (item.nombre || '').includes('SST')) && (gestionFiltro.includes('GSG,GMA') || gestionFiltro.includes('GSG') || gestionFiltro.includes('GMA'))) return true;
-                                        if ((item.codigo === 'CALIDAD' || (item.nombre || '').includes('CALIDAD')) && (gestionFiltro.includes('GCA') || gestionFiltro.includes('CALIDAD'))) return true;
-                                        if ((item.codigo === 'PATRIMONIAL' || (item.nombre || '').includes('PATRIMONIAL')) && (gestionFiltro.includes('GPA') || gestionFiltro.includes('PATRIMONIAL'))) return true;
-                                        if ((item.codigo === 'ETICA' || (item.nombre || '').includes('ETICA')) && (gestionFiltro.includes('GTR') || gestionFiltro.includes('ETICA'))) return true;
-                                        return false;
-                                    }).map((item, index) => {
-                                        const pct = Number(item.porcentaje || 0);
-                                        const progressColor = pct >= 90 ? colors.success : pct >= 75 ? '#d97706' : colors.danger;
-                                        const badgeBg = pct >= 90 ? '#dcfce7' : pct >= 75 ? '#fef3c7' : '#fee2e2';
-                                        const badgeFg = pct >= 90 ? '#15803d' : pct >= 75 ? '#b45309' : '#dc2626';
-                                        const badgeBorder = pct >= 90 ? '#bbf7d0' : pct >= 75 ? '#fde68a' : '#fecaca';
 
-                                        return (
-                                            <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                
-
-                                                <td style={{
-                                                            ...styles.td,
-                                                            padding: '16px',
-                                                            color: '#000000',
-                                                            background: '#ffffff'
-                                                        }}>
-                                                            <strong style={{ fontSize: '13.5px', color: colors.text }}>
-                                                                {item.nombre}
-                                                            </strong>
-                                                        </td>
-
-                                                <td style={{ ...styles.td, padding: '16px' }}>
-                                                    <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden', height: '10px' }}>
-                                                        <div style={{
-                                                            width: `${Math.min(pct, 100)}%`,
-                                                            background: progressColor,
-                                                            height: '100%',
-                                                            transition: 'width 1s ease-in-out',
-                                                            borderRadius: '999px'
-                                                        }}></div>
-                                                    </div>
-                                                </td>
-                                                <td style={{ ...styles.td, textAlign: 'center', padding: '16px' }}>
-                                                    <span style={{
-                                                        ...styles.badge(badgeBg, badgeFg),
-                                                        padding: '5px 14px',
-                                                        fontSize: '13px',
-                                                        fontWeight: 800,
-                                                        border: `1px solid ${badgeBorder}`,
-                                                        borderRadius: '999px'
-                                                    }}>
-                                                        {pct.toFixed(2)}%
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    </div>
-                )}
+                    </div>        
     
         
         {/* ─ EROMAN 03/09/2026 ─*/}
@@ -2455,10 +2733,10 @@ const puntaje = Number(
                                             </div>
                                             <div>
                                                 <h2 style={{ fontSize: '17px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.01em' }}>
-                                                    Alertas y Atención
+                                                    Alertas de la Cartera
                                                 </h2>
                                                 <p style={{ color: colors.textMuted, fontSize: '12.5px', margin: '2px 0 0 0' }}>
-                                                    Monitoreo preventivo de proveedores e incidencias críticas.
+                                                    Monitoreo global de proveedores e incidencias críticas.
                                                 </p>
                                             </div>
                                         </div>
@@ -3271,9 +3549,10 @@ const puntaje = Number(
                             </div>
                         </div>
                     </div>
-                )}
+                )}                      
             </>
-        )}
+              )}
+
 
             {/* ── MODAL: RANKING COMPLETO DE PROVEEDORES ────────────────────────── */}
             {modalRankingOpen && (
