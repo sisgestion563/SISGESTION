@@ -408,6 +408,13 @@ const [proveedoresList, setProveedoresList] = useState([]);
         return () => window.removeEventListener('click', handleClickOutside);
     }, [dropdownOpen]);
 
+    const rolEtiqueta = (() => {
+        if (rolCodigo === 'ADMIN') return 'ADMIN';
+        if (rolCodigo === 'CONSULTOR') return 'CONSULTOR';
+        if (rolCodigo === 'PROVEEDOR') return 'PROVEEDOR';
+        return usuario?.rol_nombre || usuario?.rol_codigo || 'USUARIO';
+    })();
+
     return (
         <header
             style={{
@@ -420,14 +427,14 @@ const [proveedoresList, setProveedoresList] = useState([]);
                 boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03)'
             }}
         >
-            {/* ── Nivel 1 y Nivel 2: Título y Subtítulo + Fecha Institucional ── */}
+            {/* ── Nivel 1 y Nivel 2: Título a la izquierda + Mi Perfil y Fecha a la derecha ── */}
             <div
                 style={{
                     display: 'flex',
-                    justifyContent: 'flex-start',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
                     flexWrap: 'wrap',
-                    gap: '12px'
+                    gap: '16px'
                 }}
             >
                 <div>
@@ -456,34 +463,15 @@ const [proveedoresList, setProveedoresList] = useState([]);
                     </p>
                 </div>
 
+                {/* Contenedor Superior Derecho: Mi Perfil ARRIBA de la Fecha */}
                 <div
                     style={{
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        flexWrap: 'wrap'
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        gap: '5px'
                     }}
                 >
-                    {/* Fecha institucional*/}
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            fontSize: '12px',
-                            color: '#334155',
-                            backgroundColor: '#F8FAFC',
-                            padding: '6px 14px',
-                            borderRadius: '8px',
-                            border: '1px solid #E2E8F0',
-                            fontWeight: '600',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
-                        }}
-                    >
-                        <Calendar size={15} color="#2563EB" />
-                        <span>{fecha}</span>
-                    </div>
-
                     {/* Tarjeta de MI PERFIL */}
                     <div
                         style={{
@@ -492,59 +480,97 @@ const [proveedoresList, setProveedoresList] = useState([]);
                             gap: '10px',
                             background: '#F8FAFC',
                             border: '1px solid #E2E8F0',
-                            padding: '6px 14px',
-                            borderRadius: '10px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+                            padding: '4px 12px 4px 6px',
+                            borderRadius: '999px',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
                         }}
                     >
                         <div
                             style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '8px',
-                                background: '#EFF6FF',
-                                border: '1px solid #DBEAFE',
+                                width: '30px',
+                                height: '30px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                flexShrink: 0
+                                color: '#FFFFFF',
+                                flexShrink: 0,
+                                boxShadow: '0 2px 4px rgba(37,99,235,0.2)'
                             }}
                         >
-                            <User size={16} color="#2563EB" />
+                            <User size={15} strokeWidth={2.4} />
                         </div>
 
                         <div
                             style={{
                                 display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'flex-start',
-                                textAlign: 'left'
+                                alignItems: 'center',
+                                gap: '8px'
                             }}
                         >
-                            <span
+                            <div
                                 style={{
-                                    fontSize: '10px',
-                                    fontWeight: '700',
-                                    color: '#64748B',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.06em',
-                                    lineHeight: '1.1'
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-start',
+                                    lineHeight: '1.15'
                                 }}
                             >
-                                MI PERFIL
-                            </span>
+                                <span
+                                    style={{
+                                        fontSize: '9.5px',
+                                        fontWeight: '700',
+                                        color: '#64748B',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em'
+                                    }}
+                                >
+                                    MI PERFIL
+                                </span>
+                                <span
+                                    style={{
+                                        fontSize: '13px',
+                                        fontWeight: '750',
+                                        color: '#0F172A',
+                                        letterSpacing: '-0.01em'
+                                    }}
+                                >
+                                    {usuario?.username || 'Usuario'}
+                                </span>
+                            </div>
+
                             <span
                                 style={{
-                                    fontSize: '13px',
-                                    fontWeight: '700',
-                                    color: '#0F172A',
-                                    letterSpacing: '0.02em',
-                                    lineHeight: '1.3'
+                                    fontSize: '10.5px',
+                                    fontWeight: '800',
+                                    padding: '2px 8px',
+                                    borderRadius: '999px',
+                                    background: rolCodigo === 'ADMIN' ? '#EFF6FF' : rolCodigo === 'CONSULTOR' ? '#F5F3FF' : '#ECFDF5',
+                                    color: rolCodigo === 'ADMIN' ? '#1D4ED8' : rolCodigo === 'CONSULTOR' ? '#6D28D9' : '#047857',
+                                    border: `1px solid ${rolCodigo === 'ADMIN' ? '#BFDBFE' : rolCodigo === 'CONSULTOR' ? '#DDD6FE' : '#A7F3D0'}`,
+                                    letterSpacing: '0.03em'
                                 }}
                             >
-                                {usuario?.rol_codigo || 'ROL'}
+                                {rolEtiqueta}
                             </span>
                         </div>
+                    </div>
+
+                    {/* Fecha institucional (debajo de Mi Perfil) */}
+                    <div
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontSize: '11.5px',
+                            color: '#64748B',
+                            fontWeight: '600',
+                            paddingRight: '6px'
+                        }}
+                    >
+                        <Calendar size={13} color="#2563EB" strokeWidth={2.2} />
+                        <span>{fecha}</span>
                     </div>
                 </div>
             </div>
