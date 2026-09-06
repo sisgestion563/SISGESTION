@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layers, CalendarDays, Calendar, User, ChevronDown, RotateCcw, Briefcase } from 'lucide-react';
+import { Layers, CalendarDays, Calendar, User, ChevronDown, RotateCcw, Briefcase, LogOut } from 'lucide-react';
 /*import { obtenerCatalogo, obtenerPeriodos } from '../services/catalogos.service';
 import { obtenerProveedorPorId } from '../services/providers.service';*/
 /*EROMAN 03/09/2026*/
@@ -415,6 +415,12 @@ const [proveedoresList, setProveedoresList] = useState([]);
         return usuario?.rol_nombre || usuario?.rol_codigo || 'USUARIO';
     })();
 
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        window.location.href = '/';
+    };
+
     return (
         <header
             style={{
@@ -463,101 +469,144 @@ const [proveedoresList, setProveedoresList] = useState([]);
                     </p>
                 </div>
 
-                {/* Contenedor Superior Derecho: Mi Perfil ARRIBA de la Fecha */}
+                {/* Contenedor Superior Derecho: Mi Perfil + Cerrar Sesión ARRIBA de la Fecha */}
                 <div
                     style={{
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'flex-end',
-                        gap: '5px'
+                        gap: '6px'
                     }}
                 >
-                    {/* Tarjeta de MI PERFIL */}
                     <div
                         style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '10px',
-                            background: '#F8FAFC',
-                            border: '1px solid #E2E8F0',
-                            padding: '4px 12px 4px 6px',
-                            borderRadius: '999px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                            gap: '8px'
                         }}
                     >
-                        <div
-                            style={{
-                                width: '30px',
-                                height: '30px',
-                                borderRadius: '50%',
-                                background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: '#FFFFFF',
-                                flexShrink: 0,
-                                boxShadow: '0 2px 4px rgba(37,99,235,0.2)'
-                            }}
-                        >
-                            <User size={15} strokeWidth={2.4} />
-                        </div>
-
+                        {/* Tarjeta de MI PERFIL */}
                         <div
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px'
+                                gap: '10px',
+                                background: '#F8FAFC',
+                                border: '1px solid #E2E8F0',
+                                padding: '4px 12px 4px 6px',
+                                borderRadius: '999px',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
                             }}
                         >
                             <div
                                 style={{
+                                    width: '30px',
+                                    height: '30px',
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
                                     display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'flex-start',
-                                    lineHeight: '1.15'
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#FFFFFF',
+                                    flexShrink: 0,
+                                    boxShadow: '0 2px 4px rgba(37,99,235,0.2)'
                                 }}
                             >
-                                <span
-                                    style={{
-                                        fontSize: '9.5px',
-                                        fontWeight: '700',
-                                        color: '#64748B',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.05em'
-                                    }}
-                                >
-                                    MI PERFIL
-                                </span>
-                                <span
-                                    style={{
-                                        fontSize: '13px',
-                                        fontWeight: '750',
-                                        color: '#0F172A',
-                                        letterSpacing: '-0.01em'
-                                    }}
-                                >
-                                    {usuario?.username || 'Usuario'}
-                                </span>
+                                <User size={15} strokeWidth={2.4} />
                             </div>
 
-                            <span
+                            <div
                                 style={{
-                                    fontSize: '10.5px',
-                                    fontWeight: '800',
-                                    padding: '2px 8px',
-                                    borderRadius: '999px',
-                                    background: rolCodigo === 'ADMIN' ? '#EFF6FF' : rolCodigo === 'CONSULTOR' ? '#F5F3FF' : '#ECFDF5',
-                                    color: rolCodigo === 'ADMIN' ? '#1D4ED8' : rolCodigo === 'CONSULTOR' ? '#6D28D9' : '#047857',
-                                    border: `1px solid ${rolCodigo === 'ADMIN' ? '#BFDBFE' : rolCodigo === 'CONSULTOR' ? '#DDD6FE' : '#A7F3D0'}`,
-                                    letterSpacing: '0.03em'
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
                                 }}
                             >
-                                {rolEtiqueta}
-                            </span>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'flex-start',
+                                        lineHeight: '1.15'
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            fontSize: '9.5px',
+                                            fontWeight: '700',
+                                            color: '#64748B',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
+                                        }}
+                                    >
+                                        MI PERFIL
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: '13px',
+                                            fontWeight: '750',
+                                            color: '#0F172A',
+                                            letterSpacing: '-0.01em'
+                                        }}
+                                    >
+                                        {usuario?.username || 'Usuario'}
+                                    </span>
+                                </div>
+
+                                <span
+                                    style={{
+                                        fontSize: '10.5px',
+                                        fontWeight: '800',
+                                        padding: '2px 8px',
+                                        borderRadius: '999px',
+                                        background: rolCodigo === 'ADMIN' ? '#EFF6FF' : rolCodigo === 'CONSULTOR' ? '#F5F3FF' : '#ECFDF5',
+                                        color: rolCodigo === 'ADMIN' ? '#1D4ED8' : rolCodigo === 'CONSULTOR' ? '#6D28D9' : '#047857',
+                                        border: `1px solid ${rolCodigo === 'ADMIN' ? '#BFDBFE' : rolCodigo === 'CONSULTOR' ? '#DDD6FE' : '#A7F3D0'}`,
+                                        letterSpacing: '0.03em'
+                                    }}
+                                >
+                                    {rolEtiqueta}
+                                </span>
+                            </div>
                         </div>
+
+                        {/* Botón Cerrar Sesión */}
+                        <button
+                            type="button"
+                            onClick={logout}
+                            title="Cerrar sesión"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: '#FEF2F2',
+                                border: '1px solid #FECACA',
+                                color: '#DC2626',
+                                padding: '6px 12px',
+                                borderRadius: '999px',
+                                fontSize: '12px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 1px 2px rgba(220,38,38,0.06)'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.background = '#FEE2E2';
+                                e.currentTarget.style.borderColor = '#FCA5A5';
+                                e.currentTarget.style.color = '#B91C1C';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.background = '#FEF2F2';
+                                e.currentTarget.style.borderColor = '#FECACA';
+                                e.currentTarget.style.color = '#DC2626';
+                            }}
+                        >
+                            <LogOut size={13} strokeWidth={2.4} />
+                            <span>Cerrar sesión</span>
+                        </button>
                     </div>
 
-                    {/* Fecha institucional (debajo de Mi Perfil) */}
+                    {/* Fecha institucional (debajo de Mi Perfil y Cerrar Sesión) */}
                     <div
                         style={{
                             display: 'inline-flex',
