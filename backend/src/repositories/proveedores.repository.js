@@ -182,6 +182,8 @@ const listar = async (campo = 'ALL', valor = '') => {
 
             MPRO.ubigeo,
 
+            MPRO.ciiu,
+
             ${SQL_ACTIVIDAD} AS actividad_economica,
 
             ${SQL_ESTADO_DOCUMENTOS} AS estado_documentos,

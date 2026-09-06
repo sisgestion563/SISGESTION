@@ -150,117 +150,115 @@ const [proveedoresList, setProveedoresList] = useState([]);
         return () => { isMounted = false; };
     }, [esConsultor, mostrarFiltros]);
 
+    const getProvCiiu = (p) => {
+        if (!p) return '';
+        if (p.ciiu) return String(p.ciiu).trim();
+        if (p.actividad_economica) {
+            return String(p.actividad_economica).split('-')[0].trim();
+        }
+        return '';
+    };
+
     const cambiarPeriodo = (nuevoPeriodo) => {
         setPeriodo(nuevoPeriodo);
         localStorage.setItem('sisgestion_periodo_actual', nuevoPeriodo);
         window.dispatchEvent(new CustomEvent('sisgestion:periodo_change', { detail: nuevoPeriodo }));
     };
 
-    /*const cambiarRubro = (nuevoRubro) => {
+    const cambiarRubro = (nuevoRubro) => {
         setRubro(nuevoRubro);
         localStorage.setItem('sisgestion_rubro_actual', nuevoRubro);
-        window.dispatchEvent(new CustomEvent('sisgestion:rubro_change', { detail: nuevoRubro }));
-    };*/
-
-    /**EROMAN 09/03/2026 **/
-    const cambiarRubro = (nuevoRubro) => {
-    setRubro(nuevoRubro);
-
-    localStorage.setItem(
-        'sisgestion_rubro_actual',
-        nuevoRubro
-    );
-
-    // Al cambiar Rubro, recalcular la lista de proveedores
-    // y seleccionar inicialmente todos los proveedores
-    setProveedorFiltro('ALL');
-
-    localStorage.setItem(
-        'sisgestion_proveedor_actual',
-        'ALL'
-    );
-
-    window.dispatchEvent(
-        new CustomEvent(
-            'sisgestion:rubro_change',
-            {
+        window.dispatchEvent(
+            new CustomEvent('sisgestion:rubro_change', {
                 detail: nuevoRubro
+            })
+        );
+
+        if (nuevoRubro !== 'ALL' && proveedorFiltro !== 'ALL') {
+            const selectedProv = proveedoresList.find(p => String(p.proveedor_id) === String(proveedorFiltro));
+            if (getProvCiiu(selectedProv) !== String(nuevoRubro)) {
+                setProveedorFiltro('ALL');
+                localStorage.setItem('sisgestion_proveedor_actual', 'ALL');
+                window.dispatchEvent(
+                    new CustomEvent('sisgestion:proveedor_change', {
+                        detail: 'ALL'
+                    })
+                );
             }
-        )
-    );
-
-    window.dispatchEvent(
-        new CustomEvent(
-            'sisgestion:proveedor_change',
-            {
-                detail: 'ALL'
-            }
-        )
-    );
-};
-
-    /** EROMAN 03/9/2026 **/
-    const cambiarProveedor = (nuevoProveedor) => {
-    setProveedorFiltro(nuevoProveedor);
-
-    localStorage.setItem(
-        'sisgestion_proveedor_actual',
-        nuevoProveedor
-    );
-
-    window.dispatchEvent(
-        new CustomEvent(
-            'sisgestion:proveedor_change',
-            {
-                detail: nuevoProveedor
-            }
-        )
-    );
-};
-/** EROMAN 03/9/2026 **/
-const proveedoresFiltrados =
-    rubro === 'ALL'
-        ? proveedoresList
-        : proveedoresList.filter(item => {
-            const actividad =
-                item.actividad_economica || '';
-
-            const codigoCiiu =
-                actividad.split('-')[0]?.trim();
-
-            return codigoCiiu === String(rubro);
-        });
-
-
-
-
-    // Cargar proveedores para el filtro del Consultor EROMAN 03/09/2026
-useEffect(() => {
-    let isMounted = true;
-
-    const cargarProveedores = async () => {
-        try {
-            const list = await obtenerProveedores();
-
-            if (isMounted && Array.isArray(list)) {
-                setProveedoresList(list);
-            }
-        } catch (error) {
-            console.error('Error al cargar proveedores:', error);
         }
     };
 
-    if (esConsultor && mostrarFiltros) {
-        cargarProveedores();
-    }
+    const cambiarProveedor = (nuevoProveedor) => {
+        setProveedorFiltro(nuevoProveedor);
+        localStorage.setItem('sisgestion_proveedor_actual', nuevoProveedor);
+        window.dispatchEvent(
+            new CustomEvent('sisgestion:proveedor_change', {
+                detail: nuevoProveedor
+            })
+        );
 
-    return () => {
-        isMounted = false;
+        if (nuevoProveedor !== 'ALL') {
+            const selectedProv = proveedoresList.find(p => String(p.proveedor_id) === String(nuevoProveedor));
+            const provCiiu = getProvCiiu(selectedProv);
+            if (provCiiu && provCiiu !== rubro) {
+                setRubro(provCiiu);
+                localStorage.setItem('sisgestion_rubro_actual', provCiiu);
+                window.dispatchEvent(
+                    new CustomEvent('sisgestion:rubro_change', {
+                        detail: provCiiu
+                    })
+                );
+            }
+        }
     };
-}, [esConsultor, mostrarFiltros]);
 
+    const proveedoresFiltrados =
+        rubro === 'ALL'
+            ? proveedoresList
+            : proveedoresList.filter(item => getProvCiiu(item) === String(rubro));
 
+    const rubrosFiltrados = (() => {
+        if (proveedorFiltro === 'ALL') {
+            return rubrosList;
+        }
+        const selectedProv = proveedoresList.find(p => String(p.proveedor_id) === String(proveedorFiltro));
+        const provCiiu = getProvCiiu(selectedProv);
+        if (!provCiiu) return rubrosList;
+        const filtrados = rubrosList.filter(item => {
+            const code = String(item.codigo_valor || item.ciiu || item.code || '').trim();
+            return code === provCiiu;
+        });
+        if (filtrados.length > 0) return filtrados;
+        return [{
+            codigo_valor: provCiiu,
+            descripcion: selectedProv?.actividad_economica || `CIIU ${provCiiu}`
+        }];
+    })();
 
+    // Cargar proveedores para el filtro del Consultor
+    useEffect(() => {
+        let isMounted = true;
+
+        const cargarProveedores = async () => {
+            try {
+                const list = await obtenerProveedores();
+
+                if (isMounted && Array.isArray(list)) {
+                    setProveedoresList(list);
+                }
+            } catch (error) {
+                console.error('Error al cargar proveedores:', error);
+            }
+        };
+
+        if (esConsultor && mostrarFiltros) {
+            cargarProveedores();
+        }
+
+        return () => {
+            isMounted = false;
+        };
+    }, [esConsultor, mostrarFiltros]);
 
     // Sincronizar rubro si se cambia externamente
     useEffect(() => {
@@ -271,6 +269,17 @@ useEffect(() => {
         };
         window.addEventListener('sisgestion:rubro_change', handleRubroSync);
         return () => window.removeEventListener('sisgestion:rubro_change', handleRubroSync);
+    }, []);
+
+    // Sincronizar proveedor si se cambia externamente
+    useEffect(() => {
+        const handleProveedorSync = (e) => {
+            if (e.detail !== undefined) {
+                setProveedorFiltro(e.detail);
+            }
+        };
+        window.addEventListener('sisgestion:proveedor_change', handleProveedorSync);
+        return () => window.removeEventListener('sisgestion:proveedor_change', handleProveedorSync);
     }, []);
 
     // Sincronizar selección si se limpia desde el Dashboard
@@ -364,7 +373,14 @@ useEffect(() => {
     const limpiarFiltro = () => {
         cambiarGestion(['ALL']);
         if (rubro !== 'ALL') {
-            cambiarRubro('ALL');
+            setRubro('ALL');
+            localStorage.setItem('sisgestion_rubro_actual', 'ALL');
+            window.dispatchEvent(new CustomEvent('sisgestion:rubro_change', { detail: 'ALL' }));
+        }
+        if (proveedorFiltro !== 'ALL') {
+            setProveedorFiltro('ALL');
+            localStorage.setItem('sisgestion_proveedor_actual', 'ALL');
+            window.dispatchEvent(new CustomEvent('sisgestion:proveedor_change', { detail: 'ALL' }));
         }
     };
     
@@ -687,7 +703,7 @@ useEffect(() => {
                                             }}
                                         >
                                             <option value="ALL">Todos los Rubros (CIIU)</option>
-                                            {rubrosList.map((item, idx) => {
+                                            {rubrosFiltrados.map((item, idx) => {
                                                 const code = item.codigo_valor || item.ciiu || item.code;
                                                 const label = item.descripcion || item.nombre || item.label;
                                                 return (
@@ -813,7 +829,7 @@ useEffect(() => {
                             </div>
 
                             {/* Botón para eliminar filtro si está activo */}
-                            {(!gestionSeleccionada.includes('ALL') || (esConsultor && rubro !== 'ALL')) && (
+                            {(!gestionSeleccionada.includes('ALL') || (esConsultor && (rubro !== 'ALL' || proveedorFiltro !== 'ALL'))) && (
                                 <button
                                     onClick={limpiarFiltro}
                                     title="Eliminar filtros y ver toda la información"

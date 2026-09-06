@@ -12,14 +12,14 @@ const getHeaders = () => ({
 });
 
 export const obtenerResumen =
-async (periodo) => {
+async (periodo, rubro, proveedorId) => {
 
     const response =
         await api.get(
             '/dashboard/resumen',
             {
                 ...getHeaders(),
-                params: { periodo }
+                params: { periodo, rubro, proveedor_id: proveedorId }
             }
         );
 
@@ -28,14 +28,14 @@ async (periodo) => {
 };
 
 export const obtenerDocumentosPorGrupo =
-async (periodo) => {
+async (periodo, rubro, proveedorId) => {
 
     const response =
         await api.get(
             '/dashboard/documentos-por-grupo',
             {
                 ...getHeaders(),
-                params: { periodo }
+                params: { periodo, rubro, proveedor_id: proveedorId }
             }
         );
 
@@ -44,14 +44,14 @@ async (periodo) => {
 };
 
 export const obtenerDocumentosPorEstado =
-async (periodo) => {
+async (periodo, rubro, proveedorId) => {
 
     const response =
         await api.get(
             '/dashboard/documentos-por-estado',
             {
                 ...getHeaders(),
-                params: { periodo }
+                params: { periodo, rubro, proveedor_id: proveedorId }
             }
         );
 
@@ -60,14 +60,14 @@ async (periodo) => {
 };
 
 export const obtenerProximosVencer =
-async (periodo) => {
+async (periodo, rubro, proveedorId) => {
 
     const response =
         await api.get(
             '/dashboard/proximos-vencer',
             {
                 ...getHeaders(),
-                params: { periodo }
+                params: { periodo, rubro, proveedor_id: proveedorId }
             }
         );
 
@@ -103,48 +103,48 @@ export const obtenerCalificacionProveedor =
     };
 
 export const obtenerResumenProveedoresCumplimiento =
-    async (periodo, rubro) => {
+    async (periodo, rubro, proveedorId) => {
         const response = await api.get(
             '/dashboard/proveedores-cumplimiento',
             {
                 ...getHeaders(),
-                params: { periodo, rubro }
+                params: { periodo, rubro, proveedor_id: proveedorId }
             }
         );
         return response.data.data;
     };
 
 export const obtenerCumplimientoGlobalPorGestion =
-    async (periodo, rubro) => {
+    async (periodo, rubro, proveedorId) => {
         const response = await api.get(
             '/dashboard/cumplimiento-global-gestion',
             {
                 ...getHeaders(),
-                params: { periodo, rubro }
+                params: { periodo, rubro, proveedor_id: proveedorId }
             }
         );
         return response.data.data;
     };
 
 export const obtenerRankingProveedores =
-    async (periodo, rubro) => {
+    async (periodo, rubro, proveedorId) => {
         const response = await api.get(
             '/dashboard/consultor-ranking',
             {
                 ...getHeaders(),
-                params: { periodo, rubro }
+                params: { periodo, rubro, proveedor_id: proveedorId }
             }
         );
         return response.data.data;
     };
 
 export const obtenerAlertasConsultor =
-    async (periodo, rubro) => {
+    async (periodo, rubro, proveedorId) => {
         const response = await api.get(
             '/dashboard/consultor-alertas',
             {
                 ...getHeaders(),
-                params: { periodo, rubro }
+                params: { periodo, rubro, proveedor_id: proveedorId }
             }
         );
         return response.data.data;

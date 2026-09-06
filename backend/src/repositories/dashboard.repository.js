@@ -1,18 +1,34 @@
 const pool = require('../config/db');
 
-const obtenerResumen = async (periodo) => {
+const obtenerResumen = async (periodo, rubro, proveedorId) => {
     let whereProv = "WHERE status = 'A'";
-    let whereDoc = "WHERE estado_documento = 'V'";
+    let whereDoc = "WHERE (estado_documento = 'V' OR estado_documento = 'C')";
     let whereDocVig = "WHERE estado_documento = 'V' AND fecha_vigencia >= CURRENT_DATE";
-    let whereDocVen = "WHERE estado_documento = 'C' AND fecha_vigencia < CURRENT_DATE";
+    let whereDocVen = "WHERE (estado_documento = 'C' OR fecha_vigencia < CURRENT_DATE)";
     const params = [];
 
-    if (periodo) {
+    if (periodo && periodo !== 'ALL') {
         params.push(periodo);
-        whereProv += " AND periodo = $1";
-        // whereDoc += ` AND proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $1)`;
-        // whereDocVig += ` AND proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $1)`;
-        // whereDocVen += ` AND proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $1)`;
+        whereProv += ` AND periodo = $${params.length}`;
+        whereDoc += ` AND proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $${params.length})`;
+        whereDocVig += ` AND proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $${params.length})`;
+        whereDocVen += ` AND proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $${params.length})`;
+    }
+
+    if (rubro && rubro !== 'ALL') {
+        params.push(rubro);
+        whereProv += ` AND ciiu::varchar = $${params.length}::varchar`;
+        whereDoc += ` AND proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE ciiu::varchar = $${params.length}::varchar)`;
+        whereDocVig += ` AND proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE ciiu::varchar = $${params.length}::varchar)`;
+        whereDocVen += ` AND proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE ciiu::varchar = $${params.length}::varchar)`;
+    }
+
+    if (proveedorId && proveedorId !== 'ALL') {
+        params.push(proveedorId);
+        whereProv += ` AND proveedor_id = $${params.length}`;
+        whereDoc += ` AND proveedor_id = $${params.length}`;
+        whereDocVig += ` AND proveedor_id = $${params.length}`;
+        whereDocVen += ` AND proveedor_id = $${params.length}`;
     }
 
     const sql = `
@@ -46,41 +62,63 @@ const obtenerResumen = async (periodo) => {
     return result.rows[0];
 };
 
-const obtenerDocumentosPorGrupo = async (periodo) => {
-    let where = "WHERE d.estado_documento = 'V'";
+const obtenerDocumentosPorGrupo = async (periodo, rubro, proveedorId) => {
+    let where = "WHERE (d.estado_documento = 'V' OR d.estado_documento = 'C')";
     const params = [];
-    if (periodo) {
-        // params.push(periodo);
-        // where += ` AND d.proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $1)`;
+
+    if (periodo && periodo !== 'ALL') {
+        params.push(periodo);
+        where += ` AND d.proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $${params.length})`;
+    }
+
+    if (rubro && rubro !== 'ALL') {
+        params.push(rubro);
+        where += ` AND d.proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE ciiu::varchar = $${params.length}::varchar)`;
+    }
+
+    if (proveedorId && proveedorId !== 'ALL') {
+        params.push(proveedorId);
+        where += ` AND d.proveedor_id = $${params.length}`;
     }
 
     const sql = `
         SELECT
-    d.grupo_documentos,
-    lv.descripcion,
-    COUNT(*) cantidad
-FROM "SISGES"."MOV_DOCUMENTOS" d
-JOIN "SISGES"."MAE_LISTA_VALORES" lv
-    ON lv.codigo_valor = d.grupo_documentos
-   AND lv.cod_grupo = '0005'
-   AND lv.tipo_grupo = 'GRUPO_DOCUMENTO'
-${where}
-GROUP BY
-    d.grupo_documentos,
-    lv.descripcion
-ORDER BY lv.descripcion
+            d.grupo_documentos,
+            lv.descripcion,
+            COUNT(*) cantidad
+        FROM "SISGES"."MOV_DOCUMENTOS" d
+        JOIN "SISGES"."MAE_LISTA_VALORES" lv
+            ON lv.codigo_valor = d.grupo_documentos
+           AND lv.cod_grupo = '0005'
+           AND lv.tipo_grupo = 'GRUPO_DOCUMENTO'
+        ${where}
+        GROUP BY
+            d.grupo_documentos,
+            lv.descripcion
+        ORDER BY lv.descripcion
     `;
 
     const result = await pool.query(sql, params);
     return result.rows;
 };
 
-const obtenerDocumentosPorEstado = async (periodo) => {
+const obtenerDocumentosPorEstado = async (periodo, rubro, proveedorId) => {
     let where = "WHERE ( d.estado_documento = 'V' or d.estado_documento = 'C' ) ";
     const params = [];
-    if (periodo) {
-        // params.push(periodo);
-        // where += ` AND d.proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $1)`;
+
+    if (periodo && periodo !== 'ALL') {
+        params.push(periodo);
+        where += ` AND d.proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE periodo = $${params.length})`;
+    }
+
+    if (rubro && rubro !== 'ALL') {
+        params.push(rubro);
+        where += ` AND d.proveedor_id IN (SELECT proveedor_id FROM "SISGES"."MAE_PROVEEDOR" WHERE ciiu::varchar = $${params.length}::varchar)`;
+    }
+
+    if (proveedorId && proveedorId !== 'ALL') {
+        params.push(proveedorId);
+        where += ` AND d.proveedor_id = $${params.length}`;
     }
 
     const sql = `
@@ -105,12 +143,23 @@ const obtenerDocumentosPorEstado = async (periodo) => {
     return result.rows;
 };
 
-const obtenerProveedoresVencidos = async (periodo) => {
+const obtenerProveedoresVencidos = async (periodo, rubro, proveedorId) => {
     let where = "WHERE d.estado_documento = 'C' AND d.status = 'A'";
     const params = [];
-    if (periodo) {
-        // params.push(periodo);
-        // where += " AND p.periodo = $1";
+
+    if (periodo && periodo !== 'ALL') {
+        params.push(periodo);
+        where += ` AND p.periodo = $${params.length}`;
+    }
+
+    if (rubro && rubro !== 'ALL') {
+        params.push(rubro);
+        where += ` AND p.ciiu::varchar = $${params.length}::varchar`;
+    }
+
+    if (proveedorId && proveedorId !== 'ALL') {
+        params.push(proveedorId);
+        where += ` AND p.proveedor_id = $${params.length}`;
     }
 
     const sql = `
@@ -147,8 +196,6 @@ const obtenerProveedoresVencidos = async (periodo) => {
     const result = await pool.query(sql, params);
     return result.rows;
 };
-
-
 
 const DOC_DESCRIPCIONES = {
     GSG: {
@@ -191,7 +238,25 @@ const REQUERIDOS_SST = {
     RG: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 };
 
-const obtenerDocumentosProximosVencer = async (periodo) => {
+const obtenerDocumentosProximosVencer = async (periodo, rubro, proveedorId) => {
+    let whereProv = "WHERE p.status = 'A'";
+    const paramsProv = [];
+
+    if (periodo && periodo !== 'ALL') {
+        paramsProv.push(periodo);
+        whereProv += ` AND p.periodo = $${paramsProv.length}`;
+    }
+
+    if (rubro && rubro !== 'ALL') {
+        paramsProv.push(rubro);
+        whereProv += ` AND p.ciiu::varchar = $${paramsProv.length}::varchar`;
+    }
+
+    if (proveedorId && proveedorId !== 'ALL') {
+        paramsProv.push(proveedorId);
+        whereProv += ` AND p.proveedor_id = $${paramsProv.length}`;
+    }
+
     let sqlProveedores = `
         SELECT 
             p.proveedor_id,
@@ -202,14 +267,9 @@ const obtenerDocumentosProximosVencer = async (periodo) => {
             p.regimen_tributario,
             p.nro_trabajadores
         FROM "SISGES"."MAE_PROVEEDOR" p
-        WHERE p.status = 'A'
+        ${whereProv}
+        ORDER BY proveedor
     `;
-    const paramsProv = [];
-    if (periodo) {
-        // sqlProveedores += " AND p.periodo = $1";
-        // paramsProv.push(periodo);
-    }
-    sqlProveedores += " ORDER BY proveedor";
 
     const resProv = await pool.query(sqlProveedores, paramsProv);
     const proveedores = resProv.rows;
@@ -566,7 +626,7 @@ FROM evaluacion;
     return result.rows[0] || null;
 };
 
-const obtenerResumenProveedoresCumplimiento = async (periodo, rubro) => {
+const obtenerResumenProveedoresCumplimiento = async (periodo, rubro, proveedorId) => {
     let whereProv = "(r.codigo = 'PROVEEDOR' OR u.rol_id = 2) AND u.estado_usuario = 'A'";
     const params = [];
 
@@ -578,6 +638,11 @@ const obtenerResumenProveedoresCumplimiento = async (periodo, rubro) => {
     if (rubro && rubro !== 'ALL') {
         params.push(rubro);
         whereProv += ` AND p.ciiu::varchar = $${params.length}::varchar`;
+    }
+
+    if (proveedorId && proveedorId !== 'ALL') {
+        params.push(proveedorId);
+        whereProv += ` AND p.proveedor_id = $${params.length}`;
     }
 
     const sql = `
@@ -714,7 +779,7 @@ FROM evaluacion;
     };
 };
 
-const obtenerCumplimientoGlobalPorGestion = async (periodo, rubro) => {
+const obtenerCumplimientoGlobalPorGestion = async (periodo, rubro, proveedorId) => {
     let whereProv = "(r.codigo = 'PROVEEDOR' OR u.rol_id = 2) AND u.estado_usuario = 'A'";
     const params = [];
 
@@ -726,6 +791,11 @@ const obtenerCumplimientoGlobalPorGestion = async (periodo, rubro) => {
     if (rubro && rubro !== 'ALL') {
         params.push(rubro);
         whereProv += ` AND p.ciiu::varchar = $${params.length}::varchar`;
+    }
+
+    if (proveedorId && proveedorId !== 'ALL') {
+        params.push(proveedorId);
+        whereProv += ` AND p.proveedor_id = $${params.length}`;
     }
 
     const sql = `
@@ -826,7 +896,7 @@ FROM capped_counts;
     return result.rows;
 };
 
-const obtenerRankingProveedores = async (periodo, rubro) => {
+const obtenerRankingProveedores = async (periodo, rubro, proveedorId) => {
     let whereProv = "(r.codigo = 'PROVEEDOR' OR u.rol_id = 2) AND u.estado_usuario = 'A'";
     const params = [];
 
@@ -838,6 +908,11 @@ const obtenerRankingProveedores = async (periodo, rubro) => {
     if (rubro && rubro !== 'ALL') {
         params.push(rubro);
         whereProv += ` AND p.ciiu::varchar = $${params.length}::varchar`;
+    }
+
+    if (proveedorId && proveedorId !== 'ALL') {
+        params.push(proveedorId);
+        whereProv += ` AND p.proveedor_id = $${params.length}`;
     }
 
     const sql = `
@@ -969,7 +1044,7 @@ ORDER BY puntaje_global DESC, proveedor_nombre ASC;
     return result.rows;
 };
 
-const obtenerAlertasConsultor = async (periodo, rubro) => {
+const obtenerAlertasConsultor = async (periodo, rubro, proveedorId) => {
     let whereProv = "(r.codigo = 'PROVEEDOR' OR u.rol_id = 2) AND u.estado_usuario = 'A'";
     const params = [];
 
@@ -981,6 +1056,11 @@ const obtenerAlertasConsultor = async (periodo, rubro) => {
     if (rubro && rubro !== 'ALL') {
         params.push(rubro);
         whereProv += ` AND p.ciiu::varchar = $${params.length}::varchar`;
+    }
+
+    if (proveedorId && proveedorId !== 'ALL') {
+        params.push(proveedorId);
+        whereProv += ` AND p.proveedor_id = $${params.length}`;
     }
 
     // 1. Proveedores con documentos registrados vs exigibles (para cálculo de avance de llenado y alertas)

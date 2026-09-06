@@ -765,18 +765,18 @@ useEffect(() => {
 
 
     useEffect(() => {
-    if (esProveedor) {
-        cargarDashboardProveedor();
-    } else {
-        cargarDashboardAdmin(periodoFiltro, rubroFiltro);
-    }
-}, [
-    esProveedor,
-    miProveedorId,
-    periodoFiltro,
-    rubroFiltro,
-    proveedorSeleccionado
-]);
+        if (esProveedor) {
+            cargarDashboardProveedor();
+        } else {
+            cargarDashboardAdmin(periodoFiltro, rubroFiltro, proveedorSeleccionado);
+        }
+    }, [
+        esProveedor,
+        miProveedorId,
+        periodoFiltro,
+        rubroFiltro,
+        proveedorSeleccionado
+    ]);
 
     // Cargar información de la razón social del proveedor
     useEffect(() => {
@@ -835,8 +835,9 @@ useEffect(() => {
     }, [gestionFiltro, rawDocsProveedor, rawKpisProveedor, rawCalificacion, rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, rawRankingProveedores, rawAlertasConsultor, esProveedor]);
 
     // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
-    async function cargarDashboardAdmin(periodo, rubro = 'ALL') {
+    async function cargarDashboardAdmin(periodo, rubro = 'ALL', proveedor = 'ALL') {
         try {
+            const provIdParam = proveedor !== 'ALL' ? proveedor : undefined;
             const [
                 resumenRes,
                 gruposRes,
@@ -847,16 +848,16 @@ useEffect(() => {
                 rankingRes,
                 alertasRes
             ] = await Promise.allSettled([
-                obtenerResumen(periodo),
-                obtenerDocumentosPorGrupo(periodo),
-                obtenerDocumentosPorEstado(periodo),
-                obtenerProximosVencer(periodo),
-                obtenerResumenProveedoresCumplimiento(periodo, rubro),                
-                esConsultor && proveedorSeleccionado !== 'ALL'
-    ? obtenerCumplimientoGestion(Number(proveedorSeleccionado))
-    : obtenerCumplimientoGlobalPorGestion(periodo, rubro),
-                obtenerRankingProveedores(periodo, rubro),
-                obtenerAlertasConsultor(periodo, rubro)
+                obtenerResumen(periodo, rubro, provIdParam),
+                obtenerDocumentosPorGrupo(periodo, rubro, provIdParam),
+                obtenerDocumentosPorEstado(periodo, rubro, provIdParam),
+                obtenerProximosVencer(periodo, rubro, provIdParam),
+                obtenerResumenProveedoresCumplimiento(periodo, rubro, provIdParam),                
+                esConsultor && proveedor !== 'ALL'
+                    ? obtenerCumplimientoGestion(Number(proveedor))
+                    : obtenerCumplimientoGlobalPorGestion(periodo, rubro, provIdParam),
+                obtenerRankingProveedores(periodo, rubro, provIdParam),
+                obtenerAlertasConsultor(periodo, rubro, provIdParam)
             ]);
 
             const resumenData = (resumenRes.status === 'fulfilled' && resumenRes.value) ? resumenRes.value : { total_proveedores: 0, total_documentos: 0, documentos_vigentes: 0, documentos_vencidos: 0 };
@@ -867,7 +868,7 @@ useEffect(() => {
             
             const globalGestionRaw = (globalGestionRes.status === 'fulfilled' && Array.isArray(globalGestionRes.value))? globalGestionRes.value: [];
             const globalGestionData =
-    esConsultor && proveedorSeleccionado !== 'ALL'
+    esConsultor && proveedor !== 'ALL'
         ? globalGestionRaw.map(item => ({
             codigo:
                 item.gestion === 'SST / MA'
@@ -1540,7 +1541,7 @@ const puntaje = Number(
                         }}>
                             Régimen Tributario:{' '}
                             <strong>
-                                {calificacionConsultor.regimen_tributario}
+                                {obtenerDescripcionRegimen(calificacionConsultor.regimen_tributario_codigo || calificacionConsultor.regimen_tributario, calificacionConsultor.descripcion_regimen_tributario || calificacionConsultor.regimen_tributario)}
                             </strong>
                         </p>
                     </div>
@@ -1661,8 +1662,7 @@ const puntaje = Number(
                     }}>
                         Documentos vigentes evaluados:{' '}
                         <strong style={{ color: colors.primary }}>
-                            {calificacionConsultor.cantidad_documentos_vigentes ?? 0 }
-                            {/*calificacionMostrar.cantidad_documentos_vigentes ?? 0 EROMAN 04092026*/}
+                            {calificacionMostrar.cantidad_documentos_vigentes ?? 0}
                         </strong>
                     </span>
                 </div>
@@ -1794,19 +1794,27 @@ const puntaje = Number(
                    </div>
 
                     {/* 2. TARJETA: ALERTAS DEL PROVEEDOR */}
-                    {proveedorSeleccionado !== 'ALL' && (
-                        <div
-    className="consultor-alertas-card"
-    style={{
-                                ...styles.card,
-                                padding: '24px 26px',
-                                borderLeft: `5px solid #dc2626`,
-                                borderRadius: '14px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-between'
-                            }}>
+                    {proveedorSeleccionado !== 'ALL' && (() => {
+                        const noRecList = alertasCalculadas.noRecomendadosList.filter(p => String(p.proveedor_id) === String(proveedorSeleccionado));
+                        const porVencList = alertasCalculadas.porVencerList.filter(d => String(d.proveedor_id) === String(proveedorSeleccionado));
+                        const incompList = alertasCalculadas.incompletosList.filter(p => String(p.proveedor_id) === String(proveedorSeleccionado));
+                        const incompCount = incompList.length > 0 ? (incompList[0].pendientes_evaluados ?? incompList.length) : 0;
+                        const totalIncidencias = noRecList.length + (porVencList.length > 0 ? 1 : 0) + (incompCount > 0 ? 1 : 0);
+
+                        return (
+                            <div
+                                className="consultor-alertas-card"
+                                style={{
+                                    ...styles.card,
+                                    padding: '24px 26px',
+                                    borderLeft: `5px solid #dc2626`,
+                                    borderRadius: '14px',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'space-between'
+                                }}
+                            >
                                 <div>
                                     <div style={{
                                         display: 'flex',
@@ -1861,15 +1869,12 @@ const puntaje = Number(
                                         }}>
                                             <span>Total incidencias:</span>
                                             <strong style={{ color: '#991b1b' }}>
-                                                {alertasCalculadas.noRecomendadosCount + (alertasCalculadas.porVencerCount > 0 ? 1 : 0) + (alertasCalculadas.incompletosCount > 0 ? 1 : 0)}
+                                                {totalIncidencias}
                                             </strong>
                                         </span>
                                     </div>
 
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        {/* Alerta 1: Proveedores No Recomendados */}
-                                        
-
                                         {/* Alerta 2: Documentos por Vencer (< 15 días) */}
                                         <div
                                             onClick={() => setModalAlertaDetalle('POR_VENCER')}
@@ -1933,7 +1938,7 @@ const puntaje = Number(
                                                     border: '1px solid #fde68a',
                                                     boxShadow: '0 1px 2px rgba(217,119,6,0.08)'
                                                 }}>
-                                                    {alertasCalculadas.porVencerCount}
+                                                    {porVencList.length}
                                                 </span>
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                     <polyline points="9 18 15 12 9 6"></polyline>
@@ -1989,7 +1994,7 @@ const puntaje = Number(
                                                         Llenado incompleto de documentos
                                                     </div>
                                                     <div style={{ fontSize: '12px', color: '#1d4ed8', marginTop: '2px' }}>
-                                                        Proveedores con carga documental pendiente
+                                                        Documentos exigibles pendientes de carga
                                                     </div>
                                                 </div>
                                             </div>
@@ -2005,7 +2010,7 @@ const puntaje = Number(
                                                     border: '1px solid #bfdbfe',
                                                     boxShadow: '0 1px 2px rgba(37,99,235,0.08)'
                                                 }}>
-                                                    {alertasCalculadas.incompletosCount}
+                                                    {incompCount}
                                                 </span>
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                     <polyline points="9 18 15 12 9 6"></polyline>
@@ -2027,9 +2032,10 @@ const puntaje = Number(
                                 }}>
                                     <span>Haga clic en cualquier alerta para ver el detalle.</span>
                                 </div>
-                </div>                                
-                                 )}
-                            </div>                
+                            </div>
+                        );
+                    })()}
+                </div>                
                
         <div className="consultor-cartera-grid">
 
@@ -3899,143 +3905,163 @@ const puntaje = Number(
 
                         {/* Cuerpo del Modal */}
                         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 26px' }}>
-                            {modalAlertaDetalle === 'NO_RECOMENDADOS' && (
-                                alertasCalculadas.noRecomendadosList.length === 0 ? (
-                                    <div style={{ ...styles.emptyState, padding: '40px 16px' }}>
-                                        No hay proveedores no recomendados con los filtros activos.
-                                    </div>
-                                ) : (
-                                    <div className="table-scroll">
-                                        <table style={{ ...styles.table, marginTop: 0 }}>
-                                            <thead>
-                                                <tr>
-                                                    <th style={{ ...styles.th, width: '42%' }}>Proveedor</th>
-                                                    <th style={{ ...styles.th, width: '18%' }}>RUC</th>
-                                                    <th style={{ ...styles.th, width: '20%', textAlign: 'center' }}>Régimen</th>
-                                                    <th style={{ ...styles.th, width: '20%', textAlign: 'center' }}>Calificación</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {alertasCalculadas.noRecomendadosList.map((prov, index) => (
-                                                    <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                        <td style={{ ...styles.td }}>
-                                                            <strong style={{ fontSize: '13.5px' }}>{prov.proveedor_nombre}</strong>
-                                                        </td>
-                                                        <td style={{ ...styles.td, color: colors.textMuted, fontSize: '13px' }}>
-                                                            {prov.nro_documento || 'S/N'}
-                                                        </td>
-                                                        <td style={{ ...styles.td, textAlign: 'center' }}>
-                                                            <span style={{ background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
-                                                                {obtenerDescripcionRegimen(prov.regimen_tributario, prov.descripcion_regimen_tributario)}
-                                                            </span>
-                                                        </td>
-                                                        <td style={{ ...styles.td, textAlign: 'center' }}>
-                                                            <span style={{ ...styles.badge('#fee2e2', '#dc2626'), border: '1px solid #fecaca', padding: '3px 10px', fontSize: '12.5px', fontWeight: 800 }}>
-                                                                {prov.puntaje_evaluado || 0}%
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )
-                            )}
+                            {(() => {
+                                const modalAlertasData = (() => {
+                                    if (esConsultor && proveedorSeleccionado !== 'ALL') {
+                                        const noRec = alertasCalculadas.noRecomendadosList.filter(p => String(p.proveedor_id) === String(proveedorSeleccionado));
+                                        const porVenc = alertasCalculadas.porVencerList.filter(d => String(d.proveedor_id) === String(proveedorSeleccionado));
+                                        const incomp = alertasCalculadas.incompletosList.filter(p => String(p.proveedor_id) === String(proveedorSeleccionado));
+                                        return {
+                                            noRecomendadosList: noRec,
+                                            porVencerList: porVenc,
+                                            incompletosList: incomp
+                                        };
+                                    }
+                                    return alertasCalculadas;
+                                })();
 
-                            {modalAlertaDetalle === 'POR_VENCER' && (
-                                alertasCalculadas.porVencerList.length === 0 ? (
-                                    <div style={{ ...styles.emptyState, padding: '40px 16px' }}>
-                                        No existen documentos próximos a vencer en menos de 15 días.
-                                    </div>
-                                ) : (
-                                    <div className="table-scroll">
-                                        <table style={{ ...styles.table, marginTop: 0 }}>
-                                            <thead>
-                                                <tr>
-                                                    <th style={{ ...styles.th, width: '30%' }}>Proveedor</th>
-                                                    <th style={{ ...styles.th, width: '20%' }}>Gestión</th>
-                                                    <th style={{ ...styles.th, width: '25%' }}>Tipo Documento</th>
-                                                    <th style={{ ...styles.th, width: '13%', textAlign: 'center' }}>Vencimiento</th>
-                                                    <th style={{ ...styles.th, width: '12%', textAlign: 'center' }}>Urgencia</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {alertasCalculadas.porVencerList.map((doc, index) => {
-                                                    const dias = Number(doc.dias_restantes);
-                                                    const urg = urgencia(dias >= 0 ? dias : 0);
-                                                    return (
-                                                        <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                            <td style={{ ...styles.td }}>
-                                                                <strong style={{ fontSize: '13px' }}>{doc.proveedor_nombre}</strong>
-                                                                <div style={{ fontSize: '11.5px', color: colors.textMuted }}>Doc: {doc.nro_documento || 'S/N'}</div>
-                                                            </td>
-                                                            <td style={{ ...styles.td }}>
-                                                                <span style={{ background: '#eff6ff', color: colors.primary, padding: '2px 8px', borderRadius: '4px', fontSize: '11.5px', fontWeight: 600 }}>
-                                                                    {doc.gestion_nombre || doc.alcance}
-                                                                </span>
-                                                            </td>
-                                                            <td style={{ ...styles.td, fontSize: '13px' }}>
-                                                                {DOC_DESCRIPCIONES_DASHBOARD[doc.alcance]?.[String(doc.tipo_documento_id).padStart(2, '0')] || `Documento ${doc.tipo_documento_id}`}
-                                                            </td>
-                                                            <td style={{ ...styles.td, textAlign: 'center', fontSize: '13px' }}>
-                                                                {formatearFechaLocal(doc.fecha_vigencia)}
-                                                            </td>
-                                                            <td style={{ ...styles.td, textAlign: 'center' }}>
-                                                                <span style={{ ...styles.badge(urg.bg, urg.fg), padding: '3px 8px', fontSize: '11.5px', fontWeight: 700 }}>
-                                                                    {urg.label}
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )
-                            )}
+                                return (
+                                    <>
+                                        {modalAlertaDetalle === 'NO_RECOMENDADOS' && (
+                                            modalAlertasData.noRecomendadosList.length === 0 ? (
+                                                <div style={{ ...styles.emptyState, padding: '40px 16px' }}>
+                                                    No hay proveedores no recomendados con los filtros activos.
+                                                </div>
+                                            ) : (
+                                                <div className="table-scroll">
+                                                    <table style={{ ...styles.table, marginTop: 0 }}>
+                                                        <thead>
+                                                            <tr>
+                                                                <th style={{ ...styles.th, width: '42%' }}>Proveedor</th>
+                                                                <th style={{ ...styles.th, width: '18%' }}>RUC</th>
+                                                                <th style={{ ...styles.th, width: '20%', textAlign: 'center' }}>Régimen</th>
+                                                                <th style={{ ...styles.th, width: '20%', textAlign: 'center' }}>Calificación</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {modalAlertasData.noRecomendadosList.map((prov, index) => (
+                                                                <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                                    <td style={{ ...styles.td }}>
+                                                                        <strong style={{ fontSize: '13.5px' }}>{prov.proveedor_nombre}</strong>
+                                                                    </td>
+                                                                    <td style={{ ...styles.td, color: colors.textMuted, fontSize: '13px' }}>
+                                                                        {prov.nro_documento || 'S/N'}
+                                                                    </td>
+                                                                    <td style={{ ...styles.td, textAlign: 'center' }}>
+                                                                        <span style={{ background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                                                                            {obtenerDescripcionRegimen(prov.regimen_tributario, prov.descripcion_regimen_tributario)}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td style={{ ...styles.td, textAlign: 'center' }}>
+                                                                        <span style={{ ...styles.badge('#fee2e2', '#dc2626'), border: '1px solid #fecaca', padding: '3px 10px', fontSize: '12.5px', fontWeight: 800 }}>
+                                                                            {prov.puntaje_evaluado || 0}%
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )
+                                        )}
 
-                            {modalAlertaDetalle === 'INCOMPLETOS' && (
-                                alertasCalculadas.incompletosList.length === 0 ? (
-                                    <div style={{ ...styles.emptyState, padding: '40px 16px' }}>
-                                        Todos los proveedores han completado la carga de sus documentos exigibles.
-                                    </div>
-                                ) : (
-                                    <div className="table-scroll">
-                                        <table style={{ ...styles.table, marginTop: 0 }}>
-                                            <thead>
-                                                <tr>
-                                                    <th style={{ ...styles.th, width: '42%' }}>Proveedor</th>
-                                                    <th style={{ ...styles.th, width: '18%' }}>RUC</th>
-                                                    <th style={{ ...styles.th, width: '22%', textAlign: 'center' }}>Tipo Régimen</th>
-                                                    <th style={{ ...styles.th, width: '18%', textAlign: 'center' }}>Pendientes</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {alertasCalculadas.incompletosList.map((prov, index) => (
-                                                    <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                        <td style={{ ...styles.td }}>
-                                                            <strong style={{ fontSize: '13.5px' }}>{prov.proveedor_nombre}</strong>
-                                                        </td>
-                                                        <td style={{ ...styles.td, color: colors.textMuted, fontSize: '13px' }}>
-                                                            {prov.nro_documento || 'S/N'}
-                                                        </td>
-                                                        <td style={{ ...styles.td, textAlign: 'center' }}>
-                                                            <span style={{ background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
-                                                                {obtenerDescripcionRegimen(prov.regimen_tributario, prov.descripcion_regimen_tributario)}
-                                                            </span>
-                                                        </td>
-                                                        <td style={{ ...styles.td, textAlign: 'center' }}>
-                                                            <span style={{ ...styles.badge('#fee2e2', '#dc2626'), padding: '3px 10px', fontSize: '12px', fontWeight: 800 }}>
-                                                                {prov.pendientes_evaluados} faltante{prov.pendientes_evaluados === 1 ? '' : 's'}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )
-                            )}
+                                        {modalAlertaDetalle === 'POR_VENCER' && (
+                                            modalAlertasData.porVencerList.length === 0 ? (
+                                                <div style={{ ...styles.emptyState, padding: '40px 16px' }}>
+                                                    No existen documentos próximos a vencer en menos de 15 días.
+                                                </div>
+                                            ) : (
+                                                <div className="table-scroll">
+                                                    <table style={{ ...styles.table, marginTop: 0 }}>
+                                                        <thead>
+                                                            <tr>
+                                                                <th style={{ ...styles.th, width: '30%' }}>Proveedor</th>
+                                                                <th style={{ ...styles.th, width: '20%' }}>Gestión</th>
+                                                                <th style={{ ...styles.th, width: '25%' }}>Tipo Documento</th>
+                                                                <th style={{ ...styles.th, width: '13%', textAlign: 'center' }}>Vencimiento</th>
+                                                                <th style={{ ...styles.th, width: '12%', textAlign: 'center' }}>Urgencia</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {modalAlertasData.porVencerList.map((doc, index) => {
+                                                                const dias = Number(doc.dias_restantes);
+                                                                const urg = urgencia(dias >= 0 ? dias : 0);
+                                                                return (
+                                                                    <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                                        <td style={{ ...styles.td }}>
+                                                                            <strong style={{ fontSize: '13px' }}>{doc.proveedor_nombre}</strong>
+                                                                            <div style={{ fontSize: '11.5px', color: colors.textMuted }}>Doc: {doc.nro_documento || 'S/N'}</div>
+                                                                        </td>
+                                                                        <td style={{ ...styles.td }}>
+                                                                            <span style={{ background: '#eff6ff', color: colors.primary, padding: '2px 8px', borderRadius: '4px', fontSize: '11.5px', fontWeight: 600 }}>
+                                                                                {doc.gestion_nombre || doc.alcance}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td style={{ ...styles.td, fontSize: '13px' }}>
+                                                                            {DOC_DESCRIPCIONES_DASHBOARD[doc.alcance]?.[String(doc.tipo_documento_id).padStart(2, '0')] || `Documento ${doc.tipo_documento_id}`}
+                                                                        </td>
+                                                                        <td style={{ ...styles.td, textAlign: 'center', fontSize: '13px' }}>
+                                                                            {formatearFechaLocal(doc.fecha_vigencia)}
+                                                                        </td>
+                                                                        <td style={{ ...styles.td, textAlign: 'center' }}>
+                                                                            <span style={{ ...styles.badge(urg.bg, urg.fg), padding: '3px 8px', fontSize: '11.5px', fontWeight: 700 }}>
+                                                                                {urg.label}
+                                                                            </span>
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )
+                                        )}
+
+                                        {modalAlertaDetalle === 'INCOMPLETOS' && (
+                                            modalAlertasData.incompletosList.length === 0 ? (
+                                                <div style={{ ...styles.emptyState, padding: '40px 16px' }}>
+                                                    Todos los proveedores han completado la carga de sus documentos exigibles.
+                                                </div>
+                                            ) : (
+                                                <div className="table-scroll">
+                                                    <table style={{ ...styles.table, marginTop: 0 }}>
+                                                        <thead>
+                                                            <tr>
+                                                                <th style={{ ...styles.th, width: '42%' }}>Proveedor</th>
+                                                                <th style={{ ...styles.th, width: '18%' }}>RUC</th>
+                                                                <th style={{ ...styles.th, width: '22%', textAlign: 'center' }}>Tipo Régimen</th>
+                                                                <th style={{ ...styles.th, width: '18%', textAlign: 'center' }}>Pendientes</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {modalAlertasData.incompletosList.map((prov, index) => (
+                                                                <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                                    <td style={{ ...styles.td }}>
+                                                                        <strong style={{ fontSize: '13.5px' }}>{prov.proveedor_nombre}</strong>
+                                                                    </td>
+                                                                    <td style={{ ...styles.td, color: colors.textMuted, fontSize: '13px' }}>
+                                                                        {prov.nro_documento || 'S/N'}
+                                                                    </td>
+                                                                    <td style={{ ...styles.td, textAlign: 'center' }}>
+                                                                        <span style={{ background: '#f3f4f6', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 }}>
+                                                                            {obtenerDescripcionRegimen(prov.regimen_tributario, prov.descripcion_regimen_tributario)}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td style={{ ...styles.td, textAlign: 'center' }}>
+                                                                        <span style={{ ...styles.badge('#fee2e2', '#dc2626'), padding: '3px 10px', fontSize: '12px', fontWeight: 800 }}>
+                                                                            {prov.pendientes_evaluados} faltante{prov.pendientes_evaluados === 1 ? '' : 's'}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )
+                                        )}
+                                    </>
+                                );
+                            })()}
                         </div>
 
                         {/* Footer del Modal */}
