@@ -26,7 +26,8 @@ function AdminLayout({ children }) {
     );
 }
 
-// Ruta pública (Login): si ya está autenticado en cualquier pestaña, redirige directo al dashboard
+// Ruta pública (Login): si ya está autenticado en cualquier pestaña, redirige directo al dashboard (DESHABILITADO TEMPORALMENTE)
+/*
 function PublicRoute({ children }) {
     const token = localStorage.getItem('token');
     const usuario = localStorage.getItem('usuario');
@@ -35,6 +36,7 @@ function PublicRoute({ children }) {
     }
     return children;
 }
+*/
 
 // Ruta protegida: si no está autenticado, redirige al login
 function ProtectedRoute({ children }) {
@@ -50,8 +52,9 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Ruta de Login (redirecciona a /dashboard si ya hay sesión iniciada) */}
-                <Route path="/" element={<PublicRoute><LoginPage /></PublicRoute>} />
+                {/* Ruta de Login suelto */}
+                {/* <Route path="/" element={<PublicRoute><LoginPage /></PublicRoute>} /> */}
+                <Route path="/" element={<LoginPage />} />
 
                 {/* Rutas principales protegidas */}
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

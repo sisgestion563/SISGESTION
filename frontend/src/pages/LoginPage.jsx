@@ -47,7 +47,8 @@ export default function LoginPage() {
   const { doLogin } = useAuth();
   const navigate = useNavigate();
 
-  // ── Auto-redirección si ya existe sesión iniciada en otra pestaña ──────────
+  // ── Auto-redirección si ya existe sesión iniciada en otra pestaña (DESHABILITADO TEMPORALMENTE) ──────────
+  /*
   const estaAutenticado = Boolean(localStorage.getItem('token') && localStorage.getItem('usuario'));
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function LoginPage() {
       navigate('/dashboard', { replace: true });
     }
   }, [estaAutenticado, navigate]);
+  */
 
   // ── Estado Login ─────────────────────────────────────────────────────────
   const [username, setUsername] = useState('');
