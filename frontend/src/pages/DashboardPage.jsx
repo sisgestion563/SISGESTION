@@ -424,6 +424,26 @@ const obtenerDescripcionRegimen = (regimen, descripcion) => {
     return MAPA_REGIMENES[code] || (code === 'RG' ? 'Régimen General' : code === 'RP' ? 'Pequeña Empresa' : code === 'RM' ? 'Micro Empresa' : regimen);
 };
 
+const obtenerNombreGestionFiltro = (gestionFiltro) => {
+    if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL')) {
+        return 'Todas las Gestiones';
+    }
+    const nombres = (Array.isArray(gestionFiltro) ? gestionFiltro : [gestionFiltro])
+        .map(code => GESTION_MAP[code]?.nombre || code)
+        .filter(Boolean);
+    return nombres.join(', ') || 'Todas las Gestiones';
+};
+
+const obtenerEtiquetaFiltrosActivos = (gestionFiltro, periodoFiltro, rubroFiltro) => {
+    const isAllGestiones = !gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL');
+    const gestionTexto = isAllGestiones ? 'Todas las Gestiones' : obtenerNombreGestionFiltro(gestionFiltro);
+    const partes = [];
+    if (periodoFiltro) partes.push(`Periodo: ${periodoFiltro}`);
+    if (rubroFiltro && rubroFiltro !== 'ALL') partes.push(`Rubro: ${rubroFiltro}`);
+    partes.push(`Gestión: ${gestionTexto}`);
+    return partes.join(' · ');
+};
+
 const calcularRankingYAlertas = (rawRanking, rawAlertas, gestionesCodeArray) => {
     const isAll = !gestionesCodeArray || gestionesCodeArray.length === 0 || gestionesCodeArray.includes('ALL');
     const configs = isAll ? [] : gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
@@ -1266,7 +1286,7 @@ useEffect(() => {
                         {esProveedor
                             ? 'Resumen analítico y alertas del estado de vigencia de sus expedientes cargados.'
                             : esConsultor
-                                ? 'Vista general del sistema. Acceso de solo lectura para auditorías corporativas.'
+                                ? `Panel de auditoría y KPIs de cumplimiento documental (${periodoFiltro}${rubroFiltro !== 'ALL' ? ` · Rubro: ${rubroFiltro}` : ''} · ${obtenerNombreGestionFiltro(gestionFiltro)}).`
                                 : 'Vista general del sistema para gestión de auditorías corporativas.'}
                     </p>
                 </div>
@@ -1444,6 +1464,9 @@ if (!isAllGestiones && cumplimientoGlobal?.length > 0) {
             cantidad_documentos_vigentes:
                 totalVigentes,
 
+            total_exigibles:
+                totalExigibles,
+
             puntaje_formateado:
                 `${Math.round(puntajeRaw)} / 100`,
 
@@ -1545,10 +1568,11 @@ const puntaje = Number(
                             color: colors.textMuted,
                             margin: '4px 0 0 0'
                         }}>
-                            Régimen Tributario:{' '}
+                            KPI de Calificación | Régimen:{' '}
                             <strong>
                                 {obtenerDescripcionRegimen(calificacionConsultor.regimen_tributario_codigo || calificacionConsultor.regimen_tributario, calificacionConsultor.descripcion_regimen_tributario || calificacionConsultor.regimen_tributario)}
-                            </strong>
+                            </strong>{' '}
+                            | {obtenerEtiquetaFiltrosActivos(gestionFiltro, periodoFiltro, rubroFiltro)}
                         </p>
                     </div>
 
@@ -1666,10 +1690,15 @@ const puntaje = Number(
                         fontWeight: 700,
                         color: colors.textMuted
                     }}>
-                        Documentos vigentes evaluados:{' '}
+                        KPI de Efectividad Documental:{' '}
                         <strong style={{ color: colors.primary }}>
                             {calificacionMostrar.cantidad_documentos_vigentes ?? 0}
                         </strong>
+                        {' '}documentos vigentes evaluados de{' '}
+                        <strong style={{ color: colors.text }}>
+                            {calificacionMostrar.total_exigibles ?? calificacionConsultor.total_documentos_exigibles ?? (calificacionConsultor.regimen_tributario_codigo === 'RM' ? 11 : calificacionConsultor.regimen_tributario_codigo === 'RP' ? 13 : 16)}
+                        </strong>
+                        {' '}exigibles ({obtenerNombreGestionFiltro(gestionFiltro)}).
                     </span>
                 </div>
 
@@ -1695,7 +1724,7 @@ const puntaje = Number(
                                         CUMPLIMIENTO POR GESTIÓN
                                     </h3>
                                     <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
-                                        Indicadores de cumplimiento de los proveedores por cada área de gestión.
+                                        KPI en función a los filtros seleccionados.
                                     </p>
                                 </div>
                             </div>
@@ -1805,7 +1834,6 @@ const puntaje = Number(
                         const porVencList = alertasCalculadas.porVencerList.filter(d => String(d.proveedor_id) === String(proveedorSeleccionado));
                         const incompList = alertasCalculadas.incompletosList.filter(p => String(p.proveedor_id) === String(proveedorSeleccionado));
                         const incompCount = incompList.length > 0 ? (incompList[0].pendientes_evaluados ?? incompList.length) : 0;
-                        const totalIncidencias = noRecList.length + (porVencList.length > 0 ? 1 : 0) + (incompCount > 0 ? 1 : 0);
 
                         return (
                             <div
@@ -1856,28 +1884,10 @@ const puntaje = Number(
                                                     Alertas del Proveedor
                                                 </h2>
                                                 <p style={{ color: colors.textMuted, fontSize: '12.5px', margin: '2px 0 0 0' }}>
-                                                    Monitoreo preventivo del proveedor seleccionado.
+                                                    KPI en función a los filtros seleccionados.
                                                 </p>
                                             </div>
                                         </div>
-
-                                        <span style={{
-                                            background: '#fef2f2',
-                                            color: '#b91c1c',
-                                            fontWeight: 700,
-                                            fontSize: '12px',
-                                            padding: '4px 12px',
-                                            borderRadius: '999px',
-                                            border: '1px solid #fecaca',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '5px'
-                                        }}>
-                                            <span>Total incidencias:</span>
-                                            <strong style={{ color: '#991b1b' }}>
-                                                {totalIncidencias}
-                                            </strong>
-                                        </span>
                                     </div>
 
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -2036,7 +2046,7 @@ const puntaje = Number(
                                     fontSize: '12px',
                                     color: colors.textMuted
                                 }}>
-                                    <span>Haga clic en cualquier alerta para ver el detalle.</span>
+                                    <span>KPI de Alerta Preventiva: Haga clic en cualquier alerta para ver el detalle.</span>
                                 </div>
                             </div>
                         );
@@ -2047,16 +2057,11 @@ const puntaje = Number(
 
                      {/* ── VISTA CONSULTOR: TARJETA GENERAL PROVEEDORES SOLO NUMEROS (Agrandada y Destacada) EROMAN 03/09/2026─────────── */}
                     {esConsultor && (() => {
-                        const totalP = Number(cumplimientoProveedores?.total_proveedores ?? resumen?.total_proveedores ?? 0);
-                        const recP = Number(cumplimientoProveedores?.recomendados ?? 0);
-                        const restP = Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
-                        const noRecP = Number(cumplimientoProveedores?.no_recomendados ?? 0);
+                        const totalP = rankingCalculado.length > 0 ? rankingCalculado.length : Number(cumplimientoProveedores?.total_proveedores ?? resumen?.total_proveedores ?? 0);
+                        const recP = rankingCalculado.length > 0 ? rankingCalculado.filter(p => p.puntaje_evaluado > 90).length : Number(cumplimientoProveedores?.recomendados ?? 0);
+                        const restP = rankingCalculado.length > 0 ? rankingCalculado.filter(p => p.puntaje_evaluado >= 75 && p.puntaje_evaluado <= 90).length : Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
+                        const noRecP = rankingCalculado.length > 0 ? rankingCalculado.filter(p => p.puntaje_evaluado < 75).length : Number(cumplimientoProveedores?.no_recomendados ?? 0);
 
-                        /*const recPct = totalP > 0 ? Math.round((recP / totalP) * 100) : 0;
-                        const restPct = totalP > 0 ? Math.round((restP / totalP) * 100) : 0;
-                        const noRecPct = totalP > 0 ? Math.round((noRecP / totalP) * 100) : 0;*/
-
-                        
                         return (
                             <div style={{
                                 ...styles.card,
@@ -2101,7 +2106,7 @@ const puntaje = Number(
                                                 Proveedores
                                             </h2>
                                             <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
-                                                Distribución global del cumplimiento y calificación de proveedores en el sistema.
+                                                KPI en función a los filtros seleccionados.
                                             </p>
                                         </div>
                                     </div>
@@ -2251,16 +2256,15 @@ const puntaje = Number(
 
                     {/* ── VISTA CONSULTOR: TARJETA GENERAL PROVEEDORES (Agrandada y Destacada) ─────────── */}
                     {esConsultor && (() => {
-                        const totalP = Number(cumplimientoProveedores?.total_proveedores ?? resumen?.total_proveedores ?? 0);
-                        const recP = Number(cumplimientoProveedores?.recomendados ?? 0);
-                        const restP = Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
-                        const noRecP = Number(cumplimientoProveedores?.no_recomendados ?? 0);
+                        const totalP = rankingCalculado.length > 0 ? rankingCalculado.length : Number(cumplimientoProveedores?.total_proveedores ?? resumen?.total_proveedores ?? 0);
+                        const recP = rankingCalculado.length > 0 ? rankingCalculado.filter(p => p.puntaje_evaluado > 90).length : Number(cumplimientoProveedores?.recomendados ?? 0);
+                        const restP = rankingCalculado.length > 0 ? rankingCalculado.filter(p => p.puntaje_evaluado >= 75 && p.puntaje_evaluado <= 90).length : Number(cumplimientoProveedores?.recomendados_con_restricciones ?? 0);
+                        const noRecP = rankingCalculado.length > 0 ? rankingCalculado.filter(p => p.puntaje_evaluado < 75).length : Number(cumplimientoProveedores?.no_recomendados ?? 0);
 
                         const recPct = totalP > 0 ? Math.round((recP / totalP) * 100) : 0;
                         const restPct = totalP > 0 ? Math.round((restP / totalP) * 100) : 0;
                         const noRecPct = totalP > 0 ? Math.round((noRecP / totalP) * 100) : 0;
 
-                        
                         return (
                             <div style={{
                                 ...styles.card,
@@ -2305,7 +2309,7 @@ const puntaje = Number(
                                                 Salud De La Cartera
                                             </h2>
                                             <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
-                                                Distribución global del cumplimiento y calificación de proveedores en el sistema.
+                                                KPI en función a los filtros seleccionados.
                                             </p>
                                         </div>
                                     </div>
@@ -2522,7 +2526,7 @@ const puntaje = Number(
                                                     Ranking de Proveedores
                                                 </h2>
                                                 <p style={{ color: colors.textMuted, fontSize: '12.5px', margin: '2px 0 0 0' }}>
-                                                    Top proveedores con las mejores calificaciones del sistema.
+                                                    KPI en función a los filtros seleccionados.
                                                 </p>
                                             </div>
                                         </div>
@@ -2748,28 +2752,10 @@ const puntaje = Number(
                                                     Alertas de la Cartera
                                                 </h2>
                                                 <p style={{ color: colors.textMuted, fontSize: '12.5px', margin: '2px 0 0 0' }}>
-                                                    Monitoreo global de proveedores e incidencias críticas.
+                                                    KPI en función a los filtros seleccionados.
                                                 </p>
                                             </div>
                                         </div>
-
-                                        <span style={{
-                                            background: '#fef2f2',
-                                            color: '#b91c1c',
-                                            fontWeight: 700,
-                                            fontSize: '12px',
-                                            padding: '4px 12px',
-                                            borderRadius: '999px',
-                                            border: '1px solid #fecaca',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '5px'
-                                        }}>
-                                            <span>Total incidencias:</span>
-                                            <strong style={{ color: '#991b1b' }}>
-                                                {alertasCalculadas.noRecomendadosCount + (alertasCalculadas.porVencerCount > 0 ? 1 : 0) + (alertasCalculadas.incompletosCount > 0 ? 1 : 0)}
-                                            </strong>
-                                        </span>
                                     </div>
 
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -3000,7 +2986,7 @@ const puntaje = Number(
                                     fontSize: '12px',
                                     color: colors.textMuted
                                 }}>
-                                    <span>Haga clic en cualquier alerta para ver el detalle.</span>
+                                    <span>KPI de Alerta Preventiva: Haga clic en cualquier alerta para ver el detalle de proveedores y documentos observados.</span>
                                 </div>
                             </div>
                         </div>
