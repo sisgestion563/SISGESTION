@@ -1,19 +1,7 @@
-import {
-    useEffect,
-    useState,
-    useRef
-} from 'react';
-import { useNavigate } from 'react-router-dom';
-
+import {useEffect,useState,useRef} from 'react';
+import {useNavigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
-
-import {
-    Tooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell
-} from 'recharts';
+import {Tooltip,ResponsiveContainer,PieChart,Pie,Cell} from 'recharts';
 
 import {
     obtenerResumen,
@@ -26,2034 +14,1998 @@ import {
     obtenerResumenProveedoresCumplimiento,
     obtenerCumplimientoGlobalPorGestion,
     obtenerRankingProveedores,
-    obtenerAlertasConsultor
-} from '../services/dashboard.service';
+    obtenerAlertasConsultor} from '../services/dashboard.service';
 
 import { obtenerCatalogo, obtenerPeriodos } from '../services/catalogos.service';
-
 // Reutilizamos el servicio para listar los expedientes por grupo corporativo
 import { listarPorGrupo } from '../services/documentos.service';
 import { obtenerProveedorPorId } from '../services/providers.service';
 
-const formatearFechaLocal = (fechaString) => {
-    if (!fechaString) return '';
-    const datePart = typeof fechaString === 'string' ? fechaString.split('T')[0] : new Date(fechaString).toISOString().split('T')[0];
-    const parts = datePart.split('-');
-    if (parts.length !== 3) return fechaString;
-    const [year, month, day] = parts;
-    return `${day}/${month}/${year}`;
-};
+const formatearFechaLocal = (fechaString) => 
+    {
+        if (!fechaString) return '';
+            const datePart = typeof fechaString === 'string' ? fechaString.split('T')[0] : new Date(fechaString).toISOString().split('T')[0];
+            const parts = datePart.split('-');
+        if (parts.length !== 3) return fechaString;
+            const [year, month, day] = parts;
+        return `${day}/${month}/${year}`;
+    };
 
 // Misma paleta usada en DocumentsPage (navy sidebar + acentos azul/ámbar)
-const colors = {
-    bg: '#f3f4f6',
-    card: '#ffffff',
-    border: '#e5e7eb',
-    text: '#111827',
-    textMuted: '#6b7280',
-    primary: '#2563eb',
-    amber: '#f59e0b',
-    danger: '#dc2626',
-    dangerBg: '#fee2e2',
-    success: '#16a34a',
-    successBg: '#dcfce7',
-};
+const colors = 
+    {
+        bg: '#f3f4f6',
+        card: '#ffffff',
+        border: '#e5e7eb',
+        text: '#111827',
+        textMuted: '#6b7280',
+        primary: '#2563eb',
+        amber: '#f59e0b',
+        danger: '#dc2626',
+        dangerBg: '#fee2e2',
+        success: '#16a34a',
+        successBg: '#dcfce7',
+    };
 
-const styles = {
-    heading: {
-        fontSize: '24px',
-        fontWeight: 700,
-        color: colors.text,
-        margin: 0,
-    },
-    card: {
-        background: colors.card,
-        border: `1px solid ${colors.border}`,
-        borderRadius: '12px',
-        padding: '24px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-    },
-    statCard: (accent) => ({
-        background: colors.card,
-        border: `1px solid ${colors.border}`,
-        borderLeft: `4px solid ${accent}`,
-        borderRadius: '12px',
-        padding: '20px 24px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-    }),
-    statLabel: {
-        fontSize: '13px',
-        fontWeight: 700,
-        color: colors.text,
-        margin: 0,
-        textTransform: 'uppercase',
-        letterSpacing: '0.03em',
-    },
-    statValue: (accent) => ({
-        fontSize: '32px',
-        fontWeight: 700,
-        color: accent,
-        margin: '8px 0 0 0',
-    }),
-    sectionTitle: {
-        fontSize: '17px',
-        fontWeight: 700,
-        color: colors.text,
-        margin: '0 0 16px 0',
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-        marginTop: '4px',
-    },
-    th: {
-        textAlign: 'left',
-        padding: '12px 16px',
-        fontSize: '13px',
-        fontWeight: 700,
-        color: colors.text,
-        borderBottom: `1px solid ${colors.border}`,
-        background: '#f9fafb',
-    },
-    td: {
-        padding: '14px 16px',
-        fontSize: '14px',
-        color: colors.text,
-        borderBottom: `1px solid ${colors.border}`,
-    },
-    badge: (bg, fg) => ({
-        display: 'inline-block',
-        padding: '4px 12px',
-        borderRadius: '999px',
-        fontSize: '12px',
-        fontWeight: 700,
-        background: bg,
-        color: fg,
-    }),
-    emptyState: {
-        padding: '32px 16px',
-        textAlign: 'center',
-        color: colors.textMuted,
-        fontSize: '14px',
-    },
-};
+const styles = 
+    {
+        heading: {
+            fontSize: '24px',
+            fontWeight: 700,
+            color: colors.text,
+            margin: 0,
+        },
+        card: {
+            background: colors.card,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '12px',
+            padding: '24px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+        },
+        statCard: (accent) => ({
+            background: colors.card,
+            border: `1px solid ${colors.border}`,
+            borderLeft: `4px solid ${accent}`,
+            borderRadius: '12px',
+            padding: '20px 24px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+        }),
+        statLabel: {
+            fontSize: '13px',
+            fontWeight: 700,
+            color: colors.text,
+            margin: 0,
+            textTransform: 'uppercase',
+            letterSpacing: '0.03em',
+        },
+        statValue: (accent) => ({
+            fontSize: '32px',
+            fontWeight: 700,
+            color: accent,
+            margin: '8px 0 0 0',
+        }),
+        sectionTitle: {
+            fontSize: '17px',
+            fontWeight: 700,
+            color: colors.text,
+            margin: '0 0 16px 0',
+        },
+        table: {
+            width: '100%',
+            borderCollapse: 'collapse',
+            marginTop: '4px',
+        },
+        th: {
+            textAlign: 'left',
+            padding: '12px 16px',
+            fontSize: '13px',
+            fontWeight: 700,
+            color: colors.text,
+            borderBottom: `1px solid ${colors.border}`,
+            background: '#f9fafb',
+        },
+        td: {
+            padding: '14px 16px',
+            fontSize: '14px',
+            color: colors.text,
+            borderBottom: `1px solid ${colors.border}`,
+        },
+        badge: (bg, fg) => ({
+            display: 'inline-block',
+            padding: '4px 12px',
+            borderRadius: '999px',
+            fontSize: '12px',
+            fontWeight: 700,
+            background: bg,
+            color: fg,
+        }),
+        emptyState: {
+            padding: '32px 16px',
+            textAlign: 'center',
+            color: colors.textMuted,
+            fontSize: '14px',
+        },
+    };
 
 // Determina si un registro de "estado" corresponde a vigente o vencido,
 // sin depender del orden en que llegue el arreglo del backend.
-const esVigente = (item) => {
-    const ref = `${item.estado_documento || ''} ${item.descripcion || ''}`.toUpperCase();
-    return ref.includes('VIG');
-};
-
+const esVigente = (item) => 
+    {
+        const ref = `${item.estado_documento || ''} ${item.descripcion || ''}`.toUpperCase();
+        return ref.includes('VIG');
+    };
 // Urgencia para "Próximos a Vencer": rojo <=15 días, ámbar <=30 días, verde el resto.
-const urgencia = (dias) => {
-    if (dias <= 15) return { label: `${dias} día${dias === 1 ? '' : 's'}`, bg: colors.dangerBg, fg: colors.danger };
-    if (dias <= 30) return { label: `${dias} días`, bg: '#fef3c7', fg: '#b45309' };
-    return { label: `${dias} días`, bg: colors.successBg, fg: colors.success };
-};
+const urgencia = (dias) =>
+    {
+        if (dias <= 15) return { label: `${dias} día${dias === 1 ? '' : 's'}`, bg: colors.dangerBg, fg: colors.danger };
+        if (dias <= 30) return { label: `${dias} días`, bg: '#fef3c7', fg: '#b45309' };
+        return { label: `${dias} días`, bg: colors.successBg, fg: colors.success };
+    };
 
 const responsiveCSS = `
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        margin-top: 30px;
-    }
-    .stats-grid.proveedor {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    @media (max-width: 900px) {
-        .stats-grid, .stats-grid.proveedor { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 560px) {
-        .stats-grid, .stats-grid.proveedor { grid-template-columns: 1fr; }
-    }
-    .consultor-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
-        margin-top: 28px;
-    }
-    @media (max-width: 960px) {
-        .consultor-grid { grid-template-columns: 1fr; }
-    }
-    
-    .consultor-cartera-grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 16px;
-    margin-bottom: 28px;
-}
+                        .stats-grid {
+                            display: grid;
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 20px;
+                            margin-top: 30px;
+                        }
+                        .stats-grid.proveedor {
+                            grid-template-columns: repeat(2, 1fr);
+                        }
+                        @media (max-width: 900px) {
+                            .stats-grid, .stats-grid.proveedor { grid-template-columns: repeat(2, 1fr); }
+                        }
+                        @media (max-width: 560px) {
+                            .stats-grid, .stats-grid.proveedor { grid-template-columns: 1fr; }
+                        }
+                        .consultor-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 24px;
+                            margin-top: 28px;
+                        }
+                        @media (max-width: 960px) {
+                            .consultor-grid { grid-template-columns: 1fr; }
+                        }
+                        
+                        .consultor-cartera-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 2fr;
+                        gap: 16px;
+                        margin-bottom: 28px;
+                        }
 
-@media (max-width: 960px) {
-    .consultor-cartera-grid {
-        grid-template-columns: 1fr;
-    }
-}
+                        @media (max-width: 960px) {
+                            .consultor-cartera-grid {
+                                grid-template-columns: 1fr;
+                            }
+                        }
 
-.consultor-cumplimiento-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 28px;
-}
+                        .consultor-cumplimiento-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 16px;
+                            margin-bottom: 28px;
+                        }
 
-.consultor-cumplimiento-full {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-bottom: 28px;
-}
+                        .consultor-cumplimiento-full {
+                            display: grid;
+                            grid-template-columns: 1fr;
+                            gap: 16px;
+                            margin-bottom: 28px;
+                        }
 
-.consultor-proveedor-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.25fr 2fr;
-    gap: 16px;
-    align-items: stretch;
-    margin-bottom: 28px;
-}
+                        .consultor-proveedor-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1.25fr 2fr;
+                            gap: 16px;
+                            align-items: stretch;
+                            margin-bottom: 28px;
+                        }
 
-.consultor-proveedor-grid-full {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-bottom: 28px;
-}
+                        .consultor-proveedor-grid-full {
+                            display: grid;
+                            grid-template-columns: 1fr;
+                            gap: 16px;
+                            margin-bottom: 28px;
+                        }
 
-.consultor-calificacion-card {
-    order: 1;
-}
+                        .consultor-calificacion-card {
+                            order: 1;
+                        }
 
-.consultor-alertas-card {
-    order: 2;
-}
+                        .consultor-alertas-card {
+                            order: 2;
+                        }
 
-.consultor-cumplimiento-card {
-    order: 3;
-}
+                        .consultor-cumplimiento-card {
+                            order: 3;
+                        }
 
-@media (max-width: 1200px) {
-    .consultor-proveedor-grid {
-        grid-template-columns: 1fr;
-    }
-}
+                        @media (max-width: 1200px) {
+                            .consultor-proveedor-grid {
+                                grid-template-columns: 1fr;
+                            }
+                        }
 
-@media (max-width: 960px) {
-    .consultor-cumplimiento-grid {
-        grid-template-columns: 1fr;
-    }
-}
+                        @media (max-width: 960px) {
+                            .consultor-cumplimiento-grid {
+                                grid-template-columns: 1fr;
+                            }
+                        }
 
-
-    .pie-chart-wrap {
-        width: 60%;
-    }
-    @media (max-width: 700px) {
-        .pie-chart-wrap { width: 100%; }
-    }
-    .table-scroll {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .table-scroll table {
-        min-width: 480px;
-    }
-`;
+                        .pie-chart-wrap {
+                            width: 60%;
+                        }
+                        @media (max-width: 700px) {
+                            .pie-chart-wrap { width: 100%; }
+                        }
+                        .table-scroll {
+                            width: 100%;
+                            overflow-x: auto;
+                            -webkit-overflow-scrolling: touch;
+                        }
+                        .table-scroll table {
+                            min-width: 480px;
+                        }
+                    `;
 
 // ── Helper seguro para leer el usuario del localStorage ───────────────────────
-const obtenerUsuario = () => {
-    try {
-        const raw = localStorage.getItem('usuario');
-        return raw ? JSON.parse(raw) : null;
-    } catch {
-        return null;
-    }
-};
+const obtenerUsuario = () => 
+    {
+        try 
+            {
+                const raw = localStorage.getItem('usuario');
+                return raw ? JSON.parse(raw) : null;
+            } 
+        catch
+            {
+                return null;
+            }
+    };
 
 // ── Grupos documentales fijos para el dashboard del PROVEEDOR ─────────────────
 const CODIGOS_GRUPOS = ['DOC_NOR', 'DOC_EXT_NOR', 'DOC_REQ_ESTATAL', 'DOC_OTROS'];
-const NOMBRES_GRUPOS = {
-    'DOC_NOR': 'Gestión SST-MA',
-    'DOC_EXT_NOR': 'Gestión de Calidad',
-    'DOC_REQ_ESTATAL': 'Gestión Seg. Patrimonial',
-    'DOC_OTROS': 'Código Ética'
-};
-
-const GESTION_MAP = {
-    'GSG,GMA': { nombre: 'Gestión SST-MA', grupo: 'DOC_NOR', alcances: ['GSG', 'GMA'], kpiMatch: ['SST', 'MA'] },
-    'GCA': { nombre: 'Gestión de Calidad', grupo: 'DOC_EXT_NOR', alcances: ['GCA'], kpiMatch: ['CALIDAD'] },
-    'GPA': { nombre: 'Gestión Seg. Patrimonial', grupo: 'DOC_REQ_ESTATAL', alcances: ['GPA'], kpiMatch: ['PATRIMONIAL'] },
-    'GTR': { nombre: 'Código Ética', grupo: 'DOC_OTROS', alcances: ['GTR'], kpiMatch: ['ETICA'] }
-};
-
-const DOC_DESCRIPCIONES_DASHBOARD = {
-    GSG: {
-        '01': 'Accidentes de Trabajo, Enfermedades Ocupacionales e Incidentes',
-        '02': 'Exámenes Médicos Ocupacionales',
-        '03': 'Monitoreo de Agentes',
-        '04': 'Inspecciones Internas',
-        '05': 'Estadísticas',
-        '06': 'Equipos de Seguridad o Emergencia',
-        '07': 'Capacitación y Simulacros',
-        '08': 'Auditorías',
-        '09': 'Reglamento Interno de Seguridad y Salud en el Trabajo.',
-        '10': 'Identificación de peligros, evaluación de riesgos y sus medidas de control(IPERC)',
-        '11': 'Comité SST',
-        '12': 'Plan y Programa Anual de Seguridad y Salud en el Trabajo.',
-        '13': 'Supervisor SST (Elegido si tiene menos de 20 trabajadores).',
-        '15': 'Comité SST (Obligatorio si supera los 20 trabajadores)'
-    },
-    GMA: {
-        '01': 'Matriz PAMA',
-        '02': 'Otros(Certificaciones, declaraciones, manifiestos, informes)'
-    },
-    GCA: {
-        '01': 'Certificaciones ISO 9001',
-        '02': 'Certificaciones diversas(Homologaciones)'
-    },
-    GPA: {
-        '01': 'Plán de Contigencia',
-        '02': 'Otros'
-    },
-    GTR: {
-        '01': 'Carta de Presentación',
-        '02': 'Otros'
-    }
-};
-
-const REQUERIDOS_SST_DASHBOARD = {
-    RM: ['01', '02', '04', '07', '09', '12', '13'],
-    RP: ['01', '02', '03', '04', '05', '07', '09', '10', '12'],
-    RG: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-};
-
-const calcularPendientesProveedor = (regimenInput, nroTrabajadores, uploadedDocs, nombreProveedor) => {
-    const reg = (regimenInput || 'RG').toUpperCase();
-    const isRM = reg === 'RM' || reg.includes('MICRO');
-    const isRP = reg === 'RP' || reg.includes('PEQUEÑA') || reg.includes('PEQUENA');
-    const regCode = isRM ? 'RM' : (isRP ? 'RP' : 'RG');
-
-    const listaPendientes = [];
-    const docs = (uploadedDocs || []).filter(Boolean);
-    const uploadedSet = new Set(docs.map(d => `${d.alcance || ''}_${String(d.tipo_documento_id || '').padStart(2, '0')}`));
-    const uploadedByAlcance = {
-        GSG: docs.filter(d => d && d.alcance === 'GSG'),
-        GMA: docs.filter(d => d && d.alcance === 'GMA'),
-        GCA: docs.filter(d => d && d.alcance === 'GCA'),
-        GPA: docs.filter(d => d && d.alcance === 'GPA'),
-        GTR: docs.filter(d => d && d.alcance === 'GTR')
+const NOMBRES_GRUPOS = { 'DOC_NOR': 'Gestión SST-MA','DOC_EXT_NOR': 'Gestión de Calidad','DOC_REQ_ESTATAL': 'Gestión Seg. Patrimonial','DOC_OTROS': 'Código Ética'};
+//
+const GESTION_MAP = 
+    {
+        'GSG,GMA': { nombre: 'Gestión SST-MA', grupo: 'DOC_NOR', alcances: ['GSG', 'GMA'], kpiMatch: ['SST', 'MA'] },
+        'GCA': { nombre: 'Gestión de Calidad', grupo: 'DOC_EXT_NOR', alcances: ['GCA'], kpiMatch: ['CALIDAD'] },
+        'GPA': { nombre: 'Gestión Seg. Patrimonial', grupo: 'DOC_REQ_ESTATAL', alcances: ['GPA'], kpiMatch: ['PATRIMONIAL'] },
+        'GTR': { nombre: 'Código Ética', grupo: 'DOC_OTROS', alcances: ['GTR'], kpiMatch: ['ETICA'] }
     };
 
-    // 1. SST (GSG)
-    let reqSST = [...(REQUERIDOS_SST_DASHBOARD[regCode] || REQUERIDOS_SST_DASHBOARD.RG)];
-    if (regCode === 'RP') {
-        const trabStr = String(nroTrabajadores || '');
-        const esMas20 = trabStr.includes('MT') || trabStr.includes('>20') || trabStr.includes('MAS DE 20') || parseInt(trabStr, 10) > 20;
-        if (esMas20 && !reqSST.includes('15')) {
-            reqSST.push('15');
-        }
-    }
+const DOC_DESCRIPCIONES_DASHBOARD = 
+    {
+        GSG: 
+            {
+                '01': 'Accidentes de Trabajo, Enfermedades Ocupacionales e Incidentes',
+                '02': 'Exámenes Médicos Ocupacionales',
+                '03': 'Monitoreo de Agentes',
+                '04': 'Inspecciones Internas',
+                '05': 'Estadísticas',
+                '06': 'Equipos de Seguridad o Emergencia',
+                '07': 'Capacitación y Simulacros',
+                '08': 'Auditorías',
+                '09': 'Reglamento Interno de Seguridad y Salud en el Trabajo.',
+                '10': 'Identificación de peligros, evaluación de riesgos y sus medidas de control(IPERC)',
+                '11': 'Comité SST',
+                '12': 'Plan y Programa Anual de Seguridad y Salud en el Trabajo.',
+                '13': 'Supervisor SST (Elegido si tiene menos de 20 trabajadores).',
+                '15': 'Comité SST (Obligatorio si supera los 20 trabajadores)'
+            },
+    
+        GMA: {
+                '01': 'Matriz PAMA',
+                '02': 'Otros(Certificaciones, declaraciones, manifiestos, informes)'
+            },
 
-    reqSST.forEach(docId => {
-        const idPad = String(docId).padStart(2, '0');
-        if (!uploadedSet.has(`GSG_${idPad}`)) {
-            const desc = DOC_DESCRIPCIONES_DASHBOARD.GSG[idPad] || `Documento ${idPad}`;
-            listaPendientes.push({
-                proveedor: nombreProveedor,
-                grupo_documentos: 'DOC_NOR',
-                alcance: 'GSG',
-                alcance_nombre: 'SST',
-                gestion: 'GESTIÓN SST',
-                tipo_documento_id: idPad,
-                tipo_documento: `${idPad} - ${desc}`,
-                descripcion_tipo_documento: desc,
-                estado: 'Pendiente de ingresar'
+        GCA: {
+                '01': 'Certificaciones ISO 9001',
+                '02': 'Certificaciones diversas(Homologaciones)'
+            },
+
+        GPA: {
+                '01': 'Plán de Contigencia',
+                '02': 'Otros'
+            },
+    
+        GTR: {
+                '01': 'Carta de Presentación',
+                '02': 'Otros'
+            }
+    };
+
+const REQUERIDOS_SST_DASHBOARD = 
+    {
+        RM: ['01', '02', '04', '07', '09', '12', '13'],
+        RP: ['01', '02', '03', '04', '05', '07', '09', '10', '12'],
+        RG: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+    };
+
+const calcularPendientesProveedor = (regimenInput, nroTrabajadores, uploadedDocs, nombreProveedor) => 
+    {
+        const reg = (regimenInput || 'RG').toUpperCase();
+        const isRM = reg === 'RM' || reg.includes('MICRO');
+        const isRP = reg === 'RP' || reg.includes('PEQUEÑA') || reg.includes('PEQUENA');
+        const regCode = isRM ? 'RM' : (isRP ? 'RP' : 'RG');
+
+        const listaPendientes = [];
+        const docs = (uploadedDocs || []).filter(Boolean);
+        const uploadedSet = new Set(docs.map(d => `${d.alcance || ''}_${String(d.tipo_documento_id || '').padStart(2, '0')}`));
+        const uploadedByAlcance = 
+            {
+                GSG: docs.filter(d => d && d.alcance === 'GSG'),
+                GMA: docs.filter(d => d && d.alcance === 'GMA'),
+                GCA: docs.filter(d => d && d.alcance === 'GCA'),
+                GPA: docs.filter(d => d && d.alcance === 'GPA'),
+                GTR: docs.filter(d => d && d.alcance === 'GTR')
+            };
+
+        // 1. SST (GSG)
+        let reqSST = [...(REQUERIDOS_SST_DASHBOARD[regCode] || REQUERIDOS_SST_DASHBOARD.RG)];
+        if (regCode === 'RP')
+            {
+                const trabStr = String(nroTrabajadores || '');
+                const esMas20 = trabStr.includes('MT') || trabStr.includes('>20') || trabStr.includes('MAS DE 20') || parseInt(trabStr, 10) > 20;
+                if (esMas20 && !reqSST.includes('15')) 
+                    {
+                        reqSST.push('15');
+                    }
+            }
+
+        reqSST.forEach(docId => 
+            {
+                const idPad = String(docId).padStart(2, '0');
+                if (!uploadedSet.has(`GSG_${idPad}`)) 
+                    {
+                        const desc = DOC_DESCRIPCIONES_DASHBOARD.GSG[idPad] || `Documento ${idPad}`;
+                        listaPendientes.push({
+                                                proveedor: nombreProveedor,
+                                                grupo_documentos: 'DOC_NOR',
+                                                alcance: 'GSG',
+                                                alcance_nombre: 'SST',
+                                                gestion: 'GESTIÓN SST',
+                                                tipo_documento_id: idPad,
+                                                tipo_documento: `${idPad} - ${desc}`,
+                                                descripcion_tipo_documento: desc,
+                                                estado: 'Pendiente de ingresar'
+                                            });
+                    }
             });
-        }
-    });
 
-    // 2. MA (GMA), CALIDAD (GCA), PATRIMONIAL (GPA), ETICA (GTR)
-    const sencillas = [
-        { alcance: 'GMA', alcanceNombre: 'MA', gestion: 'GESTIÓN MA', grupo: 'DOC_NOR', defaultId: '01' },
-        { alcance: 'GCA', alcanceNombre: 'CALIDAD', gestion: 'GESTIÓN DE CALIDAD', grupo: 'DOC_EXT_NOR', defaultId: '01' },
-        { alcance: 'GPA', alcanceNombre: 'PATRIMONIAL', gestion: 'GESTIÓN PATRIMONIAL', grupo: 'DOC_REQ_ESTATAL', defaultId: '01' },
-        { alcance: 'GTR', alcanceNombre: 'ETICA', gestion: 'CÓDIGO ÉTICA', grupo: 'DOC_OTROS', defaultId: '01' }
-    ];
+        // 2. MA (GMA), CALIDAD (GCA), PATRIMONIAL (GPA), ETICA (GTR)
+        const sencillas = 
+            [   
+                { alcance: 'GMA', alcanceNombre: 'MA', gestion: 'GESTIÓN MA', grupo: 'DOC_NOR', defaultId: '01' },
+                { alcance: 'GCA', alcanceNombre: 'CALIDAD', gestion: 'GESTIÓN DE CALIDAD', grupo: 'DOC_EXT_NOR', defaultId: '01' },
+                { alcance: 'GPA', alcanceNombre: 'PATRIMONIAL', gestion: 'GESTIÓN PATRIMONIAL', grupo: 'DOC_REQ_ESTATAL', defaultId: '01' },
+                { alcance: 'GTR', alcanceNombre: 'ETICA', gestion: 'CÓDIGO ÉTICA', grupo: 'DOC_OTROS', defaultId: '01' }
+            ];
 
-    sencillas.forEach(item => {
-        if ((uploadedByAlcance[item.alcance] || []).length === 0) {
-            const idPad = item.defaultId;
-            const desc = DOC_DESCRIPCIONES_DASHBOARD[item.alcance][idPad] || `Documento ${idPad}`;
-            listaPendientes.push({
-                proveedor: nombreProveedor,
-                grupo_documentos: item.grupo,
-                alcance: item.alcance,
-                alcance_nombre: item.alcanceNombre,
-                gestion: item.gestion,
-                tipo_documento_id: idPad,
-                tipo_documento: `${idPad} - ${desc}`,
-                descripcion_tipo_documento: desc,
-                estado: 'Pendiente de ingresar'
+        sencillas.forEach(item => 
+            {
+            if ((uploadedByAlcance[item.alcance] || []).length === 0)
+                {
+                    const idPad = item.defaultId;
+                    const desc = DOC_DESCRIPCIONES_DASHBOARD[item.alcance][idPad] || `Documento ${idPad}`;
+                    listaPendientes.push({
+                                            proveedor: nombreProveedor,
+                                            grupo_documentos: item.grupo,
+                                            alcance: item.alcance,
+                                            alcance_nombre: item.alcanceNombre,
+                                            gestion: item.gestion,
+                                            tipo_documento_id: idPad,
+                                            tipo_documento: `${idPad} - ${desc}`,
+                                            descripcion_tipo_documento: desc,
+                                            estado: 'Pendiente de ingresar'
+                                        });
+                }
             });
-        }
-    });
 
-    return listaPendientes;
-};
+        return listaPendientes;
+    };
 
-const obtenerNombreMostrado = (gestionRaw) => {
-    const rawUpper = (gestionRaw || '').toUpperCase();
-    if (rawUpper.includes('SST') || rawUpper.includes('MA')) return 'Gestión SST-MA';
-    if (rawUpper.includes('CALIDAD')) return 'Gestión de Calidad';
-    if (rawUpper.includes('PATRIMONIAL')) return 'Gestión Seg. Patrimonial';
-    if (rawUpper.includes('ETICA')) return 'Código Ética';
-    return gestionRaw;
-};
+const obtenerNombreMostrado = (gestionRaw) => 
+    {
+        const rawUpper = (gestionRaw || '').toUpperCase();
+        if (rawUpper.includes('SST') || rawUpper.includes('MA')) return 'Gestión SST-MA';
+        if (rawUpper.includes('CALIDAD')) return 'Gestión de Calidad';
+        if (rawUpper.includes('PATRIMONIAL')) return 'Gestión Seg. Patrimonial';
+        if (rawUpper.includes('ETICA')) return 'Código Ética';
+        return gestionRaw;
+    };
 
-const MAPA_REGIMENES = {
-    'RG': 'Régimen General',
-    'RP': 'Pequeña Empresa',
-    'RM': 'Micro Empresa'
-};
+const MAPA_REGIMENES = {'RG': 'Régimen General','RP': 'Pequeña Empresa','RM': 'Micro Empresa'};
 
-const obtenerDescripcionRegimen = (regimen, descripcion) => {
-    if (descripcion && descripcion.trim()) return descripcion;
-    if (!regimen) return 'Régimen General';
-    const code = String(regimen).trim().toUpperCase();
-    return MAPA_REGIMENES[code] || (code === 'RG' ? 'Régimen General' : code === 'RP' ? 'Pequeña Empresa' : code === 'RM' ? 'Micro Empresa' : regimen);
-};
+const obtenerDescripcionRegimen = (regimen, descripcion) =>
+    {
+        if (descripcion && descripcion.trim()) return descripcion;
+        if (!regimen) return 'Régimen General';
 
-const obtenerNombreGestionFiltro = (gestionFiltro) => {
-    if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL')) {
-        return 'Todas las Gestiones';
-    }
-    const nombres = (Array.isArray(gestionFiltro) ? gestionFiltro : [gestionFiltro])
+        const code = String(regimen).trim().toUpperCase();
+        
+        return MAPA_REGIMENES[code] || (code === 'RG' ? 'Régimen General' : code === 'RP' ? 'Pequeña Empresa' : code === 'RM' ? 'Micro Empresa' : regimen);
+    };
+
+const obtenerNombreGestionFiltro = (gestionFiltro) => 
+    {
+        if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL'))
+            {
+                return 'Todas las Gestiones';
+            }
+
+        const nombres = (Array.isArray(gestionFiltro) ? gestionFiltro : [gestionFiltro])
         .map(code => GESTION_MAP[code]?.nombre || code)
         .filter(Boolean);
-    return nombres.join(', ') || 'Todas las Gestiones';
-};
-
-const obtenerEtiquetaFiltrosActivos = (gestionFiltro, periodoFiltro, rubroFiltro) => {
-    const isAllGestiones = !gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL');
-    const gestionTexto = isAllGestiones ? 'Todas las Gestiones' : obtenerNombreGestionFiltro(gestionFiltro);
-    const partes = [];
-    if (periodoFiltro) partes.push(`Periodo: ${periodoFiltro}`);
-    if (rubroFiltro && rubroFiltro !== 'ALL') partes.push(`Rubro: ${rubroFiltro}`);
-    partes.push(`Gestión: ${gestionTexto}`);
-    return partes.join(' · ');
-};
-
-const calcularRankingYAlertas = (rawRanking, rawAlertas, gestionesCodeArray) => {
-    const isAll = !gestionesCodeArray || gestionesCodeArray.length === 0 || gestionesCodeArray.includes('ALL');
-    const configs = isAll ? [] : gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
-    const activeAlcances = isAll
-        ? ['GSG', 'GMA', 'GCA', 'GPA', 'GTR']
-        : configs.reduce((acc, config) => [...acc, ...config.alcances], []);
-
-    // 1. Cálculo de Ranking
-    const rankingCalculado = (rawRanking || []).map(p => {
-        let totalExigible = 0;
-        let totalVigentes = 0;
-
-        if (activeAlcances.includes('GSG')) {
-            const ex = Number(p.exigible_sst) || 12;
-            totalExigible += ex;
-            totalVigentes += Math.min(Number(p.reg_sst) || 0, ex);
-        }
-        if (activeAlcances.includes('GMA')) {
-            const ex = Number(p.exigible_ma) || 1;
-            totalExigible += ex;
-            totalVigentes += Math.min(Number(p.reg_ma) || 0, ex);
-        }
-        if (activeAlcances.includes('GCA')) {
-            const ex = Number(p.exigible_calidad) || 1;
-            totalExigible += ex;
-            totalVigentes += Math.min(Number(p.reg_calidad) || 0, ex);
-        }
-        if (activeAlcances.includes('GPA')) {
-            const ex = Number(p.exigible_patrimonial) || 1;
-            totalExigible += ex;
-            totalVigentes += Math.min(Number(p.reg_patrimonial) || 0, ex);
-        }
-        if (activeAlcances.includes('GTR')) {
-            const ex = Number(p.exigible_etica) || 1;
-            totalExigible += ex;
-            totalVigentes += Math.min(Number(p.reg_etica) || 0, ex);
-        }
-
-        const puntajePct = totalExigible > 0 ? Math.round((totalVigentes / totalExigible) * 100) : 0;
-        const puntajeFinal = Math.min(Math.max(puntajePct, 0), 100);
-
-        let recomendacion = 'NO RECOMENDADO';
-        let nivel = 'BAJO';
-        if (puntajeFinal > 90) {
-            recomendacion = 'RECOMENDADO';
-            nivel = 'ALTO';
-        } else if (puntajeFinal >= 75) {
-            recomendacion = 'RECOMENDADO CON RESTRICCIONES';
-            nivel = 'MEDIO';
-        }
-
-        return {
-            ...p,
-            total_exigibles_evaluados: totalExigible,
-            total_vigentes_evaluados: totalVigentes,
-            puntaje_evaluado: puntajeFinal,
-            recomendacion_evaluada: recomendacion,
-            nivel_evaluado: nivel
-        };
-    }).sort((a, b) => {
-        if (b.puntaje_evaluado !== a.puntaje_evaluado) {
-            return b.puntaje_evaluado - a.puntaje_evaluado;
-        }
-        return (a.proveedor_nombre || '').localeCompare(b.proveedor_nombre || '');
-    });
-
-    // 2. Cálculo de Alertas
-    const provsLlenado = rawAlertas?.proveedores || [];
-    const docsPorVencerRaw = rawAlertas?.documentos_por_vencer || [];
-
-    // 2.1 No recomendados
-    const noRecomendadosList = rankingCalculado.filter(p => p.puntaje_evaluado < 75);
-
-    // 2.2 Documentos por vencer (< 15 días) filtrados por alcance
-    const docsPorVencerFiltrados = docsPorVencerRaw.filter(d => {
-        if (isAll) return true;
-        return activeAlcances.includes(d.alcance);
-    });
-
-    // 2.3 Proveedores con llenado incompleto de documentos para la gestión activa
-    const incompletosList = provsLlenado.map(p => {
-        let totalExigible = 0;
-        let totalUploaded = 0;
-
-        if (activeAlcances.includes('GSG')) {
-            const ex = Number(p.exigible_sst) || 12;
-            totalExigible += ex;
-            totalUploaded += Math.min(Number(p.uploaded_sst) || 0, ex);
-        }
-        if (activeAlcances.includes('GMA')) {
-            const ex = Number(p.exigible_ma) || 1;
-            totalExigible += ex;
-            totalUploaded += Math.min(Number(p.uploaded_ma) || 0, ex);
-        }
-        if (activeAlcances.includes('GCA')) {
-            const ex = Number(p.exigible_calidad) || 1;
-            totalExigible += ex;
-            totalUploaded += Math.min(Number(p.uploaded_calidad) || 0, ex);
-        }
-        if (activeAlcances.includes('GPA')) {
-            const ex = Number(p.exigible_patrimonial) || 1;
-            totalExigible += ex;
-            totalUploaded += Math.min(Number(p.uploaded_patrimonial) || 0, ex);
-        }
-        if (activeAlcances.includes('GTR')) {
-            const ex = Number(p.exigible_etica) || 1;
-            totalExigible += ex;
-            totalUploaded += Math.min(Number(p.uploaded_etica) || 0, ex);
-        }
-
-        const pendientes = Math.max(0, totalExigible - totalUploaded);
-        const isIncompleto = totalUploaded < totalExigible;
-
-        return {
-            ...p,
-            total_exigibles_evaluados: totalExigible,
-            total_uploaded_evaluados: totalUploaded,
-            pendientes_evaluados: pendientes,
-            is_incompleto: isIncompleto
-        };
-    }).filter(p => p.is_incompleto);
-
-    return {
-        ranking: rankingCalculado,
-        noRecomendadosCount: noRecomendadosList.length,
-        noRecomendadosList,
-        porVencerCount: docsPorVencerFiltrados.length,
-        porVencerList: docsPorVencerFiltrados,
-        incompletosCount: incompletosList.length,
-        incompletosList
-    };
-};
-
-export default function DashboardPage() {
-    const navigate = useNavigate();
-    const pendientesRef = useRef(null);
-
-    const [resumen, setResumen] = useState(null);
-    const [grupos, setGrupos] = useState([]);
-    const [estados, setEstados] = useState([]);
-    const [proximos, setProximos] = useState([]);
-    const [kpisGestion, setKpisGestion] = useState([]);
-    const [estadoExpediente, setEstadoExpediente] = useState(null);
-    const [calificacion, setCalificacion] = useState(null);
-    //EROMAN 03/09/2026
-    const [proveedorSeleccionado, setProveedorSeleccionado] = useState(() => {
-    return localStorage.getItem('sisgestion_proveedor_actual') || 'ALL';});
-    const [calificacionConsultor, setCalificacionConsultor] = useState(null);
-    const [proveedorConsultorInfo, setProveedorConsultorInfo] = useState(null);
-    //EROMAN 03/09/2026
-    const [cumplimientoProveedores, setCumplimientoProveedores] = useState(null);
-    const [cumplimientoGlobal, setCumplimientoGlobal] = useState([]);
-    const [rubroFiltro, setRubroFiltro] = useState(() => {
-        return localStorage.getItem('sisgestion_rubro_actual') || 'ALL';
-    });
-    const [loadingProveedor, setLoadingProveedor] = useState(true);
-    const [proveedorInfo, setProveedorInfo] = useState(null);
-    const [mostrarConstruccion, setMostrarConstruccion] = useState(false);
-    const [periodoFiltro, setPeriodoFiltro] = useState(() => {
-        return localStorage.getItem('sisgestion_periodo_actual') || '2026';
-    });
-
-    // Estado para la gestión seleccionada actualmente (por defecto ['ALL'] = Toda la información)
-    const [gestionFiltro, setGestionFiltro] = useState(() => {
-        try {
-            const raw = localStorage.getItem('sisgestion_gestion_actual');
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed)) return parsed;
-            }
-        } catch { }
-        return ['ALL'];
-    });
-
-    // Copias de datos brutos para filtrado reactivo
-    const [rawDocsProveedor, setRawDocsProveedor] = useState([]);
-    const [rawKpisProveedor, setRawKpisProveedor] = useState([]);
-    const [rawCalificacion, setRawCalificacion] = useState(null);
-    const [rawAdminGrupos, setRawAdminGrupos] = useState([]);
-    const [rawAdminProximos, setRawAdminProximos] = useState([]);
-    const [rawAdminResumen, setRawAdminResumen] = useState(null);
-    const [rawAdminEstados, setRawAdminEstados] = useState([]);
-
-    // ── Estados para Tarjetas Consultor: Ranking y Alertas ───────────────────
-    const [rawRankingProveedores, setRawRankingProveedores] = useState([]);
-    const [rawAlertasConsultor, setRawAlertasConsultor] = useState(null);
-    const [rankingCalculado, setRankingCalculado] = useState([]);
-    const [alertasCalculadas, setAlertasCalculadas] = useState({
-        noRecomendadosCount: 0,
-        noRecomendadosList: [],
-        porVencerCount: 0,
-        porVencerList: [],
-        incompletosCount: 0,
-        incompletosList: []
-    });
-    const [modalRankingOpen, setModalRankingOpen] = useState(false);
-    const [modalAlertaDetalle, setModalAlertaDetalle] = useState(null);
-
-    // ── Identidad del usuario logueado ──────────────────────────────────────
-    const usuarioLogueado = obtenerUsuario();
-    const rolCodigo = (usuarioLogueado?.rol_codigo || usuarioLogueado?.rol || usuarioLogueado?.role || '').toUpperCase();
-    const rolId = Number(usuarioLogueado?.rol_id);
-    const esProveedor = rolCodigo === 'PROVEEDOR' || rolId === 2 || usuarioLogueado?.tipo_usuario === 'PROVEEDOR';
-    const esConsultor = rolCodigo === 'CONSULTOR' || rolId === 3 || usuarioLogueado?.tipo_usuario === 'CONSULTOR' || (usuarioLogueado?.rol_nombre || '').toUpperCase().includes('CONSULT');
-    const miProveedorId = usuarioLogueado?.proveedor_id;
-
-    // Escucha de cambios de gestión desde el Header
-    useEffect(() => {
-        const handleGestionChange = (e) => {
-            if (e.detail) {
-                setGestionFiltro(Array.isArray(e.detail) ? e.detail : [e.detail]);
-            }
-        };
-        window.addEventListener('sisgestion:gestion_change', handleGestionChange);
-        return () => window.removeEventListener('sisgestion:gestion_change', handleGestionChange);
-    }, []);
-
-    // Escucha de cambios de periodo desde el Header
-    useEffect(() => {
-        const handlePeriodoChange = (e) => {
-            if (e.detail) {
-                setPeriodoFiltro(e.detail);
-            }
-        };
-        window.addEventListener('sisgestion:periodo_change', handlePeriodoChange);
-        return () => window.removeEventListener('sisgestion:periodo_change', handlePeriodoChange);
-    }, []);
-
-    // Escucha de cambios de Proveedor desde el Header 
-    useEffect(() => {
-        const handleRubroChange = (e) => {
-            if (e.detail !== undefined) {
-                setRubroFiltro(e.detail);
-            }
-        };
-        window.addEventListener('sisgestion:rubro_change', handleRubroChange);
-        return () => window.removeEventListener('sisgestion:rubro_change', handleRubroChange);
-    }, []);
-
-    // Escucha de cambios de proveedor desde el Header EROMAN 03/09/2026
-    useEffect(() => {
-        const handleProveedorChange = (e) => {
-            if (e.detail !== undefined) {
-                console.log('>>> proveedor seleccionado en Dashboard:', e.detail);
-                setProveedorSeleccionado(e.detail);
-                if (e.detail === 'ALL') {
-                    setGestionFiltro(['ALL']);
-                    localStorage.setItem('sisgestion_gestion_actual', JSON.stringify(['ALL']));
-                    setRubroFiltro('ALL');
-                    localStorage.setItem('sisgestion_rubro_actual', 'ALL');
-                }
-            }
-        };
-
-        window.addEventListener('sisgestion:proveedor_change', handleProveedorChange);
-
-        return () => {
-            window.removeEventListener('sisgestion:proveedor_change', handleProveedorChange);
-        };
-    }, []);
-
-
-// Obtener calificación del proveedor seleccionado por CONSULTOR
-useEffect(() => {
-    if (!esConsultor) return;
-
-    if (!proveedorSeleccionado || proveedorSeleccionado === 'ALL') {
-        setCalificacionConsultor(null);
-        return;
-    }
-
-    const cargarCalificacionConsultor = async () => {
-        try {
-            console.log(
-                '>>> obteniendo calificación para proveedor:',
-                proveedorSeleccionado
-            );
-
-            const data = await obtenerCalificacionProveedor(
-                Number(proveedorSeleccionado)
-            );
-
-            console.log(
-                '>>> calificación proveedor seleccionado:',
-                data
-            );
-
-            setCalificacionConsultor(data || null);
-
-        } catch (error) {
-            console.error(
-                'Error al obtener calificación del proveedor seleccionado:',
-                error
-            );
-
-            setCalificacionConsultor(null);
-        }
+        return nombres.join(', ') || 'Todas las Gestiones';
     };
 
-    cargarCalificacionConsultor();
+const obtenerEtiquetaFiltrosActivos = (gestionFiltro, periodoFiltro, rubroFiltro) => 
+    {
+        const isAllGestiones = !gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL');
+        const gestionTexto = isAllGestiones ? 'Todas las Gestiones' : obtenerNombreGestionFiltro(gestionFiltro);
+        const partes = [];
 
-}, [esConsultor, proveedorSeleccionado]);
+        if (periodoFiltro) partes.push(`Periodo: ${periodoFiltro}`);
+        if (rubroFiltro && rubroFiltro !== 'ALL') partes.push(`Rubro: ${rubroFiltro}`);
 
-
-// Obtener información del proveedor seleccionado por CONSULTOR EROMAN 03/09/2026
-useEffect(() => {
-    if (!esConsultor) return;
-
-    if (!proveedorSeleccionado || proveedorSeleccionado === 'ALL') {
-        setProveedorConsultorInfo(null);
-        return;
-    }
-
-    const cargarProveedorConsultor = async () => {
-        try {
-            console.log(
-                '>>> obteniendo información del proveedor:',
-                proveedorSeleccionado
-            );
-
-            const data = await obtenerProveedorPorId(
-                Number(proveedorSeleccionado)
-            );
-
-            console.log(
-                '>>> información proveedor seleccionado:',
-                data
-            );
-
-            setProveedorConsultorInfo(data || null);
-
-        } catch (error) {
-            console.error(
-                'Error al obtener información del proveedor seleccionado:',
-                error
-            );
-
-            setProveedorConsultorInfo(null);
-        }
+        partes.push(`Gestión: ${gestionTexto}`);
+        return partes.join(' · ');
     };
 
-    cargarProveedorConsultor();
-
-}, [esConsultor, proveedorSeleccionado]);
-
-
-    useEffect(() => {
-        if (esProveedor) {
-            cargarDashboardProveedor();
-        } else {
-            cargarDashboardAdmin(periodoFiltro, rubroFiltro, proveedorSeleccionado);
-        }
-    }, [
-        esProveedor,
-        miProveedorId,
-        periodoFiltro,
-        rubroFiltro,
-        proveedorSeleccionado
-    ]);
-
-    // Cargar información de la razón social del proveedor
-    useEffect(() => {
-        if (miProveedorId) {
-            obtenerProveedorPorId(miProveedorId)
-                .then(data => {
-                    setProveedorInfo(data);
-                })
-                .catch(err => console.error("Error al obtener info de proveedor:", err));
-        }
-    }, [miProveedorId]);
-
-    const obtenerIdentidadProveedor = () => {
-        if (!proveedorInfo) return usuarioLogueado?.username || '';
-        if (proveedorInfo.tipo_documento === '06' || proveedorInfo.razon_social) {
-            return proveedorInfo.razon_social || proveedorInfo.proveedor || usuarioLogueado?.username || '';
-        }
-        const nombresCompletos = `${proveedorInfo.nombre || ''} ${proveedorInfo.apellido_paterno || ''} ${proveedorInfo.apellido_materno || ''}`.trim();
-        return nombresCompletos || proveedorInfo.proveedor || usuarioLogueado?.username || '';
-    };
-    //EROMAN 03/09/2026
-    const obtenerIdentidadProveedorConsultor = () => {
-    if (!proveedorConsultorInfo) return String(proveedorSeleccionado || '');
-
-    if (
-        proveedorConsultorInfo.tipo_documento === '06' ||
-        proveedorConsultorInfo.razon_social
-    ) {
-        return (
-            proveedorConsultorInfo.razon_social ||
-            proveedorConsultorInfo.proveedor ||
-            String(proveedorSeleccionado)
-        );
-    }
-
-    const nombresCompletos = `${proveedorConsultorInfo.nombre || ''} ${proveedorConsultorInfo.apellido_paterno || ''} ${proveedorConsultorInfo.apellido_materno || ''}`.trim();
-
-    return (
-        nombresCompletos ||
-        proveedorConsultorInfo.proveedor ||
-        String(proveedorSeleccionado)
-    );
-};
-
-
-    // Reaccionar al cambio de gestión para filtrar los datos en pantalla
-    useEffect(() => {
-        if (esProveedor) {
-            aplicarFiltroProveedor(rawDocsProveedor, rawKpisProveedor, gestionFiltro);
-        } else {
-            aplicarFiltroAdmin(rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, gestionFiltro);
-            const res = calcularRankingYAlertas(rawRankingProveedores, rawAlertasConsultor, gestionFiltro);
-            setRankingCalculado(res.ranking);
-            setAlertasCalculadas(res);
-        }
-    }, [gestionFiltro, rawDocsProveedor, rawKpisProveedor, rawCalificacion, rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, rawRankingProveedores, rawAlertasConsultor, esProveedor]);
-
-    // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
-    async function cargarDashboardAdmin(periodo, rubro = 'ALL', proveedor = 'ALL') {
-        try {
-            const provIdParam = proveedor !== 'ALL' ? proveedor : undefined;
-            const [
-                resumenRes,
-                gruposRes,
-                estadosRes,
-                proximosRes,
-                cumplimientoRes,
-                globalGestionRes,
-                rankingRes,
-                alertasRes
-            ] = await Promise.allSettled([
-                obtenerResumen(periodo, rubro, provIdParam),
-                obtenerDocumentosPorGrupo(periodo, rubro, provIdParam),
-                obtenerDocumentosPorEstado(periodo, rubro, provIdParam),
-                obtenerProximosVencer(periodo, rubro, provIdParam),
-                obtenerResumenProveedoresCumplimiento(periodo, rubro, provIdParam),                
-                esConsultor && proveedor !== 'ALL'
-                    ? obtenerCumplimientoGestion(Number(proveedor))
-                    : obtenerCumplimientoGlobalPorGestion(periodo, rubro, provIdParam),
-                obtenerRankingProveedores(periodo, rubro, provIdParam),
-                obtenerAlertasConsultor(periodo, rubro, provIdParam)
-            ]);
-
-            const resumenData = (resumenRes.status === 'fulfilled' && resumenRes.value) ? resumenRes.value : { total_proveedores: 0, total_documentos: 0, documentos_vigentes: 0, documentos_vencidos: 0 };
-            const gruposData = (gruposRes.status === 'fulfilled' && Array.isArray(gruposRes.value)) ? gruposRes.value : [];
-            const estadosData = (estadosRes.status === 'fulfilled' && Array.isArray(estadosRes.value)) ? estadosRes.value : [];
-            const proximosData = (proximosRes.status === 'fulfilled' && Array.isArray(proximosRes.value)) ? proximosRes.value : [];
-            const cumplimientoData = (cumplimientoRes.status === 'fulfilled' && cumplimientoRes.value) ? cumplimientoRes.value : { total_proveedores: 0, recomendados: 0, recomendados_con_restricciones: 0, no_recomendados: 0 };
-            
-            const globalGestionRaw = (globalGestionRes.status === 'fulfilled' && Array.isArray(globalGestionRes.value))? globalGestionRes.value: [];
-            const globalGestionData =
-    esConsultor && proveedor !== 'ALL'
-        ? globalGestionRaw.map(item => ({
-            codigo:
-                item.gestion === 'SST / MA'
-                    ? 'SST_MA'
-                    : item.gestion === 'CALIDAD'
-                        ? 'CALIDAD'
-                        : item.gestion === 'PATRIMONIAL'
-                            ? 'PATRIMONIAL'
-                            : item.gestion === 'ETICA'
-                                ? 'ETICA'
-                                : item.gestion,
-
-            nombre:
-                item.gestion === 'SST / MA'
-                    ? 'SST-MA'
-                    : item.gestion || '',
-
-            porcentaje: Number(item.porcentaje || 0),
-
-            documentos_registrados: Number(item.documentos_registrados || 0),
-            documentos_exigibles: Number(item.documentos_exigibles || 0)
-        }))
-        : globalGestionRaw;
-
-            console.log('DEBUG CUMPLIMIENTO GESTION:', globalGestionData);
-            const rankingData = (rankingRes.status === 'fulfilled' && Array.isArray(rankingRes.value)) ? rankingRes.value : [];
-            const alertasData = (alertasRes.status === 'fulfilled' && alertasRes.value) ? alertasRes.value : { proveedores: [], documentos_por_vencer: [] };
-
-            setRawAdminResumen(resumenData);
-            setResumen(resumenData);
-            setRawAdminGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
-            setGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
-            setRawAdminEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
-            setEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
-            setRawAdminProximos(proximosData);
-            setProximos(proximosData);
-            setCumplimientoProveedores(cumplimientoData);
-            setCumplimientoGlobal(globalGestionData);
-            setRawRankingProveedores(rankingData);
-            setRawAlertasConsultor(alertasData);
-
-            const resAlertas = calcularRankingYAlertas(rankingData, alertasData, gestionFiltro);
-            setRankingCalculado(resAlertas.ranking);
-            setAlertasCalculadas(resAlertas);
-        } catch (error) {
-            console.error("Error al cargar dashboard admin/consultor:", error);
-            setResumen({ total_proveedores: 0, total_documentos: 0, documentos_vigentes: 0, documentos_vencidos: 0 });
-            setCumplimientoProveedores({ total_proveedores: 0, recomendados: 0, recomendados_con_restricciones: 0, no_recomendados: 0 });
-        }
-    };
-
-    const aplicarFiltroAdmin = (rawGrupos, rawProximosList, rawEstadosList, rawRes, gestionesCodeArray) => {
-        if (!rawGrupos) return;
-        const isAll = !gestionesCodeArray || gestionesCodeArray.length === 0 || gestionesCodeArray.includes('ALL');
-
-        if (isAll) {
-            setResumen(rawRes);
-            setGrupos(rawGrupos);
-            setEstados(rawEstadosList);
-            setProximos(rawProximosList || []);
-            return;
-        }
-
-        const configs = gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
-        const gruposPermitidos = configs.map(c => c.grupo);
-        const alcancesPermitidos = configs.reduce((acc, c) => [...acc, ...c.alcances], []);
-
-        // Filtrar pendientes de ingresar por alcance o grupo asociado a la gestión
-        const proximosFiltrados = (rawProximosList || []).filter(item => {
-            if (item.alcance) return alcancesPermitidos.includes(item.alcance);
-            return !item.grupo_documentos || gruposPermitidos.includes(item.grupo_documentos);
-        });
-        setProximos(proximosFiltrados);
-
-        // Filtrar grupos
-        const gruposEncontrados = (rawGrupos || []).filter(g => gruposPermitidos.includes(g.grupo_documentos));
-        if (gruposEncontrados.length > 0) {
-            setGrupos(gruposEncontrados);
-        } else {
-            setGrupos(rawGrupos);
-        }
-
-        setResumen(rawRes);
-        setEstados(rawEstadosList);
-    };
-
-    // ── Dashboard PROVEEDOR (solo sus propios documentos) ────────────────────
-    async function cargarDashboardProveedor() {
-        if (!miProveedorId) {
-            setLoadingProveedor(false);
-            return;
-        }
-        try {
-            let acumuladoDocs = [];
-
-            // Consultamos secuencialmente los 4 grupos documentales del proveedor logueado
-            for (const grupoCode of CODIGOS_GRUPOS) {
-                const dataDocs = await listarPorGrupo(miProveedorId, grupoCode);
-                if (dataDocs && dataDocs.length > 0) {
-                    acumuladoDocs = [...acumuladoDocs, ...dataDocs];
-                }
-            }
-
-            setRawDocsProveedor(acumuladoDocs);
-
-            console.log('>>> proveedorId Dashboard:', miProveedorId);
-
-            const dataKpis = await obtenerCumplimientoGestion(miProveedorId);
-            
-            console.log('>>> dataKpis Dashboard:', dataKpis);            
-            
-
-            setRawKpisProveedor(dataKpis || []);
-
-            const dataEstado = await obtenerEstadoExpediente(miProveedorId);
-            setEstadoExpediente(dataEstado);
-
-            const dataCalificacion = await obtenerCalificacionProveedor(miProveedorId);
-            setRawCalificacion(dataCalificacion);
-            // setCalificacion is handled inside aplicarFiltroProveedor which is triggered by rawCalificacion change
-        } catch (error) {
-            console.error("Error consolidando indicadores de proveedor:", error);
-        } finally {
-            setLoadingProveedor(false);
-        }
-    };
-
-    const aplicarFiltroProveedor = (acumuladoDocs, dataKpis, gestionesCodeArray) => {
-        if (!acumuladoDocs) return;
-
+const calcularRankingYAlertas = (rawRanking, rawAlertas, gestionesCodeArray) =>
+    {
         const isAll = !gestionesCodeArray || gestionesCodeArray.length === 0 || gestionesCodeArray.includes('ALL');
         const configs = isAll ? [] : gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
+        const activeAlcances = isAll ? ['GSG', 'GMA', 'GCA', 'GPA', 'GTR'] : configs.reduce((acc, config) => [...acc, ...config.alcances], []);
 
-        // Filtrar documentos según la gestión seleccionada
-        const docsFiltrados = isAll
-            ? acumuladoDocs
-            : acumuladoDocs.filter(d => {
-                return configs.some(config => {
-                    if (d.alcance) {
-                        return config.alcances.includes(d.alcance);
-                    }
-                    return d.grupo_documentos === config.grupo;
-                });
-            });
-
-        // Separación de documentos por estatus evaluando fecha_vigencia
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-
-        const vigentesCount = docsFiltrados.filter(d => {
-            if (!d.fecha_vigencia) return false;
-            const f = new Date(d.fecha_vigencia);
-            f.setHours(0, 0, 0, 0);
-            return f >= hoy;
-        }).length;
-
-        const vencidosCount = docsFiltrados.filter(d => {
-            if (!d.fecha_vigencia) return false;
-            const f = new Date(d.fecha_vigencia);
-            f.setHours(0, 0, 0, 0);
-            return f < hoy;
-        }).length;
-
-        setResumen({
-            total_proveedores: 'N/A',
-            documentos_vigentes: vigentesCount,
-            documentos_vencidos: vencidosCount,
-            total_documentos: docsFiltrados.length
-        });
-
-        // ── Recalcular estadoExpediente para "MIS DOCUMENTOS"
-        const regimen = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || 'RG';
-        const LIMITS_PER_ALCANCE = {
-            'RG': { 'GSG': 12, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
-            'RP': { 'GSG': 9, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
-            'RM': { 'GSG': 7, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 }
-        };
-        const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
-
-        const activeAlcances = isAll
-            ? ['GSG', 'GMA', 'GCA', 'GPA', 'GTR']
-            : configs.reduce((acc, config) => [...acc, ...config.alcances], []);
-
-        let totalExigibles = 0;
-        let totalRegistrados = 0;
-        let totalVigentesCapped = 0;
-
-        activeAlcances.forEach(alcance => {
-            const exigibleAlcance = limits[alcance] || 0;
-            totalExigibles += exigibleAlcance;
-
-            //const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
-            const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance && d.estado_documento === 'V');
-
-
-            const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
-            const countUploaded = uniqueTypes.size;
-            totalRegistrados += Math.min(countUploaded, exigibleAlcance);
-
-            const docsVigentesAlcance = docsAlcance.filter(d => {
-                if (!d.fecha_vigencia) return false;
-                const f = new Date(d.fecha_vigencia);
-                f.setHours(0, 0, 0, 0);
-                return f >= hoy;
-            });
-            const uniqueVigentesTypes = new Set(docsVigentesAlcance.map(d => d.tipo_documento_id));
-            const countVigentes = uniqueVigentesTypes.size;
-            totalVigentesCapped += Math.min(countVigentes, exigibleAlcance);
-        });
-
-        // Documentos pendientes de ingresar para el proveedor logueado
-        const regimenProv = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || proveedorInfo?.codigo_regimen_tributario || proveedorInfo?.regimen_tributario || 'RG';
-        const nroTrabProv = proveedorInfo?.nro_trabajadores || '';
-        const todosPendientes = calcularPendientesProveedor(regimenProv, nroTrabProv, acumuladoDocs, obtenerIdentidadProveedor());
-
-        const alcancesPermitidos = isAll ? null : configs.reduce((acc, c) => [...acc, ...c.alcances], []);
-        const pendientesFiltrados = isAll
-            ? todosPendientes
-            : todosPendientes.filter(item => alcancesPermitidos.includes(item.alcance));
-
-        setProximos(pendientesFiltrados);
-
-        const unDiaMs = 86400000;
-        const hoyMas15 = new Date(hoy.getTime() + 15 * unDiaMs);
-
-        const vencidosAbs = docsFiltrados.filter(d => {
-            if (!d || !d.fecha_vigencia) return false;
-            const f = new Date(d.fecha_vigencia);
-            f.setHours(0, 0, 0, 0);
-            return f < hoy;
-        }).length;
-
-        const porVencerAbs = docsFiltrados.filter(d => {
-            if (!d || !d.fecha_vigencia) return false;
-            const f = new Date(d.fecha_vigencia);
-            f.setHours(0, 0, 0, 0);
-            return f >= hoy && f <= hoyMas15;
-        }).length;
-
-        const vigentesAbs = docsFiltrados.filter(d => {
-            if (!d || !d.fecha_vigencia) return false;
-            const f = new Date(d.fecha_vigencia);
-            f.setHours(0, 0, 0, 0);
-            return f >= hoy;
-        }).length;
-
-        const pendientesCount = pendientesFiltrados.length;
-
-        setEstadoExpediente({
-            total_exigibles: totalExigibles,
-            total_registrados: totalRegistrados,
-            vigentes_para_porcentaje: totalVigentesCapped,
-            vencidos: vencidosAbs,
-            por_vencer: porVencerAbs,
-            vigentes: vigentesAbs,
-            pendientes: pendientesCount
-        });
-
-        // Gráficos de grupo según filtro
-        if (!isAll && configs.length > 0) {
-            const gruposEstadistica = configs.map(config => {
-                const count = docsFiltrados.filter(d => {
-                    if (d && d.alcance) return config.alcances.includes(d.alcance);
-                    return d && d.grupo_documentos === config.grupo;
-                }).length;
-                return { descripcion: config.nombre, cantidad: count };
-            });
-            setGrupos(gruposEstadistica);
-        } else {
-            const estadisticaGrupos = CODIGOS_GRUPOS.map(grupoCode => {
-                const count = (acumuladoDocs || []).filter(d => d && d.grupo_documentos === grupoCode).length;
-                return { descripcion: NOMBRES_GRUPOS[grupoCode], cantidad: count };
-            });
-            setGrupos(estadisticaGrupos);
-        }
-
-        setEstados([
-            { descripcion: 'VIGENTE', cantidad: vigentesCount },
-            { descripcion: 'VENCIDO', cantidad: vencidosCount }
-        ]);
-
-        // Filtrar o resaltar KPIs de gestión
-        if (!isAll && configs.length > 0 && dataKpis && dataKpis.length > 0) {
-            const kpisFiltrados = dataKpis.filter(kpi => {
-                const nombreUpper = (kpi.gestion || '').toUpperCase();
-                return configs.some(config => config.kpiMatch.some(match => nombreUpper.includes(match)));
-            });
-            setKpisGestion(kpisFiltrados.length > 0 ? kpisFiltrados : dataKpis);
-        } else {
-            setKpisGestion(dataKpis || []);
-        }
-
-        // Calificación Dinámica
-        if (rawCalificacion) {
-            if (isAll) {
-                setCalificacion(rawCalificacion);
-            } else {
-                const regimen = rawCalificacion.regimen_tributario_codigo || rawCalificacion.regimen_tributario;
-                const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
-
+        // 1. Cálculo de Ranking
+        const rankingCalculado = (rawRanking || []).map(p => 
+            {
                 let totalExigible = 0;
-                let totalCappedIngresados = 0;
+                let totalVigentes = 0;
 
-                gestionesCodeArray.forEach(code => {
-                    const config = GESTION_MAP[code];
-                    if (config) {
-                        config.alcances.forEach(alcance => {
-                            const exigibleAlcance = limits[alcance] || 0;
-                            totalExigible += exigibleAlcance;
-
-                            //const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
-                            //const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
-                            //const countUploaded = uniqueTypes.size;
-
-                            //totalCappedIngresados += Math.min(countUploaded, exigibleAlcance);
-                            
-                            const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance && d.estado_documento === 'V');
-                            const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
-                            const countVigentes = uniqueTypes.size;
-
-                            totalCappedIngresados += Math.min(countVigentes,exigibleAlcance);
-
-                        });
+                if (activeAlcances.includes('GSG')) 
+                    {
+                        const ex = Number(p.exigible_sst) || 12;
+                        totalExigible += ex;
+                        totalVigentes += Math.min(Number(p.reg_sst) || 0, ex);
                     }
-                });
 
-                if (totalExigible === 0) {
-                    setCalificacion(rawCalificacion);
-                } else {
-                    let puntajeRaw = (totalCappedIngresados / totalExigible) * 100;
-                    if (puntajeRaw > 100) puntajeRaw = 100;
+                if (activeAlcances.includes('GMA')) 
+                    {
+                        const ex = Number(p.exigible_ma) || 1;
+                        totalExigible += ex;
+                        totalVigentes += Math.min(Number(p.reg_ma) || 0, ex);
+                    }
 
-                    let recomendacion = 'NO RECOMENDADO';
-                    let nivel = 'BAJO';
-                    let desc = 'Presentas un bajo nivel de registro y vigencia documental';
+                if (activeAlcances.includes('GCA')) 
+                    {
+                        const ex = Number(p.exigible_calidad) || 1;
+                        totalExigible += ex;
+                        totalVigentes += Math.min(Number(p.reg_calidad) || 0, ex);
+                    }
 
-                    if (puntajeRaw > 90) {
+                if (activeAlcances.includes('GPA'))
+                    {
+                        const ex = Number(p.exigible_patrimonial) || 1;
+                        totalExigible += ex;
+                        totalVigentes += Math.min(Number(p.reg_patrimonial) || 0, ex);
+                    }
+
+                if (activeAlcances.includes('GTR')) 
+                    {
+                        const ex = Number(p.exigible_etica) || 1;
+                        totalExigible += ex;
+                        totalVigentes += Math.min(Number(p.reg_etica) || 0, ex);
+                    }
+
+                const puntajePct = totalExigible > 0 ? Math.round((totalVigentes / totalExigible) * 100) : 0;
+                const puntajeFinal = Math.min(Math.max(puntajePct, 0), 100);
+
+                let recomendacion = 'NO RECOMENDADO';
+                let nivel = 'BAJO';
+                
+                if (puntajeFinal > 90) 
+                    {
                         recomendacion = 'RECOMENDADO';
                         nivel = 'ALTO';
-                        desc = 'Mantienes un alto nivel de registro y vigencia documental';
-                    } else if (puntajeRaw >= 75) {
+                    } 
+                else if (puntajeFinal >= 75) 
+                    {
                         recomendacion = 'RECOMENDADO CON RESTRICCIONES';
                         nivel = 'MEDIO';
-                        desc = 'Mantienes un nivel aceptable de registro y vigencia documental';
                     }
 
-                    setCalificacion({
-                        ...rawCalificacion,
-                        cantidad_documentos_vigentes: totalCappedIngresados,
-                        puntaje_formateado: `${Math.round(puntajeRaw)} / 100`,
-                        puntaje_numerico: Math.round(puntajeRaw),
-                        recomendacion,
-                        nivel_documental: nivel,
-                        descripcion_nivel: desc
+                return  {
+                            ...p,
+                            total_exigibles_evaluados: totalExigible,
+                            total_vigentes_evaluados: totalVigentes,
+                            puntaje_evaluado: puntajeFinal,
+                            recomendacion_evaluada: recomendacion,
+                            nivel_evaluado: nivel
+                        };
+
+            }).sort((a, b) => {
+                                if (b.puntaje_evaluado !== a.puntaje_evaluado) 
+                                    {
+                                        return b.puntaje_evaluado - a.puntaje_evaluado;
+                                    }
+                                return (a.proveedor_nombre || '').localeCompare(b.proveedor_nombre || '');
+                                });
+
+        // 2. Cálculo de Alertas
+        const provsLlenado = rawAlertas?.proveedores || [];
+        const docsPorVencerRaw = rawAlertas?.documentos_por_vencer || [];
+
+        // 2.1 No recomendados
+        const noRecomendadosList = rankingCalculado.filter(p => p.puntaje_evaluado < 75);
+
+        // 2.2 Documentos por vencer (< 15 días) filtrados por alcance
+        const docsPorVencerFiltrados = docsPorVencerRaw.filter(d => 
+            {
+                if (isAll) return true;
+                    return activeAlcances.includes(d.alcance);
+            });
+
+        // 2.3 Proveedores con llenado incompleto de documentos para la gestión activa
+        const incompletosList = provsLlenado.map(p => 
+            {
+                let totalExigible = 0;
+                let totalUploaded = 0;
+
+                if (activeAlcances.includes('GSG')) 
+                    {
+                        const ex = Number(p.exigible_sst) || 12;
+                        totalExigible += ex;
+                        totalUploaded += Math.min(Number(p.uploaded_sst) || 0, ex);
+                    }
+
+                if (activeAlcances.includes('GMA')) 
+                    {
+                        const ex = Number(p.exigible_ma) || 1;
+                        totalExigible += ex;
+                        totalUploaded += Math.min(Number(p.uploaded_ma) || 0, ex);
+                    }
+
+                if (activeAlcances.includes('GCA')) 
+                    {
+                        const ex = Number(p.exigible_calidad) || 1;
+                        totalExigible += ex;
+                        totalUploaded += Math.min(Number(p.uploaded_calidad) || 0, ex);
+                    }
+
+                if (activeAlcances.includes('GPA')) 
+                    {
+                        const ex = Number(p.exigible_patrimonial) || 1;
+                        totalExigible += ex;
+                        totalUploaded += Math.min(Number(p.uploaded_patrimonial) || 0, ex);
+                    }
+
+                if (activeAlcances.includes('GTR')) 
+                    {
+                        const ex = Number(p.exigible_etica) || 1;
+                        totalExigible += ex;
+                        totalUploaded += Math.min(Number(p.uploaded_etica) || 0, ex);
+                    }
+
+                const pendientes = Math.max(0, totalExigible - totalUploaded);
+                const isIncompleto = totalUploaded < totalExigible;
+
+                return {
+                        ...p,
+                        total_exigibles_evaluados: totalExigible,
+                        total_uploaded_evaluados: totalUploaded,
+                        pendientes_evaluados: pendientes,
+                        is_incompleto: isIncompleto
+                    };
+            }).filter(p => p.is_incompleto);
+
+            return {
+                    ranking: rankingCalculado,
+                    noRecomendadosCount: noRecomendadosList.length,
+                    noRecomendadosList,
+                    porVencerCount: docsPorVencerFiltrados.length,
+                    porVencerList: docsPorVencerFiltrados,
+                    incompletosCount: incompletosList.length,
+                    incompletosList
+                };
+            };
+
+        export default function DashboardPage() 
+            {
+                const navigate = useNavigate();
+                const pendientesRef = useRef(null);
+
+                const [resumen, setResumen] = useState(null);
+                const [grupos, setGrupos] = useState([]);
+                const [estados, setEstados] = useState([]);
+                const [proximos, setProximos] = useState([]);
+                const [kpisGestion, setKpisGestion] = useState([]);
+                const [estadoExpediente, setEstadoExpediente] = useState(null);
+                const [calificacion, setCalificacion] = useState(null);
+
+                //EROMAN 03/09/2026
+                const [proveedorSeleccionado, setProveedorSeleccionado] = useState(() => {
+                return localStorage.getItem('sisgestion_proveedor_actual') || 'ALL';});
+                const [calificacionConsultor, setCalificacionConsultor] = useState(null);
+                const [proveedorConsultorInfo, setProveedorConsultorInfo] = useState(null);
+                //EROMAN 03/09/2026
+                const [cumplimientoProveedores, setCumplimientoProveedores] = useState(null);
+                const [cumplimientoGlobal, setCumplimientoGlobal] = useState([]);
+                const [rubroFiltro, setRubroFiltro] = useState(() => {return localStorage.getItem('sisgestion_rubro_actual') || 'ALL';});
+                const [loadingProveedor, setLoadingProveedor] = useState(true);
+                const [proveedorInfo, setProveedorInfo] = useState(null);
+                const [mostrarConstruccion, setMostrarConstruccion] = useState(false);
+                const [periodoFiltro, setPeriodoFiltro] = useState(() => {return localStorage.getItem('sisgestion_periodo_actual') || '2026';});
+
+                // Estado para la gestión seleccionada actualmente (por defecto ['ALL'] = Toda la información)
+                const [gestionFiltro, setGestionFiltro] = useState(() => 
+                    {
+                        try 
+                            {
+                                const raw = localStorage.getItem('sisgestion_gestion_actual');
+                                if (raw) 
+                                    {
+                                        const parsed = JSON.parse(raw);
+                                        if (Array.isArray(parsed)) return parsed;
+                                    }
+                            } 
+                        catch { }
+                        return ['ALL'];
                     });
-                }
-            }
-        }
-    };
 
-    // Documentos pendientes ordenados por proveedor, alcance y tipo de documento
-    const proximosOrdenados = [...proximos].sort((a, b) => {
-        if (a.proveedor !== b.proveedor) return String(a.proveedor || '').localeCompare(String(b.proveedor || ''));
-        if (a.alcance !== b.alcance) return String(a.alcance || '').localeCompare(String(b.alcance || ''));
-        return String(a.tipo_documento_id || '').localeCompare(String(b.tipo_documento_id || ''));
-    });
+                    // Copias de datos brutos para filtrado reactivo
+                    const [rawDocsProveedor, setRawDocsProveedor] = useState([]);
+                    const [rawKpisProveedor, setRawKpisProveedor] = useState([]);
+                    const [rawCalificacion, setRawCalificacion] = useState(null);
+                    const [rawAdminGrupos, setRawAdminGrupos] = useState([]);
+                    const [rawAdminProximos, setRawAdminProximos] = useState([]);
+                    const [rawAdminResumen, setRawAdminResumen] = useState(null);
+                    const [rawAdminEstados, setRawAdminEstados] = useState([]);
 
-    const limpiarFiltroGestion = () => {
-        setGestionFiltro('ALL');
-        localStorage.setItem('sisgestion_gestion_actual', 'ALL');
-        window.dispatchEvent(new CustomEvent('sisgestion:gestion_change', { detail: 'ALL' }));
-    };
+                    // ── Estados para Tarjetas Consultor: Ranking y Alertas ───────────────────
+                    const [rawRankingProveedores, setRawRankingProveedores] = useState([]);
+                    const [rawAlertasConsultor, setRawAlertasConsultor] = useState(null);
+                    const [rankingCalculado, setRankingCalculado] = useState([]);
+
+                    const [alertasCalculadas, setAlertasCalculadas] = useState({
+                        noRecomendadosCount: 0,
+                        noRecomendadosList: [],
+                        porVencerCount: 0,
+                        porVencerList: [],
+                        incompletosCount: 0,
+                        incompletosList: []
+                    });
+
+                    const [modalRankingOpen, setModalRankingOpen] = useState(false);
+                    const [modalAlertaDetalle, setModalAlertaDetalle] = useState(null);
+
+                    // ── Identidad del usuario logueado ──────────────────────────────────────
+                    const usuarioLogueado = obtenerUsuario();
+                    const rolCodigo = (usuarioLogueado?.rol_codigo || usuarioLogueado?.rol || usuarioLogueado?.role || '').toUpperCase();
+                    const rolId = Number(usuarioLogueado?.rol_id);
+                    const esProveedor = rolCodigo === 'PROVEEDOR' || rolId === 2 || usuarioLogueado?.tipo_usuario === 'PROVEEDOR';
+                    const esConsultor = rolCodigo === 'CONSULTOR' || rolId === 3 || usuarioLogueado?.tipo_usuario === 'CONSULTOR' || (usuarioLogueado?.rol_nombre || '').toUpperCase().includes('CONSULT');
+                    const miProveedorId = usuarioLogueado?.proveedor_id;
+
+                    // Escucha de cambios de gestión desde el Header
+                    useEffect(() => {
+                        const handleGestionChange = (e) => {
+                            if (e.detail) {
+                                setGestionFiltro(Array.isArray(e.detail) ? e.detail : [e.detail]);
+                            }
+                        };
+                        window.addEventListener('sisgestion:gestion_change', handleGestionChange);
+                        return () => window.removeEventListener('sisgestion:gestion_change', handleGestionChange);
+                    }, []);
+
+                    // Escucha de cambios de periodo desde el Header
+                    useEffect(() => {
+                        const handlePeriodoChange = (e) => {
+                            if (e.detail) {
+                                setPeriodoFiltro(e.detail);
+                            }
+                        };
+                        window.addEventListener('sisgestion:periodo_change', handlePeriodoChange);
+                        return () => window.removeEventListener('sisgestion:periodo_change', handlePeriodoChange);
+                    }, []);
+
+                    // Escucha de cambios de Proveedor desde el Header 
+                    useEffect(() => {
+                        const handleRubroChange = (e) => {
+                            if (e.detail !== undefined) {
+                                setRubroFiltro(e.detail);
+                            }
+                        };
+                        window.addEventListener('sisgestion:rubro_change', handleRubroChange);
+                        return () => window.removeEventListener('sisgestion:rubro_change', handleRubroChange);
+                    }, []);
+
+                    // Escucha de cambios de proveedor desde el Header EROMAN 03/09/2026
+                    useEffect(() => 
+                        {
+                            const handleProveedorChange = (e) => 
+                                {
+                                    if (e.detail !== undefined) 
+                                        {
+                                            console.log('>>> proveedor seleccionado en Dashboard:', e.detail);
+                                            setProveedorSeleccionado(e.detail);
+
+                                            if (e.detail === 'ALL') 
+                                                {
+                                                    setGestionFiltro(['ALL']);
+                                                    localStorage.setItem('sisgestion_gestion_actual', JSON.stringify(['ALL']));
+                                                    setRubroFiltro('ALL');
+                                                    localStorage.setItem('sisgestion_rubro_actual', 'ALL');
+                                                }
+                                        }
+                                };
+
+                            window.addEventListener('sisgestion:proveedor_change', handleProveedorChange);
+
+                            return () => {window.removeEventListener('sisgestion:proveedor_change', handleProveedorChange);};
+                        }, []);
+
+                    // Obtener calificación del proveedor seleccionado por CONSULTOR
+                    useEffect(() => 
+                        {
+                            if (!esConsultor) return;
+
+                            if (!proveedorSeleccionado || proveedorSeleccionado === 'ALL') 
+                                {
+                                    setCalificacionConsultor(null);
+                                    return;
+                                }
+
+                            const cargarCalificacionConsultor = async () => 
+                                {
+                                    try 
+                                        {
+                                            console.log('>>> obteniendo calificación para proveedor:',proveedorSeleccionado);
+                                            const data = await obtenerCalificacionProveedor(Number(proveedorSeleccionado));
+                                            console.log('>>> calificación proveedor seleccionado:',data);
+                                            setCalificacionConsultor(data || null);
+                                        } 
+                                    catch (error) 
+                                        {
+                                            console.error('Error al obtener calificación del proveedor seleccionado:',error);
+                                            setCalificacionConsultor(null);
+                                        }
+                                };
+                            cargarCalificacionConsultor();
+                        }, [esConsultor, proveedorSeleccionado]);
+
+
+                        // Obtener información del proveedor seleccionado por CONSULTOR EROMAN 03/09/2026
+                        useEffect(() => 
+                            {
+                                if (!esConsultor) return;
+
+                                if (!proveedorSeleccionado || proveedorSeleccionado === 'ALL') 
+                                    {
+                                        setProveedorConsultorInfo(null);
+                                        return;
+                                    }
+
+                                const cargarProveedorConsultor = async () => 
+                                    {
+                                        try 
+                                            {
+                                                console.log('>>> obteniendo información del proveedor:',proveedorSeleccionado);
+                                                const data = await obtenerProveedorPorId(Number(proveedorSeleccionado));
+                                                console.log('>>> información proveedor seleccionado:',data);
+                                                setProveedorConsultorInfo(data || null);
+
+                                            } 
+                                        catch (error) 
+                                            {
+                                                console.error('Error al obtener información del proveedor seleccionado:',error);
+                                                setProveedorConsultorInfo(null);
+                                            }
+                                    };
+
+                                cargarProveedorConsultor();
+
+                            }, [esConsultor, proveedorSeleccionado]);
+
+                        useEffect(() => 
+                            {
+                                if (esProveedor) 
+                                    {
+                                        cargarDashboardProveedor();
+                                    } 
+                                else 
+                                    {
+                                        cargarDashboardAdmin(periodoFiltro, rubroFiltro, proveedorSeleccionado);
+                                    }
+                            }, [esProveedor,miProveedorId,periodoFiltro,rubroFiltro,proveedorSeleccionado]);
+
+                        // Cargar información de la razón social del proveedor
+                        useEffect(() => 
+                            {
+                                if (miProveedorId) 
+                                    {
+                                        obtenerProveedorPorId(miProveedorId).then(data => {setProveedorInfo(data);}).catch(err => console.error("Error al obtener info de proveedor:", err));
+                                    }
+                            }, [miProveedorId]);
+
+                        const obtenerIdentidadProveedor = () => 
+                            {
+                                if (!proveedorInfo) return usuarioLogueado?.username || '';
+                                if (proveedorInfo.tipo_documento === '06' || proveedorInfo.razon_social) 
+                                    {
+                                        return proveedorInfo.razon_social || proveedorInfo.proveedor || usuarioLogueado?.username || '';
+                                    }
+
+                                const nombresCompletos = `${proveedorInfo.nombre || ''} ${proveedorInfo.apellido_paterno || ''} ${proveedorInfo.apellido_materno || ''}`.trim();
+                                return nombresCompletos || proveedorInfo.proveedor || usuarioLogueado?.username || '';
+                            };
+
+                        //EROMAN 03/09/2026
+                        const obtenerIdentidadProveedorConsultor = () => 
+                            {
+                                if (!proveedorConsultorInfo) return String(proveedorSeleccionado || '');
+
+                                if (proveedorConsultorInfo.tipo_documento === '06' ||proveedorConsultorInfo.razon_social)
+                                    {
+                                        return (proveedorConsultorInfo.razon_social ||proveedorConsultorInfo.proveedor ||String(proveedorSeleccionado));
+                                    }
+
+                                const nombresCompletos = `${proveedorConsultorInfo.nombre || ''} ${proveedorConsultorInfo.apellido_paterno || ''} ${proveedorConsultorInfo.apellido_materno || ''}`.trim();
+
+                                return (nombresCompletos ||proveedorConsultorInfo.proveedor ||String(proveedorSeleccionado));
+                            };
+
+                        // Reaccionar al cambio de gestión para filtrar los datos en pantalla
+                        useEffect(() => 
+                            {
+                                if (esProveedor) 
+                                    {
+                                        aplicarFiltroProveedor(rawDocsProveedor, rawKpisProveedor, gestionFiltro);
+                                    } 
+                                else
+                                    {
+                                        aplicarFiltroAdmin(rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, gestionFiltro);
+                                        const res = calcularRankingYAlertas(rawRankingProveedores, rawAlertasConsultor, gestionFiltro);
+                                        setRankingCalculado(res.ranking);
+                                        setAlertasCalculadas(res);
+                                    }
+                            }, [gestionFiltro, rawDocsProveedor, rawKpisProveedor, rawCalificacion, rawAdminGrupos, rawAdminProximos, rawAdminEstados, rawAdminResumen, rawRankingProveedores, rawAlertasConsultor, esProveedor]);
+
+                        // ── Dashboard ADMIN / CONSULTOR ──────────────────────────────────────────
+                        async function cargarDashboardAdmin(periodo, rubro = 'ALL', proveedor = 'ALL') 
+                            {
+                                try 
+                                    {
+                                        const provIdParam = proveedor !== 'ALL' ? proveedor : undefined;
+                                        const [resumenRes,gruposRes,estadosRes,proximosRes,cumplimientoRes,globalGestionRes,rankingRes,alertasRes] = 
+                                            await Promise.allSettled([
+                                                                        obtenerResumen(periodo, rubro, provIdParam),
+                                                                        obtenerDocumentosPorGrupo(periodo, rubro, provIdParam),
+                                                                        obtenerDocumentosPorEstado(periodo, rubro, provIdParam),
+                                                                        obtenerProximosVencer(periodo, rubro, provIdParam),
+                                                                        obtenerResumenProveedoresCumplimiento(periodo, rubro, provIdParam),                
+                                                                        esConsultor && proveedor !== 'ALL' ? obtenerCumplimientoGestion(Number(proveedor)): obtenerCumplimientoGlobalPorGestion(periodo, rubro, provIdParam),
+                                                                        obtenerRankingProveedores(periodo, rubro, provIdParam),
+                                                                        obtenerAlertasConsultor(periodo, rubro, provIdParam)
+                                                                    ]);
+
+                                        const resumenData = (resumenRes.status === 'fulfilled' && resumenRes.value) ? resumenRes.value : { total_proveedores: 0, total_documentos: 0, documentos_vigentes: 0, documentos_vencidos: 0 };
+                                        const gruposData = (gruposRes.status === 'fulfilled' && Array.isArray(gruposRes.value)) ? gruposRes.value : [];
+                                        const estadosData = (estadosRes.status === 'fulfilled' && Array.isArray(estadosRes.value)) ? estadosRes.value : [];
+                                        const proximosData = (proximosRes.status === 'fulfilled' && Array.isArray(proximosRes.value)) ? proximosRes.value : [];
+                                        const cumplimientoData = (cumplimientoRes.status === 'fulfilled' && cumplimientoRes.value) ? cumplimientoRes.value : { total_proveedores: 0, recomendados: 0, recomendados_con_restricciones: 0, no_recomendados: 0 };                                        
+                                        const globalGestionRaw = (globalGestionRes.status === 'fulfilled' && Array.isArray(globalGestionRes.value))? globalGestionRes.value: [];
+
+                                        const globalGestionData = esConsultor && proveedor !== 'ALL' ? globalGestionRaw.map(item => ({codigo:item.gestion === 'SST / MA' ? 'SST_MA'
+                                                                                                                                        :item.gestion === 'CALIDAD' ? 'CALIDAD'
+                                                                                                                                        :item.gestion === 'PATRIMONIAL' ? 'PATRIMONIAL'
+                                                                                                                                        :item.gestion === 'ETICA' ? 'ETICA'
+                                                                                                                                        :item.gestion,nombre
+                                                                                                                                        :item.gestion === 'SST / MA' ? 'SST-MA'
+                                                                                                                                        :item.gestion || '',porcentaje: Number(item.porcentaje || 0),
+                                                                                                                                        documentos_registrados: Number(item.documentos_registrados || 0),
+                                                                                                                                        documentos_exigibles: Number(item.documentos_exigibles || 0)}))
+                                                                                                                                        : globalGestionRaw;console.log('DEBUG CUMPLIMIENTO GESTION:', globalGestionData);
+
+                                        const rankingData = (rankingRes.status === 'fulfilled' && Array.isArray(rankingRes.value)) ? rankingRes.value : [];
+                                        const alertasData = (alertasRes.status === 'fulfilled' && alertasRes.value) ? alertasRes.value : { proveedores: [], documentos_por_vencer: [] };
+
+                                        setRawAdminResumen(resumenData);
+                                        setResumen(resumenData);
+                                        setRawAdminGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
+                                        setGrupos(gruposData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
+                                        setRawAdminEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
+                                        setEstados(estadosData.map(item => ({ ...item, cantidad: Number(item.cantidad || 0) })));
+                                        setRawAdminProximos(proximosData);
+                                        setProximos(proximosData);
+                                        setCumplimientoProveedores(cumplimientoData);
+                                        setCumplimientoGlobal(globalGestionData);
+                                        setRawRankingProveedores(rankingData);
+                                        setRawAlertasConsultor(alertasData);
+
+                                        const resAlertas = calcularRankingYAlertas(rankingData, alertasData, gestionFiltro);
+                                        setRankingCalculado(resAlertas.ranking);
+                                        setAlertasCalculadas(resAlertas);
+                                    } 
+                                catch (error) 
+                                    {
+                                        console.error("Error al cargar dashboard admin/consultor:", error);
+                                        setResumen({ total_proveedores: 0, total_documentos: 0, documentos_vigentes: 0, documentos_vencidos: 0 });
+                                        setCumplimientoProveedores({ total_proveedores: 0, recomendados: 0, recomendados_con_restricciones: 0, no_recomendados: 0 });
+                                    }
+            };
+
+        const aplicarFiltroAdmin = (rawGrupos, rawProximosList, rawEstadosList, rawRes, gestionesCodeArray) => 
+            {
+                if (!rawGrupos) return;
+                const isAll = !gestionesCodeArray || gestionesCodeArray.length === 0 || gestionesCodeArray.includes('ALL');
+
+                if (isAll) 
+                    {
+                            setResumen(rawRes);
+                            setGrupos(rawGrupos);
+                            setEstados(rawEstadosList);
+                            setProximos(rawProximosList || []);
+                            return;
+                    }
+
+                const configs = gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
+                const gruposPermitidos = configs.map(c => c.grupo);
+                const alcancesPermitidos = configs.reduce((acc, c) => [...acc, ...c.alcances], []);
+
+                // Filtrar pendientes de ingresar por alcance o grupo asociado a la gestión
+                const proximosFiltrados = (rawProximosList || []).filter(item => 
+                    {
+                        if (item.alcance) return alcancesPermitidos.includes(item.alcance);
+                        return !item.grupo_documentos || gruposPermitidos.includes(item.grupo_documentos);
+                    });
+                setProximos(proximosFiltrados);
+
+                // Filtrar grupos
+                const gruposEncontrados = (rawGrupos || []).filter(g => gruposPermitidos.includes(g.grupo_documentos));
+                if (gruposEncontrados.length > 0) 
+                    {
+                        setGrupos(gruposEncontrados);
+                    } 
+                else
+                    {
+                        setGrupos(rawGrupos);
+                    }
+
+                setResumen(rawRes);
+                setEstados(rawEstadosList);
+            };
+
+        // ── Dashboard PROVEEDOR (solo sus propios documentos) ────────────────────
+        async function cargarDashboardProveedor() 
+            {
+                if (!miProveedorId) 
+                    {
+                        setLoadingProveedor(false);
+                        return;
+                    }
+                    try 
+                        {
+                            let acumuladoDocs = [];
+                            // Consultamos secuencialmente los 4 grupos documentales del proveedor logueado
+                            for (const grupoCode of CODIGOS_GRUPOS) 
+                                {
+                                    const dataDocs = await listarPorGrupo(miProveedorId, grupoCode);
+                                    if (dataDocs && dataDocs.length > 0) 
+                                        {
+                                            acumuladoDocs = [...acumuladoDocs, ...dataDocs];
+                                        }
+                                }
+
+                            setRawDocsProveedor(acumuladoDocs);
+                            console.log('>>> proveedorId Dashboard:', miProveedorId);
+
+                            const dataKpis = await obtenerCumplimientoGestion(miProveedorId);                            
+                            console.log('>>> dataKpis Dashboard:', dataKpis);            
+                            
+                            setRawKpisProveedor(dataKpis || []);
+                            const dataEstado = await obtenerEstadoExpediente(miProveedorId);
+                            setEstadoExpediente(dataEstado);
+
+                            const dataCalificacion = await obtenerCalificacionProveedor(miProveedorId);
+                            setRawCalificacion(dataCalificacion);
+                            // setCalificacion is handled inside aplicarFiltroProveedor which is triggered by rawCalificacion change
+                        } 
+                    catch (error)
+                        {
+                            console.error("Error consolidando indicadores de proveedor:", error);
+                        } 
+                    finally 
+                        {
+                            setLoadingProveedor(false);
+                        }
+            };
+
+    const aplicarFiltroProveedor = (acumuladoDocs, dataKpis, gestionesCodeArray) => 
+        {
+            if (!acumuladoDocs) return;
+
+            const isAll = !gestionesCodeArray || gestionesCodeArray.length === 0 || gestionesCodeArray.includes('ALL');
+            const configs = isAll ? [] : gestionesCodeArray.map(code => GESTION_MAP[code]).filter(Boolean);
+
+            // Filtrar documentos según la gestión seleccionada
+            const docsFiltrados = isAll ? acumuladoDocs : acumuladoDocs.filter(d =>
+                {
+                    return configs.some(config => 
+                        {
+                            if (d.alcance) 
+                                {
+                                    return config.alcances.includes(d.alcance);
+                                }
+                            return d.grupo_documentos === config.grupo;
+                        });
+                });
+
+            // Separación de documentos por estatus evaluando fecha_vigencia
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            const vigentesCount = docsFiltrados.filter(d => 
+                {
+                    if (!d.fecha_vigencia) return false;
+                    const f = new Date(d.fecha_vigencia);
+                    f.setHours(0, 0, 0, 0);
+                    return f >= hoy;
+                }).length;
+
+            const vencidosCount = docsFiltrados.filter(d => 
+                {
+                    if (!d.fecha_vigencia) return false;
+                    const f = new Date(d.fecha_vigencia);
+                    f.setHours(0, 0, 0, 0);
+                    return f < hoy;
+                }).length;
+
+            setResumen(
+                {
+                    total_proveedores: 'N/A',
+                    documentos_vigentes: vigentesCount,
+                    documentos_vencidos: vencidosCount,
+                    total_documentos: docsFiltrados.length
+                });
+
+            // ── Recalcular estadoExpediente para "MIS DOCUMENTOS"
+            const regimen = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || 'RG';
+            const LIMITS_PER_ALCANCE = 
+                {
+                    'RG': { 'GSG': 12, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+                    'RP': { 'GSG': 9, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 },
+                    'RM': { 'GSG': 7, 'GMA': 1, 'GCA': 1, 'GPA': 1, 'GTR': 1 }
+                };
+
+            const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
+
+            const activeAlcances = isAll ? ['GSG', 'GMA', 'GCA', 'GPA', 'GTR']: configs.reduce((acc, config) => [...acc, ...config.alcances], []);
+
+            let totalExigibles = 0;
+            let totalRegistrados = 0;
+            let totalVigentesCapped = 0;
+
+            activeAlcances.forEach(alcance => 
+                {
+                    const exigibleAlcance = limits[alcance] || 0;
+                    totalExigibles += exigibleAlcance;
+
+                    //const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
+                    const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance && d.estado_documento === 'V');
+
+                    const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
+                    const countUploaded = uniqueTypes.size;
+                    totalRegistrados += Math.min(countUploaded, exigibleAlcance);
+
+                    const docsVigentesAlcance = docsAlcance.filter(d => 
+                        {
+                            if (!d.fecha_vigencia) return false;
+                            const f = new Date(d.fecha_vigencia);
+                            f.setHours(0, 0, 0, 0);
+                            return f >= hoy;
+                        });
+
+                    const uniqueVigentesTypes = new Set(docsVigentesAlcance.map(d => d.tipo_documento_id));
+                    const countVigentes = uniqueVigentesTypes.size;
+                    totalVigentesCapped += Math.min(countVigentes, exigibleAlcance);
+                });
+
+                // Documentos pendientes de ingresar para el proveedor logueado
+                const regimenProv = rawCalificacion?.regimen_tributario_codigo || rawCalificacion?.regimen_tributario || proveedorInfo?.codigo_regimen_tributario || proveedorInfo?.regimen_tributario || 'RG';
+                const nroTrabProv = proveedorInfo?.nro_trabajadores || '';
+                const todosPendientes = calcularPendientesProveedor(regimenProv, nroTrabProv, acumuladoDocs, obtenerIdentidadProveedor());
+
+                const alcancesPermitidos = isAll ? null : configs.reduce((acc, c) => [...acc, ...c.alcances], []);
+                const pendientesFiltrados = isAll ? todosPendientes : todosPendientes.filter(item => alcancesPermitidos.includes(item.alcance));
+                setProximos(pendientesFiltrados);
+
+                const unDiaMs = 86400000;
+                const hoyMas15 = new Date(hoy.getTime() + 15 * unDiaMs);
+
+                const vencidosAbs = docsFiltrados.filter(d => 
+                    {
+                        if (!d || !d.fecha_vigencia) return false;
+                        const f = new Date(d.fecha_vigencia);
+                        f.setHours(0, 0, 0, 0);
+                        return f < hoy;
+                    }).length;
+
+                const porVencerAbs = docsFiltrados.filter(d => 
+                    {
+                        if (!d || !d.fecha_vigencia) return false;
+                        const f = new Date(d.fecha_vigencia);
+                        f.setHours(0, 0, 0, 0);
+                        return f >= hoy && f <= hoyMas15;
+                    }).length;
+
+                const vigentesAbs = docsFiltrados.filter(d => 
+                    {
+                        if (!d || !d.fecha_vigencia) return false;
+                        const f = new Date(d.fecha_vigencia);
+                        f.setHours(0, 0, 0, 0);
+                        return f >= hoy;
+                    }).length;
+
+                const pendientesCount = pendientesFiltrados.length;
+
+                setEstadoExpediente(
+                    {
+                        total_exigibles: totalExigibles,
+                        total_registrados: totalRegistrados,
+                        vigentes_para_porcentaje: totalVigentesCapped,
+                        vencidos: vencidosAbs,
+                        por_vencer: porVencerAbs,
+                        vigentes: vigentesAbs,
+                        pendientes: pendientesCount
+                    });
+
+                // Gráficos de grupo según filtro
+                if (!isAll && configs.length > 0) 
+                    {
+                        const gruposEstadistica = configs.map(config => 
+                            {
+                                const count = docsFiltrados.filter(d => 
+                                    {
+                                        if (d && d.alcance) return config.alcances.includes(d.alcance);
+                                        return d && d.grupo_documentos === config.grupo;
+                                    }).length;
+                                return { descripcion: config.nombre, cantidad: count };
+                            });
+                        setGrupos(gruposEstadistica);
+                    } 
+                else
+                    {
+                        const estadisticaGrupos = CODIGOS_GRUPOS.map(grupoCode => 
+                            {
+                                const count = (acumuladoDocs || []).filter(d => d && d.grupo_documentos === grupoCode).length;
+                                return { descripcion: NOMBRES_GRUPOS[grupoCode], cantidad: count };
+                            });
+                        setGrupos(estadisticaGrupos);
+                    }
+
+                setEstados(
+                    [
+                        { descripcion: 'VIGENTE', cantidad: vigentesCount },
+                        { descripcion: 'VENCIDO', cantidad: vencidosCount }
+                    ]);
+
+                // Filtrar o resaltar KPIs de gestión
+                if (!isAll && configs.length > 0 && dataKpis && dataKpis.length > 0) 
+                    {
+                        const kpisFiltrados = dataKpis.filter(kpi => 
+                            {
+                                const nombreUpper = (kpi.gestion || '').toUpperCase();
+                                return configs.some(config => config.kpiMatch.some(match => nombreUpper.includes(match)));
+                            });
+                        setKpisGestion(kpisFiltrados.length > 0 ? kpisFiltrados : dataKpis);
+                    } 
+                else 
+                    {
+                        setKpisGestion(dataKpis || []);
+                    }
+
+                // Calificación Dinámica
+                if (rawCalificacion) 
+                    {
+                        if (isAll) 
+                            {
+                                setCalificacion(rawCalificacion);
+                            } 
+                        else
+                            {
+
+                                const regimen = rawCalificacion.regimen_tributario_codigo || rawCalificacion.regimen_tributario;
+                                const limits = LIMITS_PER_ALCANCE[regimen] || LIMITS_PER_ALCANCE['RG'];
+
+                                let totalExigible = 0;
+                                let totalCappedIngresados = 0;
+
+                                gestionesCodeArray.forEach(code => 
+                                    {
+                                        const config = GESTION_MAP[code];
+                                        if (config) 
+                                            {
+                                                config.alcances.forEach(alcance => 
+                                                    {
+                                                        const exigibleAlcance = limits[alcance] || 0;
+                                                        totalExigible += exigibleAlcance;
+
+                                                        //const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance);
+                                                        //const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
+                                                        //const countUploaded = uniqueTypes.size;
+
+                                                        //totalCappedIngresados += Math.min(countUploaded, exigibleAlcance);
+                                    
+                                                        const docsAlcance = docsFiltrados.filter(d => d.alcance === alcance && d.estado_documento === 'V');
+                                                        const uniqueTypes = new Set(docsAlcance.map(d => d.tipo_documento_id));
+                                                        const countVigentes = uniqueTypes.size;
+
+                                                        totalCappedIngresados += Math.min(countVigentes,exigibleAlcance);
+
+                                                    });
+                                            }
+                                    });
+
+                                if (totalExigible === 0) 
+                                    {
+                                        setCalificacion(rawCalificacion);
+                                    } 
+                                else 
+                                    {
+                                        let puntajeRaw = (totalCappedIngresados / totalExigible) * 100;
+                                        if (puntajeRaw > 100) puntajeRaw = 100;
+
+                                        let recomendacion = 'NO RECOMENDADO';
+                                        let nivel = 'BAJO';
+                                        let desc = 'Presentas un bajo nivel de registro y vigencia documental';
+
+                                        if (puntajeRaw > 90) 
+                                            {
+                                                recomendacion = 'RECOMENDADO';
+                                                nivel = 'ALTO';
+                                                desc = 'Mantienes un alto nivel de registro y vigencia documental';
+                                            } 
+                                        else if (puntajeRaw >= 75) 
+                                            {
+                                                recomendacion = 'RECOMENDADO CON RESTRICCIONES';
+                                                nivel = 'MEDIO';
+                                                desc = 'Mantienes un nivel aceptable de registro y vigencia documental';
+                                            }
+
+                                        setCalificacion(
+                                            {
+                                                ...rawCalificacion,
+                                                cantidad_documentos_vigentes: totalCappedIngresados,
+                                                puntaje_formateado: `${Math.round(puntajeRaw)} / 100`,
+                                                puntaje_numerico: Math.round(puntajeRaw),
+                                                recomendacion,
+                                                nivel_documental: nivel,
+                                                descripcion_nivel: desc
+                                            });
+                                    }
+                            }
+                    }
+        };
+
+        // Documentos pendientes ordenados por proveedor, alcance y tipo de documento
+        const proximosOrdenados = [...proximos].sort((a, b) => 
+            {
+                if (a.proveedor !== b.proveedor) return String(a.proveedor || '').localeCompare(String(b.proveedor || ''));
+                if (a.alcance !== b.alcance) return String(a.alcance || '').localeCompare(String(b.alcance || ''));
+                return String(a.tipo_documento_id || '').localeCompare(String(b.tipo_documento_id || ''));
+            });
+
+        const limpiarFiltroGestion = () => 
+            {
+                setGestionFiltro('ALL');
+                localStorage.setItem('sisgestion_gestion_actual', 'ALL');
+                window.dispatchEvent(new CustomEvent('sisgestion:gestion_change', { detail: 'ALL' }));
+            };
 
     return (
-        <MainLayout>
-            <style>{responsiveCSS}</style>
+                <MainLayout>
+                    <style>{responsiveCSS}</style>
 
-            {/* ── Encabezado dinámico por rol ─────────────────────────────── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
-                <div>
-                    <h1 style={styles.heading}>
-                        {esProveedor
-                            ? `Panel de Control - ${obtenerIdentidadProveedor()}`
-                            : esConsultor
-                                ? 'Panel de Control - Consultor'
-                                : 'Dashboard ProvGestion'}
-                    </h1>
-                    <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
-                        {esProveedor
-                            ? 'Resumen analítico y alertas del estado de vigencia de sus expedientes cargados.'
-                            : esConsultor
-                                ? `Panel de auditoría y KPIs de cumplimiento documental (${periodoFiltro}${rubroFiltro !== 'ALL' ? ` · Rubro: ${rubroFiltro}` : ''} · ${obtenerNombreGestionFiltro(gestionFiltro)}).`
-                                : 'Vista general del sistema para gestión de auditorías corporativas.'}
-                    </p>
-                </div>
-
-                {/* Botón para eliminar el filtro activo */}
-                {gestionFiltro !== 'ALL' && GESTION_MAP[gestionFiltro] && (
-                    <button
-                        onClick={limpiarFiltroGestion}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            background: '#EFF6FF',
-                            border: '1px solid #BFDBFE',
-                            color: '#1D4ED8',
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            fontSize: '13px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.background = '#DBEAFE'}
-                        onMouseOut={(e) => e.currentTarget.style.background = '#EFF6FF'}
-                    >
-                        <span>Filtro: <strong>{GESTION_MAP[gestionFiltro]?.nombre}</strong></span>
-                        <span style={{ color: '#2563EB', fontWeight: '700', marginLeft: '4px' }}>✕ Ver todo</span>
-                    </button>
-                )}
-            </div>
-
-            {/* ── PROVEEDOR sin ficha → aviso ──────────────────────────────── */}
-            {esProveedor && !miProveedorId && !loadingProveedor ? (
-                <div style={{ ...styles.card, marginTop: '30px' }}>
-                    <div style={styles.emptyState}>
-                        Por favor, complete su registro de Ficha Informativa en la sección de Mi Ficha para activar sus indicadores.
-                    </div>
-                </div>
-            ) : (
-                <>
-                    
-                    <div className={
-        esConsultor && proveedorSeleccionado !== 'ALL'
-            ? 'consultor-proveedor-grid'
-            : 'consultor-proveedor-grid-full'
-    }>
-
-        {/* ── VISTA CONSULTOR: MI CALIFICACIÓN... ── */}
-                           
-
-                    {/* ─ EROMAN 03/09/2026 ─*/}
-                    {/* ── VISTA CONSULTOR: MI CALIFICACIÓN DEL PROVEEDOR SELECCIONADO ── */}
-{esConsultor &&
-    proveedorSeleccionado !== 'ALL' &&
-    calificacionConsultor &&
-    proveedorConsultorInfo && (() => {
-
-        // ─────────────────────────────────────────────────────────────
-        // CALIFICACIÓN DINÁMICA DEL CONSULTOR
-        // Se comporta igual que la vista PROVEEDOR:
-        // - Todas las gestiones → calificación global
-        // - Gestiones específicas → recalcula según esas gestiones
-        // ─────────────────────────────────────────────────────────────
-        const isAllGestiones =
-    !gestionFiltro ||
-    gestionFiltro.length === 0 ||
-    gestionFiltro.includes('ALL');
-
-let calificacionMostrar = calificacionConsultor;
-
-if (!isAllGestiones && cumplimientoGlobal?.length > 0) {
-
-    // Obtener los alcances correspondientes a las gestiones seleccionadas
-    const alcancesSeleccionados = gestionFiltro.reduce(
-        (acc, codigoGestion) => {
-
-            const config = GESTION_MAP[codigoGestion];
-
-            if (config) {
-                return [...acc, ...config.alcances];
-            }
-
-            return acc;
-        },
-        []
-    );
-
-    /*
-     * Relación entre alcance y código de cumplimiento global
-     *
-     * GSG + GMA  -> SST_MA
-     * GCA         -> CALIDAD
-     * GPA         -> PATRIMONIAL
-     * GTR         -> ETICA
-     */
-    const codigosCumplimiento = [];
-
-    if (
-        alcancesSeleccionados.includes('GSG') ||
-        alcancesSeleccionados.includes('GMA')
-    ) {
-        codigosCumplimiento.push('SST_MA');
-    }
-
-    if (alcancesSeleccionados.includes('GCA')) {
-        codigosCumplimiento.push('CALIDAD');
-    }
-
-    if (alcancesSeleccionados.includes('GPA')) {
-        codigosCumplimiento.push('PATRIMONIAL');
-    }
-
-    if (alcancesSeleccionados.includes('GTR')) {
-        codigosCumplimiento.push('ETICA');
-    }
-
-    // Obtener solamente las gestiones seleccionadas
-    const gestionesSeleccionadas = cumplimientoGlobal.filter(
-        item => codigosCumplimiento.includes(item.codigo)
-    );
-
-    let totalExigibles = 0;
-    let totalVigentes = 0;
-
-    gestionesSeleccionadas.forEach(item => {
-
-        totalExigibles += Number(
-            item.documentos_exigibles || 0
-        );
-
-        totalVigentes += Number(
-            item.documentos_registrados || 0
-        );
-
-    });
-
-    if (totalExigibles > 0) {
-
-        let puntajeRaw =
-            (totalVigentes / totalExigibles) * 100;
-
-        if (puntajeRaw > 100) {
-            puntajeRaw = 100;
-        }
-
-        let recomendacion = 'NO RECOMENDADO';
-        let nivel = 'BAJO';
-
-        let descripcion =
-            'Presenta un bajo nivel de registro y vigencia documental';
-
-        if (puntajeRaw > 90) {
-
-            recomendacion = 'RECOMENDADO';
-            nivel = 'ALTO';
-
-            descripcion =
-                'Mantiene un alto nivel de registro y vigencia documental';
-
-        } else if (puntajeRaw >= 75) {
-
-            recomendacion =
-                'RECOMENDADO CON RESTRICCIONES';
-
-            nivel = 'MEDIO';
-
-            descripcion =
-                'Mantiene un nivel aceptable de registro y vigencia documental';
-        }
-
-        calificacionMostrar = {
-            ...calificacionConsultor,
-
-            cantidad_documentos_vigentes:
-                totalVigentes,
-
-            total_exigibles:
-                totalExigibles,
-
-            puntaje_formateado:
-                `${Math.round(puntajeRaw)} / 100`,
-
-            puntaje_numerico:
-                Math.round(puntajeRaw),
-
-            recomendacion,
-
-            nivel_documental:
-                nivel,
-
-            descripcion_nivel:
-                descripcion
-        };
-    }
-}
-
-const puntaje = Number(
-    String(calificacionMostrar.puntaje_formateado || '0')
-        .split('/')[0]
-        .trim()
-) || 0;
-        
-
-        let nivel = 'BAJO';
-        let recomendacion = 'NO RECOMENDADO';
-        let descripcion =
-            'Presenta un bajo nivel de registro y vigencia documental';
-
-        if (puntaje > 90) {
-            nivel = 'ALTO';
-            recomendacion = 'RECOMENDADO';
-            descripcion =
-                'Mantiene un alto nivel de registro y vigencia documental';
-        } else if (puntaje >= 75) {
-            nivel = 'MEDIO';
-            recomendacion = 'RECOMENDADO CON RESTRICCIONES';
-            descripcion =
-                'Mantiene un nivel aceptable de registro y vigencia documental';
-        }
-
-        const identidad = obtenerIdentidadProveedorConsultor();
-        
-
-        return (
-            
-    <div
-        className="consultor-calificacion-card"
-        style={{
-            ...styles.card,
-            border: nivel === 'BAJO'
-                    ? `2px solid ${colors.danger}`
-                    : `1px solid ${colors.border}`,
-                borderLeft: `6px solid ${
-                    nivel === 'ALTO'
-                        ? colors.success
-                        : nivel === 'MEDIO'
-                            ? colors.amber
-                            : colors.danger
-                }`,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                background: nivel === 'BAJO'
-                    ? '#FEF2F2'
-                    : colors.card,
-                marginBottom: '28px'
-            }}>
-                
-                {/* CABECERA */}
-                <div style={{
-                    display: 'flex',
-                    flexDirection: nivel === 'BAJO' ? 'column' : 'row',
-                    justifyContent: 'space-between',
-                    alignItems: nivel === 'BAJO' ? 'center' : 'flex-start',
-                    borderBottom: `1px solid ${colors.border}`,
-                    paddingBottom: '16px',
-                    gap: nivel === 'BAJO' ? '12px' : '0'
-                }}>
-                    <div style={{
-                        textAlign: nivel === 'BAJO' ? 'center' : 'left'
-                    }}>
-                        <h2 style={{
-                            fontSize: '16px',
-                            fontWeight: 800,
-                            color: colors.text,
-                            margin: 0,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em'
-                        }}>
-                            CALIFICACION DEL PROVEEDOR - {' '}
-                            <span style={{ color: colors.primary }}>
-                                {identidad}
-                            </span>
-                        </h2>
-
-                        <p style={{
-                            fontSize: '13px',
-                            color: colors.textMuted,
-                            margin: '4px 0 0 0'
-                        }}>
-                            KPI de Calificación | Régimen:{' '}
-                            <strong>
-                                {obtenerDescripcionRegimen(calificacionConsultor.regimen_tributario_codigo || calificacionConsultor.regimen_tributario, calificacionConsultor.descripcion_regimen_tributario || calificacionConsultor.regimen_tributario)}
-                            </strong>{' '}
-                            | {obtenerEtiquetaFiltrosActivos(gestionFiltro, periodoFiltro, rubroFiltro)}
-                        </p>
-                    </div>
-
-                    {/* RECOMENDACIÓN */}
-                    <div style={{ textAlign: 'center' }}>
-                        <span style={{
-                            ...styles.badge(
-                                nivel === 'ALTO'
-                                    ? colors.successBg
-                                    : nivel === 'MEDIO'
-                                        ? '#fef3c7'
-                                        : colors.danger,
-                                nivel === 'ALTO'
-                                    ? colors.success
-                                    : nivel === 'MEDIO'
-                                        ? '#b45309'
-                                        : '#FFFFFF'
-                            ),
-                            fontSize: nivel === 'BAJO' ? '16px' : '14px',
-                            padding: nivel === 'BAJO'
-                                ? '8px 24px'
-                                : '6px 16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}>
-                            {recomendacion}
-                        </span>
-                    </div>
-                </div>
-
-                {/* PUNTAJE Y NIVEL */}
-                <div style={{
-                    display: 'flex',
-                    flexDirection: nivel === 'BAJO' ? 'column' : 'row',
-                    alignItems: 'center',
-                    gap: nivel === 'BAJO' ? '16px' : '30px',
-                    textAlign: nivel === 'BAJO' ? 'center' : 'left'
-                }}>
-
-                    {/* PUNTAJE */}
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: nivel === 'BAJO'
-                            ? '#FFFFFF'
-                            : '#f8fafc',
-                        padding: '20px',
-                        borderRadius: '12px',
-                        minWidth: '150px',
-                        border: nivel === 'BAJO'
-                            ? `1px solid ${colors.danger}`
-                            : 'none'
-                    }}>
-                        <span style={{
-                            fontSize: '32px',
-                            fontWeight: 900,
-                            color: nivel === 'ALTO'
-                                ? colors.success
-                                : nivel === 'MEDIO'
-                                    ? '#b45309'
-                                    : colors.danger,
-                            lineHeight: '1'
-                        }}>
-                            {puntaje}
-                        </span>
-
-                        <span style={{
-                            fontSize: '14px',
-                            fontWeight: 700,
-                            color: colors.textMuted,
-                            marginTop: '4px'
-                        }}>
-                            / 100
-                        </span>
-                    </div>
-
-                    {/* NIVEL */}
-                    <div style={{ flex: 1 }}>
-                        <h3 style={{
-                            fontSize: '16px',
-                            fontWeight: 700,
-                            color: nivel === 'BAJO'
-                                ? colors.danger
-                                : colors.text,
-                            margin: '0 0 8px 0'
-                        }}>
-                            Nivel de Gestión Documental: {nivel}
-                        </h3>
-
-                        <p style={{
-                            fontSize: '15px',
-                            color: colors.textMuted,
-                            margin: 0,
-                            lineHeight: '1.5'
-                        }}>
-                            {descripcion}
-                        </p>
-                    </div>
-                </div>
-
-                {/* DOCUMENTOS VIGENTES */}
-                <div style={{
-                    borderTop: `1px solid ${colors.border}`,
-                    paddingTop: '14px',
-                    marginTop: '4px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                }}>
-                    <span style={{
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        color: colors.textMuted
-                    }}>
-                        KPI de Efectividad Documental:{' '}
-                        <strong style={{ color: colors.primary }}>
-                            {calificacionMostrar.cantidad_documentos_vigentes ?? 0}
-                        </strong>
-                        {' '}documentos vigentes evaluados de{' '}
-                        <strong style={{ color: colors.text }}>
-                            {calificacionMostrar.total_exigibles ?? calificacionConsultor.total_documentos_exigibles ?? (calificacionConsultor.regimen_tributario_codigo === 'RM' ? 11 : calificacionConsultor.regimen_tributario_codigo === 'RP' ? 13 : 16)}
-                        </strong>
-                        {' '}exigibles ({obtenerNombreGestionFiltro(gestionFiltro)}).
-                    </span>
-                </div>
-
-            </div>
-        );
-    })()}
-
-    {/* ── TARJETA: CUMPLIMIENTO POR GESTIÓN (Solo Consultor) ────────────── */}
-               
-                    <div
-    className="consultor-cumplimiento-card"
-    style={{
-        ...styles.card,
-        padding: '24px 28px',
-                        borderRadius: '12px',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ display: 'inline-block', width: '4px', height: '22px', background: colors.primary, borderRadius: '4px' }}></span>
-                                <div>
-                                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: colors.text, letterSpacing: '0.02em' }}>
-                                        CUMPLIMIENTO POR GESTIÓN
-                                    </h3>
-                                    <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
-                                        KPI en función a los filtros seleccionados.
-                                    </p>
-                                </div>
-                            </div>
-                           
-                           {(() => {
-    const totalEvaluados =
-        proveedorSeleccionado !== 'ALL'
-            ? 1
-            : Number(cumplimientoProveedores?.total_proveedores || 0);
-
-    return totalEvaluados > 0 ? (
-        <span style={{
-            background: '#eff6ff',
-            color: colors.primary,
-            fontWeight: 700,
-            fontSize: '12.5px',
-            padding: '5px 14px',
-            borderRadius: '999px',
-            border: '1px solid #bfdbfe'
-        }}>
-            {totalEvaluados} Proveedor{totalEvaluados === 1 ? '' : 'es'} evaluado{totalEvaluados === 1 ? '' : 's'}
-        </span>
-    ) : null;
-})()}
-
-
+                    {/* ── Encabezado dinámico por rol ─────────────────────────────── */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                            <h1 style={styles.heading}>
+                                {esProveedor
+                                    ? `Panel de Control - ${obtenerIdentidadProveedor()}`
+                                    : esConsultor
+                                        ? 'Panel de Control - Consultor'
+                                        : 'Dashboard ProvGestion'}
+                            </h1>
+                            <p style={{ color: colors.textMuted, margin: '5px 0 0 0', fontSize: '14px' }}>
+                                {esProveedor
+                                    ? 'Resumen analítico y alertas del estado de vigencia de sus expedientes cargados.'
+                                    : esConsultor
+                                        ? `Panel de auditoría y KPIs de cumplimiento documental (${periodoFiltro}${rubroFiltro !== 'ALL' ? ` · Rubro: ${rubroFiltro}` : ''} · ${obtenerNombreGestionFiltro(gestionFiltro)}).`
+                                        : 'Vista general del sistema para gestión de auditorías corporativas.'}
+                            </p>
                         </div>
 
-                        <div className="table-scroll">
-                            <table style={{ ...styles.table, marginTop: 0 }}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ ...styles.th, width: '30%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Gestión</th>
-                                        <th style={{ ...styles.th, width: '55%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Avance de Cumplimiento</th>
-                                        <th style={{ ...styles.th, textAlign: 'center', width: '15%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Cumplimiento</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(cumplimientoGlobal && cumplimientoGlobal.length > 0 ? cumplimientoGlobal : [
-                                        { codigo: 'SST_MA', nombre: 'SST-MA', porcentaje: 0 },
-                                        { codigo: 'CALIDAD', nombre: 'CALIDAD', porcentaje: 0 },
-                                        { codigo: 'PATRIMONIAL', nombre: 'SEG. PATRIMONIAL', porcentaje: 0 },
-                                        { codigo: 'ETICA', nombre: 'ETICA', porcentaje: 0 },
-                                    ]).filter(item => {
-                                        if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL')) return true;
-                                        if ((item.codigo === 'SST_MA' || (item.nombre || '').includes('SST')) && (gestionFiltro.includes('GSG,GMA') || gestionFiltro.includes('GSG') || gestionFiltro.includes('GMA'))) return true;
-                                        if ((item.codigo === 'CALIDAD' || (item.nombre || '').includes('CALIDAD')) && (gestionFiltro.includes('GCA') || gestionFiltro.includes('CALIDAD'))) return true;
-                                        if ((item.codigo === 'PATRIMONIAL' || (item.nombre || '').includes('PATRIMONIAL')) && (gestionFiltro.includes('GPA') || gestionFiltro.includes('PATRIMONIAL'))) return true;
-                                        if ((item.codigo === 'ETICA' || (item.nombre || '').includes('ETICA')) && (gestionFiltro.includes('GTR') || gestionFiltro.includes('ETICA'))) return true;
-                                        return false;
-                                    }).map((item, index) => {
-                                        const pct = Number(item.porcentaje || 0);
-                                        const progressColor = pct >= 90 ? colors.success : pct >= 75 ? '#d97706' : colors.danger;
-                                        const badgeBg = pct >= 90 ? '#dcfce7' : pct >= 75 ? '#fef3c7' : '#fee2e2';
-                                        const badgeFg = pct >= 90 ? '#15803d' : pct >= 75 ? '#b45309' : '#dc2626';
-                                        const badgeBorder = pct >= 90 ? '#bbf7d0' : pct >= 75 ? '#fde68a' : '#fecaca';
-
-                                        return (
-                                            <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                                
-
-                                                <td style={{
-                                                            ...styles.td,
-                                                            padding: '16px',
-                                                            color: '#000000',
-                                                            background: '#ffffff'
-                                                        }}>
-                                                            <strong style={{ fontSize: '13.5px', color: colors.text }}>
-                                                                {item.nombre}
-                                                            </strong>
-                                                        </td>
-
-                                                <td style={{ ...styles.td, padding: '16px' }}>
-                                                    <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden', height: '10px' }}>
-                                                        <div style={{
-                                                            width: `${Math.min(pct, 100)}%`,
-                                                            background: progressColor,
-                                                            height: '100%',
-                                                            transition: 'width 1s ease-in-out',
-                                                            borderRadius: '999px'
-                                                        }}></div>
-                                                    </div>
-                                                </td>
-                                                <td style={{ ...styles.td, textAlign: 'center', padding: '16px' }}>
-                                                    <span style={{
-                                                        ...styles.badge(badgeBg, badgeFg),
-                                                        padding: '5px 14px',
-                                                        fontSize: '13px',
-                                                        fontWeight: 800,
-                                                        border: `1px solid ${badgeBorder}`,
-                                                        borderRadius: '999px'
-                                                    }}>
-                                                        {pct.toFixed(2)}%
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                   </div>
-
-                    {/* 2. TARJETA: ALERTAS DEL PROVEEDOR */}
-                    {proveedorSeleccionado !== 'ALL' && (() => {
-                        const noRecList = alertasCalculadas.noRecomendadosList.filter(p => String(p.proveedor_id) === String(proveedorSeleccionado));
-                        const porVencList = alertasCalculadas.porVencerList.filter(d => String(d.proveedor_id) === String(proveedorSeleccionado));
-                        const incompList = alertasCalculadas.incompletosList.filter(p => String(p.proveedor_id) === String(proveedorSeleccionado));
-                        const incompCount = incompList.length > 0 ? (incompList[0].pendientes_evaluados ?? incompList.length) : 0;
-
-                        return (
-                            <div
-                                className="consultor-alertas-card"
-                                style={{
-                                    ...styles.card,
-                                    padding: '24px 26px',
-                                    borderLeft: `5px solid #dc2626`,
-                                    borderRadius: '14px',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'space-between'
-                                }}
-                            >
-                                <div>
-                                    <div style={{
+                        {/* Botón para eliminar el filtro activo */}
+                        {gestionFiltro !== 'ALL' && GESTION_MAP[gestionFiltro] && 
+                            (
+                                <button
+                                    onClick={limpiarFiltroGestion}
+                                    style={{
                                         display: 'flex',
-                                        justifyContent: 'space-between',
                                         alignItems: 'center',
-                                        marginBottom: '18px',
-                                        borderBottom: `1px solid ${colors.border}`,
-                                        paddingBottom: '14px',
-                                        flexWrap: 'wrap',
-                                        gap: '10px'
-                                    }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div style={{
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: '10px',
-                                                background: '#fef2f2',
-                                                border: '1px solid #fecaca',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: colors.danger,
-                                                boxShadow: '0 2px 4px rgba(220,38,38,0.08)'
-                                            }}>
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-                                                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <h2 style={{ fontSize: '17px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.01em' }}>
-                                                    Alertas del Proveedor
-                                                </h2>
-                                                <p style={{ color: colors.textMuted, fontSize: '12.5px', margin: '2px 0 0 0' }}>
-                                                    KPI en función a los filtros seleccionados.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        gap: '8px',
+                                        background: '#EFF6FF',
+                                        border: '1px solid #BFDBFE',
+                                        color: '#1D4ED8',
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        fontSize: '13px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.background = '#DBEAFE'}
+                                    onMouseOut={(e) => e.currentTarget.style.background = '#EFF6FF'}>
+                                        <span>Filtro: <strong>{GESTION_MAP[gestionFiltro]?.nombre}</strong></span>
+                                        <span style={{ color: '#2563EB', fontWeight: '700', marginLeft: '4px' }}>✕ Ver todo</span>
+                                </button>
+                            )
+                        }
+                    </div>
 
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        {/* Alerta 2: Documentos por Vencer (< 15 días) */}
-                                        <div
-                                            onClick={() => setModalAlertaDetalle('POR_VENCER')}
-                                            style={{
-                                                padding: '14px 16px',
-                                                background: '#FFFBEB',
-                                                border: '1px solid #FDE68A',
-                                                borderRadius: '12px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.15s ease',
-                                                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-                                            }}
-                                            onMouseOver={(e) => {
-                                                e.currentTarget.style.borderColor = '#fbbf24';
-                                                e.currentTarget.style.transform = 'translateY(-1px)';
-                                            }}
-                                            onMouseOut={(e) => {
-                                                e.currentTarget.style.borderColor = '#FDE68A';
-                                                e.currentTarget.style.transform = 'translateY(0)';
-                                            }}
-                                        >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <div style={{
-                                                    width: 34,
-                                                    height: 34,
-                                                    borderRadius: '8px',
-                                                    background: '#fef3c7',
-                                                    border: '1px solid #fde68a',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: '#d97706',
-                                                    flexShrink: 0
-                                                }}>
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <circle cx="12" cy="12" r="10"></circle>
-                                                        <polyline points="12 6 12 12 16 14"></polyline>
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <div style={{ fontSize: '13.5px', fontWeight: 750, color: '#92400E' }}>
-                                                        Documentos por vencer
-                                                    </div>
-                                                    <div style={{ fontSize: '12px', color: '#b45309', marginTop: '2px' }}>
-                                                        Vencimiento en menos de 15 días
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <span style={{
-                                                    fontSize: '18px',
-                                                    fontWeight: 800,
-                                                    color: '#b45309',
-                                                    background: '#ffffff',
-                                                    padding: '4px 14px',
-                                                    borderRadius: '999px',
-                                                    border: '1px solid #fde68a',
-                                                    boxShadow: '0 1px 2px rgba(217,119,6,0.08)'
-                                                }}>
-                                                    {porVencList.length}
-                                                </span>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                                </svg>
-                                            </div>
-                                        </div>
-
-                                        {/* Alerta 3: Llenado Incompleto de Documentos */}
-                                        <div
-                                            onClick={() => setModalAlertaDetalle('INCOMPLETOS')}
-                                            style={{
-                                                padding: '14px 16px',
-                                                background: '#EFF6FF',
-                                                border: '1px solid #BFDBFE',
-                                                borderRadius: '12px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.15s ease',
-                                                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-                                            }}
-                                            onMouseOver={(e) => {
-                                                e.currentTarget.style.borderColor = '#60a5fa';
-                                                e.currentTarget.style.transform = 'translateY(-1px)';
-                                            }}
-                                            onMouseOut={(e) => {
-                                                e.currentTarget.style.borderColor = '#BFDBFE';
-                                                e.currentTarget.style.transform = 'translateY(0)';
-                                            }}
-                                        >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <div style={{
-                                                    width: 34,
-                                                    height: 34,
-                                                    borderRadius: '8px',
-                                                    background: '#eff6ff',
-                                                    border: '1px solid #bfdbfe',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: '#2563eb',
-                                                    flexShrink: 0
-                                                }}>
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                                        <line x1="9" y1="15" x2="15" y2="15"></line>
-                                                    </svg>
-                                                </div>
-                                                <div>
-                                                    <div style={{ fontSize: '13.5px', fontWeight: 750, color: '#1E40AF' }}>
-                                                        Llenado incompleto de documentos
-                                                    </div>
-                                                    <div style={{ fontSize: '12px', color: '#1d4ed8', marginTop: '2px' }}>
-                                                        Documentos exigibles pendientes de carga
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <span style={{
-                                                    fontSize: '18px',
-                                                    fontWeight: 800,
-                                                    color: '#1d4ed8',
-                                                    background: '#ffffff',
-                                                    padding: '4px 14px',
-                                                    borderRadius: '999px',
-                                                    border: '1px solid #bfdbfe',
-                                                    boxShadow: '0 1px 2px rgba(37,99,235,0.08)'
-                                                }}>
-                                                    {incompCount}
-                                                </span>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style={{
-                                    marginTop: '16px',
-                                    paddingTop: '12px',
-                                    borderTop: `1px solid ${colors.border}`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    fontSize: '12px',
-                                    color: colors.textMuted
-                                }}>
-                                    <span>KPI de Alerta Preventiva: Haga clic en cualquier alerta para ver el detalle.</span>
-                                </div>
+                    {/* ── PROVEEDOR sin ficha → aviso ──────────────────────────────── */}
+                    {esProveedor && !miProveedorId && !loadingProveedor ?
+                        (
+                            <div style={{ ...styles.card, marginTop: '30px' }}>
+                                <div style={styles.emptyState}>
+                                    Por favor, complete su registro de Ficha Informativa en la sección de Mi Ficha para activar sus indicadores.
+                                 </div>
                             </div>
-                        );
+                        ) : 
+                        (
+                            <>
+                    
+                            {esConsultor && (
+                                    <div className={
+                                        proveedorSeleccionado !== 'ALL'
+                                            ? 'consultor-proveedor-grid'
+                                            : 'consultor-proveedor-grid-full'}>
+
+                                {/* ── VISTA CONSULTOR: MI CALIFICACIÓN... ── */}
+                                {/* ─ EROMAN 03/09/2026 ─*/}
+                                {/* ── VISTA CONSULTOR: MI CALIFICACIÓN DEL PROVEEDOR SELECCIONADO ── */}
+
+                                {esConsultor && proveedorSeleccionado !== 'ALL' && calificacionConsultor && proveedorConsultorInfo && (() => 
+                                    {
+                                        // ─────────────────────────────────────────────────────────────
+                                        // CALIFICACIÓN DINÁMICA DEL CONSULTOR
+                                        // Se comporta igual que la vista PROVEEDOR:
+                                        // - Todas las gestiones → calificación global
+                                        // - Gestiones específicas → recalcula según esas gestiones
+                                        // ─────────────────────────────────────────────────────────────
+
+                                        const isAllGestiones = !gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL');
+                                        let calificacionMostrar = calificacionConsultor;
+
+                                        if (!isAllGestiones && cumplimientoGlobal?.length > 0) 
+                                            {
+                                                // Obtener los alcances correspondientes a las gestiones seleccionadas
+                                                const alcancesSeleccionados = gestionFiltro.reduce((acc, codigoGestion) => 
+                                                    {
+                                                        const config = GESTION_MAP[codigoGestion];
+                                                        if (config) 
+                                                            {
+                                                                return [...acc, ...config.alcances];
+                                                            }
+                                                        return acc;
+                                                    },[]);
+
+                                                /*
+                                                * Relación entre alcance y código de cumplimiento global
+                                                *
+                                                * GSG + GMA  -> SST_MA
+                                                * GCA         -> CALIDAD
+                                                * GPA         -> PATRIMONIAL
+                                                * GTR         -> ETICA
+                                                */
+                                                const codigosCumplimiento = [];
+
+                                                if (alcancesSeleccionados.includes('GSG') ||alcancesSeleccionados.includes('GMA'))
+                                                    {
+                                                        codigosCumplimiento.push('SST_MA');
+                                                    }
+
+                                                if (alcancesSeleccionados.includes('GCA')) 
+                                                    {
+                                                        codigosCumplimiento.push('CALIDAD');
+                                                    }
+
+                                                if (alcancesSeleccionados.includes('GPA')) 
+                                                    {
+                                                        codigosCumplimiento.push('PATRIMONIAL');
+                                                    }
+
+                                                if (alcancesSeleccionados.includes('GTR')) 
+                                                    {
+                                                        codigosCumplimiento.push('ETICA');
+                                                    }
+
+                                                // Obtener solamente las gestiones seleccionadas
+                                                const gestionesSeleccionadas = cumplimientoGlobal.filter(item => codigosCumplimiento.includes(item.codigo));
+                                                let totalExigibles = 0;
+                                                let totalVigentes = 0;
+
+                                                gestionesSeleccionadas.forEach(item => 
+                                                    {
+                                                        totalExigibles += Number(item.documentos_exigibles || 0);
+                                                        totalVigentes += Number(item.documentos_registrados || 0);
+                                                    });
+
+                                                if (totalExigibles > 0) 
+                                                    {
+                                                        let puntajeRaw = (totalVigentes / totalExigibles) * 100;
+
+                                                        if (puntajeRaw > 100) {puntajeRaw = 100;}
+
+                                                        let recomendacion = 'NO RECOMENDADO';
+                                                        let nivel = 'BAJO';
+                                                        let descripcion = 'Presenta un bajo nivel de registro y vigencia documental';
+
+                                                        if (puntajeRaw > 90) 
+                                                            {
+                                                                recomendacion = 'RECOMENDADO';
+                                                                nivel = 'ALTO';
+                                                                descripcion ='Mantiene un alto nivel de registro y vigencia documental';
+
+                                                            } 
+                                                        else if (puntajeRaw >= 75) 
+                                                            {
+                                                                recomendacion = 'RECOMENDADO CON RESTRICCIONES';
+                                                                nivel = 'MEDIO';
+                                                                descripcion = 'Mantiene un nivel aceptable de registro y vigencia documental';
+                                                            }
+
+                                                        calificacionMostrar = {...calificacionConsultor,cantidad_documentos_vigentes:totalVigentes,total_exigibles:totalExigibles,puntaje_formateado:`${Math.round(puntajeRaw)} / 100`,
+                                                                                puntaje_numerico:Math.round(puntajeRaw),recomendacion,nivel_documental:nivel,descripcion_nivel:descripcion};
+                                                    }
+                                            }
+
+                                            const puntaje = Number(String(calificacionMostrar.puntaje_formateado || '0').split('/')[0].trim()) || 0;
+
+                                            let nivel = 'BAJO';
+                                            let recomendacion = 'NO RECOMENDADO';
+                                            let descripcion = 'Presenta un bajo nivel de registro y vigencia documental';
+
+                                            if (puntaje > 90) 
+                                                {
+                                                    nivel = 'ALTO';
+                                                    recomendacion = 'RECOMENDADO';
+                                                    descripcion ='Mantiene un alto nivel de registro y vigencia documental';
+                                                } 
+                                            else if (puntaje >= 75) 
+                                                {
+                                                    nivel = 'MEDIO';
+                                                    recomendacion = 'RECOMENDADO CON RESTRICCIONES';
+                                                    descripcion = 'Mantiene un nivel aceptable de registro y vigencia documental';
+                                                }
+
+                                            const identidad = obtenerIdentidadProveedorConsultor();
+                                            {/* AQUI MUESTRA LAS 3 TARJETA CUANDO USUARIO ES CONSLTOR */}        
+                                            return  (            
+                                                        <div
+                                                            className="consultor-calificacion-card"
+                                                            style={{
+                                                                ...styles.card,
+                                                                border: nivel === 'BAJO'
+                                                                        ? `2px solid ${colors.danger}`
+                                                                        : `1px solid ${colors.border}`,
+                                                                    borderLeft: `6px solid ${
+                                                                        nivel === 'ALTO'
+                                                                            ? colors.success
+                                                                            : nivel === 'MEDIO'
+                                                                                ? colors.amber
+                                                                                : colors.danger
+                                                                    }`,
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    gap: '16px',
+                                                                    background: nivel === 'BAJO'
+                                                                        ? '#FEF2F2'
+                                                                        : colors.card,
+                                                                    marginBottom: '28px'}}>                
+                                                                        {/* CABECERA */}
+                                                                        <div style={{
+                                                                            display: 'flex',
+                                                                            flexDirection: nivel === 'BAJO' ? 'column' : 'row',
+                                                                            justifyContent: 'space-between',
+                                                                            alignItems: nivel === 'BAJO' ? 'center' : 'flex-start',
+                                                                            borderBottom: `1px solid ${colors.border}`,
+                                                                            paddingBottom: '16px',
+                                                                            gap: nivel === 'BAJO' ? '12px' : '0'}}>
+
+                                                                                <div style={{
+                                                                                    textAlign: nivel === 'BAJO' ? 'center' : 'left'}}>
+                                                                                    <h2 style={{
+                                                                                        fontSize: '16px',
+                                                                                        fontWeight: 800,
+                                                                                        color: colors.text,
+                                                                                        margin: 0,
+                                                                                        textTransform: 'uppercase',
+                                                                                        letterSpacing: '0.05em'}}>
+                                                                                            CALIFICACION DEL PROVEEDOR - {' '}
+                                                                                            <span style={{ color: colors.primary }}>
+                                                                                                {identidad}
+                                                                                            </span>
+                                                                                    </h2>
+
+                                                                                    <p style={{
+                                                                                        fontSize: '13px',
+                                                                                        color: colors.textMuted,
+                                                                                        margin: '4px 0 0 0'}}>
+                                                                                        KPI de Calificación | Régimen:{' '}
+                                                                                        <strong>
+                                                                                            {obtenerDescripcionRegimen(calificacionConsultor.regimen_tributario_codigo || calificacionConsultor.regimen_tributario, calificacionConsultor.descripcion_regimen_tributario || calificacionConsultor.regimen_tributario)}
+                                                                                        </strong>{' '}
+                                                                                        | {obtenerEtiquetaFiltrosActivos(gestionFiltro, periodoFiltro, rubroFiltro)}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                {/* RECOMENDACIÓN */}
+                                                                                <div style={{ textAlign: 'center' }}>
+                                                                                    <span style={{
+                                                                                        ...styles.badge(
+                                                                                            nivel === 'ALTO'
+                                                                                                ? colors.successBg
+                                                                                                : nivel === 'MEDIO'
+                                                                                                    ? '#fef3c7'
+                                                                                                    : colors.danger,
+                                                                                            nivel === 'ALTO'
+                                                                                                ? colors.success
+                                                                                                : nivel === 'MEDIO'
+                                                                                                    ? '#b45309'
+                                                                                                    : '#FFFFFF'
+                                                                                        ),
+                                                                                        fontSize: nivel === 'BAJO' ? '16px' : '14px',
+                                                                                        padding: nivel === 'BAJO'
+                                                                                            ? '8px 24px'
+                                                                                            : '6px 16px',
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        gap: '8px'}}>
+                                                                                            {recomendacion}
+                                                                                    </span>
+                                                                                </div>
+                                                                        </div>
+
+                                                                        {/* PUNTAJE Y NIVEL */}
+                                                                        <div style={{
+                                                                            display: 'flex',
+                                                                            flexDirection: nivel === 'BAJO' ? 'column' : 'row',
+                                                                            alignItems: 'center',
+                                                                            gap: nivel === 'BAJO' ? '16px' : '30px',
+                                                                            textAlign: nivel === 'BAJO' ? 'center' : 'left'}}>
+
+                                                                            {/* PUNTAJE */}
+                                                                            <div style={{
+                                                                                display: 'flex',
+                                                                                flexDirection: 'column',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                background: nivel === 'BAJO'
+                                                                                    ? '#FFFFFF'
+                                                                                    : '#f8fafc',
+                                                                                padding: '20px',
+                                                                                borderRadius: '12px',
+                                                                                minWidth: '150px',
+                                                                                border: nivel === 'BAJO'
+                                                                                    ? `1px solid ${colors.danger}`
+                                                                                    : 'none'}}>
+
+                                                                                    <span style={{
+                                                                                        fontSize: '32px',
+                                                                                        fontWeight: 900,
+                                                                                        color: nivel === 'ALTO'
+                                                                                            ? colors.success
+                                                                                            : nivel === 'MEDIO'
+                                                                                                ? '#b45309'
+                                                                                                : colors.danger,
+                                                                                        lineHeight: '1'}}>
+                                                                                            {puntaje}
+                                                                                    </span>
+
+                                                                                    <span style={{
+                                                                                        fontSize: '14px',
+                                                                                        fontWeight: 700,
+                                                                                        color: colors.textMuted,
+                                                                                        marginTop: '4px'}}>
+                                                                                            / 100
+                                                                                    </span>
+                                                                            </div>
+
+                                                                            {/* NIVEL */}
+                                                                            <div style={{ flex: 1 }}>
+                                                                                <h3 style={{
+                                                                                    fontSize: '16px',
+                                                                                    fontWeight: 700,
+                                                                                    color: nivel === 'BAJO'
+                                                                                        ? colors.danger
+                                                                                        : colors.text,
+                                                                                    margin: '0 0 8px 0'}}>
+                                                                                        Nivel de Gestión Documental: {nivel}
+                                                                                </h3>
+
+                                                                                <p style={{
+                                                                                    fontSize: '15px',
+                                                                                    color: colors.textMuted,
+                                                                                    margin: 0,
+                                                                                    lineHeight: '1.5'}}>
+                                                                                        {descripcion}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {/* DOCUMENTOS VIGENTES */}
+                                                                        <div style={{
+                                                                            borderTop: `1px solid ${colors.border}`,
+                                                                            paddingTop: '14px',
+                                                                            marginTop: '4px',
+                                                                            display: 'flex',
+                                                                            justifyContent: 'center',
+                                                                            alignItems: 'center'}}>
+                                                                                <span style={{
+                                                                                    fontSize: '13px',
+                                                                                    fontWeight: 700,
+                                                                                    color: colors.textMuted}}>
+                                                                                    KPI de Efectividad Documental:{' '}
+                                                                                    <strong style={{ color: colors.primary }}>
+                                                                                        {calificacionMostrar.cantidad_documentos_vigentes ?? 0}
+                                                                                    </strong>
+                                                                                    {' '}documentos vigentes evaluados de{' '}
+                                                                                    <strong style={{ color: colors.text }}>
+                                                                                        {calificacionMostrar.total_exigibles ?? calificacionConsultor.total_documentos_exigibles ?? (calificacionConsultor.regimen_tributario_codigo === 'RM' ? 11 : calificacionConsultor.regimen_tributario_codigo === 'RP' ? 13 : 16)}
+                                                                                    </strong>
+                                                                                    {' '}exigibles ({obtenerNombreGestionFiltro(gestionFiltro)}).
+                                                                                </span>
+                                                                        </div>
+                                                           </div>                                                        
+                                                    );
                     })()}
-                </div>                
-               
-        <div className="consultor-cartera-grid">
+
+                    {/* ── TARJETA: CUMPLIMIENTO POR GESTIÓN (Solo Consultor) ────────────── */}               
+                    <div
+                        className="consultor-cumplimiento-card"
+                        style={{
+                            ...styles.card,
+                            padding: '24px 28px',
+                                            borderRadius: '12px',
+                                            boxShadow: '0 2px 6px rgba(0,0,0,0.04)'}}>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px', borderBottom: `1px solid ${colors.border}`, paddingBottom: '16px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <span style={{ display: 'inline-block', width: '4px', height: '22px', background: colors.primary, borderRadius: '4px' }}></span>
+                                        <div>
+                                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: colors.text, letterSpacing: '0.02em' }}>
+                                                CUMPLIMIENTO POR GESTIÓN
+                                            </h3>
+                                            <p style={{ color: colors.textMuted, fontSize: '13px', margin: '3px 0 0 0' }}>
+                                                KPI en función a los filtros seleccionados.
+                                            </p>
+                                        </div>
+                                </div>                           
+                                {(() => 
+                                    {
+                                        const totalEvaluados = proveedorSeleccionado !== 'ALL' ? 1 : Number(cumplimientoProveedores?.total_proveedores || 0);
+
+                                        return totalEvaluados > 0 ? 
+                                            (
+                                                <span style={{
+                                                    background: '#eff6ff',
+                                                    color: colors.primary,
+                                                    fontWeight: 700,
+                                                    fontSize: '12.5px',
+                                                    padding: '5px 14px',
+                                                    borderRadius: '999px',
+                                                    border: '1px solid #bfdbfe'}}>
+                                                        {totalEvaluados} Proveedor{totalEvaluados === 1 ? '' : 'es'} evaluado{totalEvaluados === 1 ? '' : 's'}
+                                                </span>
+                                            ) : null;
+                                    })()}
+                            </div>
+
+                            <div className="table-scroll">
+                                <table style={{ ...styles.table, marginTop: 0 }}>
+                                    <thead>
+                                        <tr>
+                                            <th style={{ ...styles.th, width: '30%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Gestión</th>
+                                            <th style={{ ...styles.th, width: '55%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Avance de Cumplimiento</th>
+                                            <th style={{ ...styles.th, textAlign: 'center', width: '15%', padding: '12px 16px', background: '#f8fafc', borderBottom: `2px solid ${colors.border}` }}>Cumplimiento</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(cumplimientoGlobal && cumplimientoGlobal.length > 0 ? cumplimientoGlobal : [
+                                            { codigo: 'SST_MA', nombre: 'SST-MA', porcentaje: 0 },
+                                            { codigo: 'CALIDAD', nombre: 'CALIDAD', porcentaje: 0 },
+                                            { codigo: 'PATRIMONIAL', nombre: 'SEG. PATRIMONIAL', porcentaje: 0 },
+                                            { codigo: 'ETICA', nombre: 'ETICA', porcentaje: 0 },
+                                        ]).filter(item => {
+                                                            if (!gestionFiltro || gestionFiltro.length === 0 || gestionFiltro.includes('ALL')) return true;
+                                                            if ((item.codigo === 'SST_MA' || (item.nombre || '').includes('SST')) && (gestionFiltro.includes('GSG,GMA') || gestionFiltro.includes('GSG') || gestionFiltro.includes('GMA'))) return true;
+                                                            if ((item.codigo === 'CALIDAD' || (item.nombre || '').includes('CALIDAD')) && (gestionFiltro.includes('GCA') || gestionFiltro.includes('CALIDAD'))) return true;
+                                                            if ((item.codigo === 'PATRIMONIAL' || (item.nombre || '').includes('PATRIMONIAL')) && (gestionFiltro.includes('GPA') || gestionFiltro.includes('PATRIMONIAL'))) return true;
+                                                            if ((item.codigo === 'ETICA' || (item.nombre || '').includes('ETICA')) && (gestionFiltro.includes('GTR') || gestionFiltro.includes('ETICA'))) return true;
+                                                            return false;
+                                                        }).map((item, index) => {
+                                                                                    const pct = Number(item.porcentaje || 0);
+                                                                                    const progressColor = pct >= 90 ? colors.success : pct >= 75 ? '#d97706' : colors.danger;
+                                                                                    const badgeBg = pct >= 90 ? '#dcfce7' : pct >= 75 ? '#fef3c7' : '#fee2e2';
+                                                                                    const badgeFg = pct >= 90 ? '#15803d' : pct >= 75 ? '#b45309' : '#dc2626';
+                                                                                    const badgeBorder = pct >= 90 ? '#bbf7d0' : pct >= 75 ? '#fde68a' : '#fecaca';
+
+                                                                                    return  (
+                                                                                                <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                                                                                    <td style={{
+                                                                                                                ...styles.td,
+                                                                                                                padding: '16px',
+                                                                                                                color: '#000000',
+                                                                                                                background: '#ffffff'}}>
+                                                                                                                    <strong style={{ fontSize: '13.5px', color: colors.text }}>
+                                                                                                                        {item.nombre}
+                                                                                                                    </strong>
+                                                                                                    </td>
+
+                                                                                                    <td style={{ ...styles.td, padding: '16px' }}>
+                                                                                                        <div style={{ width: '100%', background: '#e2e8f0', borderRadius: '999px', overflow: 'hidden', height: '10px' }}>
+                                                                                                            <div style={{
+                                                                                                                width: `${Math.min(pct, 100)}%`,
+                                                                                                                background: progressColor,
+                                                                                                                height: '100%',
+                                                                                                                transition: 'width 1s ease-in-out',
+                                                                                                                borderRadius: '999px'}}>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </td>
+
+                                                                                                    <td style={{ ...styles.td, textAlign: 'center', padding: '16px' }}>
+                                                                                                        <span style={{
+                                                                                                            ...styles.badge(badgeBg, badgeFg),
+                                                                                                            padding: '5px 14px',
+                                                                                                            fontSize: '13px',
+                                                                                                            fontWeight: 800,
+                                                                                                            border: `1px solid ${badgeBorder}`,
+                                                                                                            borderRadius: '999px'}}>
+                                                                                                                {pct.toFixed(2)}%
+                                                                                                        </span>
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                    </div>
+                    {/* 2. TARJETA: ALERTAS DEL PROVEEDOR */}
+                    {   proveedorSeleccionado !== 'ALL' && (() => 
+                            {
+                                const noRecList = alertasCalculadas.noRecomendadosList.filter(p => String(p.proveedor_id) === String(proveedorSeleccionado));
+                                const porVencList = alertasCalculadas.porVencerList.filter(d => String(d.proveedor_id) === String(proveedorSeleccionado));
+                                const incompList = alertasCalculadas.incompletosList.filter(p => String(p.proveedor_id) === String(proveedorSeleccionado));
+                                const incompCount = incompList.length > 0 ? (incompList[0].pendientes_evaluados ?? incompList.length) : 0;
+
+                                return  (
+                                            <div
+                                                className="consultor-alertas-card"
+                                                style={{
+                                                    ...styles.card,
+                                                    padding: '24px 26px',
+                                                    borderLeft: `5px solid #dc2626`,
+                                                    borderRadius: '14px',
+                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'space-between'}}>
+                                                        <div>
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                marginBottom: '18px',
+                                                                borderBottom: `1px solid ${colors.border}`,
+                                                                paddingBottom: '14px',
+                                                                flexWrap: 'wrap',
+                                                                gap: '10px'}}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                                        <div style={{
+                                                                            width: 40,
+                                                                            height: 40,
+                                                                            borderRadius: '10px',
+                                                                            background: '#fef2f2',
+                                                                            border: '1px solid #fecaca',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            color: colors.danger,
+                                                                            boxShadow: '0 2px 4px rgba(220,38,38,0.08)'}}>
+                                                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                                                                                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                                                                </svg>
+                                                                        </div>
+                                                                        <div>
+                                                                            <h2 style={{ fontSize: '17px', fontWeight: 800, color: colors.text, margin: 0, letterSpacing: '0.01em' }}>
+                                                                                Alertas del Proveedor
+                                                                            </h2>
+                                                                            <p style={{ color: colors.textMuted, fontSize: '12.5px', margin: '2px 0 0 0' }}>
+                                                                                KPI en función a los filtros seleccionados.
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                            </div>
+
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                                {/* Alerta 2: Documentos por Vencer (< 15 días) */}
+                                                                <div
+                                                                    onClick={() => setModalAlertaDetalle('POR_VENCER')}
+                                                                    style={{
+                                                                        padding: '14px 16px',
+                                                                        background: '#FFFBEB',
+                                                                        border: '1px solid #FDE68A',
+                                                                        borderRadius: '12px',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'space-between',
+                                                                        cursor: 'pointer',
+                                                                        transition: 'all 0.15s ease',
+                                                                        boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                                                                    }}
+                                                                    onMouseOver={(e) => {
+                                                                        e.currentTarget.style.borderColor = '#fbbf24';
+                                                                        e.currentTarget.style.transform = 'translateY(-1px)';
+                                                                    }}
+                                                                    onMouseOut={(e) => {
+                                                                        e.currentTarget.style.borderColor = '#FDE68A';
+                                                                        e.currentTarget.style.transform = 'translateY(0)';}}>
+
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                                            <div style={{
+                                                                                width: 34,
+                                                                                height: 34,
+                                                                                borderRadius: '8px',
+                                                                                background: '#fef3c7',
+                                                                                border: '1px solid #fde68a',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                color: '#d97706',
+                                                                                flexShrink: 0}}>
+                                                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <circle cx="12" cy="12" r="10"></circle>
+                                                                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                                                                    </svg>
+                                                                            </div>
+                                                                            <div>
+                                                                                <div style={{ fontSize: '13.5px', fontWeight: 750, color: '#92400E' }}>
+                                                                                    Documentos por vencer
+                                                                                </div>
+                                                                                <div style={{ fontSize: '12px', color: '#b45309', marginTop: '2px' }}>
+                                                                                    Vencimiento en menos de 15 días
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                            <span style={{
+                                                                                fontSize: '18px',
+                                                                                fontWeight: 800,
+                                                                                color: '#b45309',
+                                                                                background: '#ffffff',
+                                                                                padding: '4px 14px',
+                                                                                borderRadius: '999px',
+                                                                                border: '1px solid #fde68a',
+                                                                                boxShadow: '0 1px 2px rgba(217,119,6,0.08)'}}>
+                                                                                    {porVencList.length}
+                                                                            </span>
+                                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <polyline points="9 18 15 12 9 6"></polyline>
+                                                                            </svg>
+                                                                        </div>
+                                                                </div>
+
+                                                                {/* Alerta 3: Llenado Incompleto de Documentos */}
+                                                                <div
+                                                                    onClick={() => setModalAlertaDetalle('INCOMPLETOS')}
+                                                                    style={{
+                                                                        padding: '14px 16px',
+                                                                        background: '#EFF6FF',
+                                                                        border: '1px solid #BFDBFE',
+                                                                        borderRadius: '12px',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'space-between',
+                                                                        cursor: 'pointer',
+                                                                        transition: 'all 0.15s ease',
+                                                                        boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                                                                    }}
+                                                                    onMouseOver={(e) => {
+                                                                        e.currentTarget.style.borderColor = '#60a5fa';
+                                                                        e.currentTarget.style.transform = 'translateY(-1px)';
+                                                                    }}
+                                                                    onMouseOut={(e) => {
+                                                                        e.currentTarget.style.borderColor = '#BFDBFE';
+                                                                        e.currentTarget.style.transform = 'translateY(0)';}}>
+
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                                            <div style={{
+                                                                                width: 34,
+                                                                                height: 34,
+                                                                                borderRadius: '8px',
+                                                                                background: '#eff6ff',
+                                                                                border: '1px solid #bfdbfe',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                color: '#2563eb',
+                                                                                flexShrink: 0}}>
+                                                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                                                                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                                                                                    </svg>
+                                                                            </div>
+                                                                            <div>
+                                                                                <div style={{ fontSize: '13.5px', fontWeight: 750, color: '#1E40AF' }}>
+                                                                                    Llenado incompleto de documentos
+                                                                                </div>
+                                                                                <div style={{ fontSize: '12px', color: '#1d4ed8', marginTop: '2px' }}>
+                                                                                    Documentos exigibles pendientes de carga
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                            <span style={{
+                                                                                fontSize: '18px',
+                                                                                fontWeight: 800,
+                                                                                color: '#1d4ed8',
+                                                                                background: '#ffffff',
+                                                                                padding: '4px 14px',
+                                                                                borderRadius: '999px',
+                                                                                border: '1px solid #bfdbfe',
+                                                                                boxShadow: '0 1px 2px rgba(37,99,235,0.08)'}}>
+                                                                                    {incompCount}
+                                                                            </span>
+                                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <polyline points="9 18 15 12 9 6"></polyline>
+                                                                            </svg>
+                                                                        </div>
+                                                                </div>
+                                                            </div>
+                                                    </div>
+
+                                                <div style={{
+                                                    marginTop: '16px',
+                                                    paddingTop: '12px',
+                                                    borderTop: `1px solid ${colors.border}`,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    fontSize: '12px',
+                                                    color: colors.textMuted}}>
+                                                        <span>KPI de Alerta Preventiva: Haga clic en cualquier alerta para ver el detalle.</span>
+                                                </div>
+                                            </div>
+                                        );
+                    })()}
+                           </div>
+                )}
+
+            <div className="consultor-cartera-grid">
 
                      {/* ── VISTA CONSULTOR: TARJETA GENERAL PROVEEDORES SOLO NUMEROS (Agrandada y Destacada) EROMAN 03/09/2026─────────── */}
                     {esConsultor && (() => {
