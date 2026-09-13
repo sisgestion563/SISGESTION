@@ -3,7 +3,7 @@ const authorizeRole = (roles) => {
     return (req,res,next) => {
 
         if (
-            !roles.includes(req.user.rol)
+            !roles.includes(req.user.rol_codigo)
         ) {
 
             return res.status(403).json({

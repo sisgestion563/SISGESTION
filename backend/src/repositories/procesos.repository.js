@@ -1,40 +1,52 @@
-const pool = require('../config/db');
+const pool =
+    require('../config/db');
+
 
 const actualizarEstadosDocumentos =
-async () => {
+async (
+    usuarioId
+) => {
 
-    const vencidosSql = `
-        UPDATE "SISGES"."MOV_DOCUMENTOS"
-        SET estado_documento = 'C',
-            last_update = CURRENT_DATE
-        WHERE fecha_vigencia <= CURRENT_DATE
-        AND estado_documento <> 'C'
-        AND status = 'A'
-    `;
+    await pool.query(
+        `
+        CALL "SISGES"."pr_actualizar_estado_documentos"($1)
+        `,
+        [
+            usuarioId
+        ]
+    );
 
-    const vigentesSql = `
-        UPDATE "SISGES"."MOV_DOCUMENTOS"
-        SET estado_documento = 'V',
-            last_update = CURRENT_DATE
-        WHERE fecha_vigencia > CURRENT_DATE
-        AND estado_documento <> 'V'
-        AND status = 'A'
-    `;
 
-    const vencidos =
-        await pool.query(vencidosSql);
+    const result =
+        await pool.query(
+            `
+            SELECT
+                id_ejecucion,
+                nombre_proceso,
+                tipo_ejecucion,
+                fecha_inicio,
+                fecha_fin,
+                usuario_id,
+                usuario,
+                estado_ejecucion,
+                total_evaluados,
+                total_actualizados,
+                observaciones
+            FROM "SISGES"."MOV_PROCESOS_EJECUCION"
+            WHERE usuario_id = $1
+            ORDER BY id_ejecucion DESC
+            LIMIT 1
+            `,
+            [
+                usuarioId
+            ]
+        );
 
-    const vigentes =
-        await pool.query(vigentesSql);
 
-    return {
-        vencidos:
-            vencidos.rowCount,
-        vigentes:
-            vigentes.rowCount
-    };
+    return result.rows[0] || null;
 
 };
+
 
 module.exports = {
     actualizarEstadosDocumentos

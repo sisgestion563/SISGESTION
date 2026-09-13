@@ -18,16 +18,18 @@ const {
 
 const controller =
 require(
-    '../controllers/procesos.controller'
+    '../controllers/reportes.controller'
 );
 
+
 router.post(
-    '/procesos/documentos/actualizarEstadosDocumentos',
+    '/reportes/documentos',
     authenticateToken,
     authorizeRole([
         'ADMIN'
     ]),
-    controller.actualizarEstadosDocumentos
+    controller.obtenerReporteDocumentos
 );
+
 
 module.exports = router;

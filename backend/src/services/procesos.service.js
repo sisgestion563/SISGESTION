@@ -1,13 +1,19 @@
 const repository =
-require('../repositories/procesos.repository');
+    require('../repositories/procesos.repository');
+
 
 const actualizarEstadosDocumentos =
-async () => {
+async (
+    usuarioId
+) => {
 
     return await repository
-        .actualizarEstadosDocumentos();
+        .actualizarEstadosDocumentos(
+            usuarioId
+        );
 
 };
+
 
 module.exports = {
     actualizarEstadosDocumentos
