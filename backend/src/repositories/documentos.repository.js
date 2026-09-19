@@ -1,7 +1,19 @@
 const pool = require('../config/db');
 
 const obtenerPeriodoActivo = async () => {
-    const currentYear = new Date().getFullYear();
+    
+    const currentYear =
+    Number(
+        new Intl.DateTimeFormat(
+            'en',
+            {
+                timeZone: 'America/Lima',
+                year: 'numeric'
+            }
+        ).format(new Date())
+    );
+
+
     
     // 1. Intentar obtener el periodo activo según la fecha actual del servidor
     const sql = `
@@ -136,8 +148,8 @@ const crear = async (documento) =>
             nextval('"SISGES".seq_documento_id'),
             $1,$2,$3,$4,$5,$6,$7,$8,$9,
             'A',
-            $10,$11,
-            CURRENT_DATE,
+            $10,$11,            
+            (CURRENT_TIMESTAMP AT TIME ZONE 'America/Lima')::date,
             $12,
             $13
         )
@@ -184,8 +196,8 @@ const actualizar = async (
             ruta_documento    = $6,
             estado_documento  = $7,
             alcance           = $8,
-            observaciones     = $9,
-            last_update       = CURRENT_DATE,
+            observaciones     = $9,            
+            last_update       = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Lima')::date,
             update_by         = $10
         WHERE documento_id = $11
     `;

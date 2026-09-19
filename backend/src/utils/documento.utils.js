@@ -1,12 +1,25 @@
-const calcularEstadoDocumento = (fechaVigencia) => {
+const obtenerFechaLima = () => {
 
-    const hoy = new Date();
+    return new Intl.DateTimeFormat(
+        'en-CA',
+        {
+            timeZone: 'America/Lima',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }
+    ).format(new Date());
 
-    hoy.setHours(0,0,0,0);
+};
 
-    const fechaDoc = new Date(fechaVigencia);
+const calcularEstadoDocumento = (
+    fechaVigencia
+) => {
 
-    fechaDoc.setHours(0,0,0,0);
+    const hoy = obtenerFechaLima();
+
+    const fechaDoc =
+        String(fechaVigencia).substring(0, 10);
 
     return fechaDoc <= hoy
         ? 'C'
